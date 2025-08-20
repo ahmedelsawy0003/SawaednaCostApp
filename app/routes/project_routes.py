@@ -7,14 +7,16 @@ project_bp = Blueprint('project', __name__, url_prefix='/projects')
 @project_bp.route('/', methods=['GET'])
 def get_projects():
     """الحصول على قائمة المشاريع"""
-    projects = Project.query.all()
-    return render_template('projects/index.html', projects=[project.to_dict() for project in projects])
+    projects = Project.query.order_by(Project.created_at.desc()).all()
+    # تم التعديل هنا: نمرر قائمة الكائنات الأصلية مباشرة
+    return render_template('projects/index.html', projects=projects)
 
 @project_bp.route('/<int:project_id>', methods=['GET'])
 def get_project(project_id):
     """الحصول على مشروع محدد"""
     project = Project.query.get_or_404(project_id)
-    return render_template('projects/show.html', project=project.to_dict())
+    # تم التعديل هنا: نمرر كائن المشروع الأصلي مباشرة
+    return render_template('projects/show.html', project=project)
 
 @project_bp.route('/new', methods=['GET'])
 def new_project():
@@ -53,7 +55,8 @@ def create_project():
 def edit_project(project_id):
     """عرض نموذج تعديل المشروع"""
     project = Project.query.get_or_404(project_id)
-    return render_template('projects/edit.html', project=project.to_dict())
+    # هذا السطر كان صحيحاً بالفعل، وأبقينا عليه كما هو
+    return render_template('projects/edit.html', project=project)
 
 @project_bp.route('/<int:project_id>', methods=['PUT', 'POST'])
 def update_project(project_id):
@@ -97,4 +100,5 @@ def delete_project(project_id):
 def project_dashboard(project_id):
     """عرض لوحة تحكم المشروع"""
     project = Project.query.get_or_404(project_id)
-    return render_template('projects/show.html', project=project)
+    # تم التعديل هنا: نمرر كائن المشروع الأصلي مباشرة
+    return render_template('projects/dashboard.html', project=project)

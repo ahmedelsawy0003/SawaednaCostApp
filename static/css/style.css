@@ -46,6 +46,7 @@ body {
 .table th {
     font-weight: bold;
     background-color: #f8f9fa;
+	color: #343a40; /* أضف هذا السطر لجعل لون الخط رمادي داكن */
 }
 
 .table-hover tbody tr:hover {

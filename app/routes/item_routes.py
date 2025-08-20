@@ -9,13 +9,14 @@ item_bp = Blueprint('item', __name__, url_prefix='/items')
 def get_items(project_id):
     """الحصول على قائمة بنود المشروع"""
     project = Project.query.get_or_404(project_id)
-    items = Item.query.filter_by(project_id=project_id).all()
+    items = Item.query.filter_by(project_id=project_id).order_by(Item.created_at.asc()).all()
     
     # إذا كان الطلب من واجهة API
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         return jsonify([item.to_dict() for item in items])
     
-    return render_template('items/index.html', project=project.to_dict(), items=[item.to_dict() for item in items])
+    # تم التعديل هنا: نمرر الكائنات الأصلية للقالب
+    return render_template('items/index.html', project=project, items=items)
 
 @item_bp.route('/<int:item_id>', methods=['GET'])
 def get_item(item_id):
@@ -26,13 +27,15 @@ def get_item(item_id):
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         return jsonify(item.to_dict())
     
-    return render_template('items/show.html', item=item.to_dict())
+    # تم التعديل هنا: نمرر الكائن الأصلي للقالب
+    return render_template('items/show.html', item=item)
 
 @item_bp.route('/project/<int:project_id>/new', methods=['GET'])
 def new_item(project_id):
     """عرض نموذج إنشاء بند جديد"""
     project = Project.query.get_or_404(project_id)
-    return render_template('items/new.html', project=project.to_dict())
+    # تم التعديل هنا: نمرر الكائن الأصلي للقالب
+    return render_template('items/new.html', project=project)
 
 @item_bp.route('/project/<int:project_id>', methods=['POST'])
 def create_item(project_id):
@@ -82,7 +85,8 @@ def create_item(project_id):
 def edit_item(item_id):
     """عرض نموذج تعديل البند"""
     item = Item.query.get_or_404(item_id)
-    return render_template('items/edit.html', item=item.to_dict())
+    # تم التعديل هنا: نمرر الكائن الأصلي للقالب
+    return render_template('items/edit.html', item=item)
 
 @item_bp.route('/<int:item_id>', methods=['PUT', 'POST'])
 def update_item(item_id):
@@ -113,7 +117,9 @@ def update_item(item_id):
         
         if data.get('paid_amount'):
             item.paid_amount = float(data.get('paid_amount'))
-            item.remaining_amount = item.calculate_remaining_amount()
+        
+        # تحديث المبلغ المتبقي بعد كل التغييرات
+        item.remaining_amount = item.calculate_remaining_amount()
         
         item.notes = data.get('notes', item.notes)
         
