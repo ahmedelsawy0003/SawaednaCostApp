@@ -97,4 +97,4 @@ def delete_project(project_id):
 def project_dashboard(project_id):
     """عرض لوحة تحكم المشروع"""
     project = Project.query.get_or_404(project_id)
-    return render_template('projects/dashboard.html', project=project.to_dict())
+    return render_template('projects/show.html', project=project)
