@@ -1,0 +1,199 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}{{ project.name }} - نظام حساب تكاليف المشاريع{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>{{ project.name }}</h1>
+    <div class="btn-group">
+        <a href="{{ url_for('project.edit_project', project_id=project.id) }}" class="btn btn-warning">
+            <i class="fas fa-edit me-1"></i> تعديل المشروع
+        </a>
+        <a href="{{ url_for('item.get_items', project_id=project.id) }}" class="btn btn-success">
+            <i class="fas fa-list me-1"></i> عرض البنود
+        </a>
+        <a href="{{ url_for('project.project_dashboard', project_id=project.id) }}" class="btn btn-info">
+            <i class="fas fa-chart-bar me-1"></i> لوحة التحكم
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h3 class="mb-0">معلومات المشروع</h3>
+            </div>
+            <div class="card-body">
+                <table class="table table-striped">
+                    <tbody>
+                        <tr>
+                            <th style="width: 30%">اسم المشروع</th>
+                            <td>{{ project.name }}</td>
+                        </tr>
+                        <tr>
+                            <th>مدير المشروع</th>
+                            <td>{{ project.manager }}</td>
+                        </tr>
+                        <tr>
+                            <th>موقع المشروع</th>
+                            <td>{{ project.location }}</td>
+                        </tr>
+                        <tr>
+                            <th>تاريخ الإنشاء</th>
+                            <td>{{ project.created_at.strftime('%Y-%m-%d') if project.created_at else '-' }}</td>
+                        </tr>
+                        <tr>
+                            <th>آخر تحديث</th>
+                            <td>{{ project.updated_at.strftime('%Y-%m-%d') if project.updated_at else '-' }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h3 class="mb-0">ملخص التكاليف</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h5 class="card-title">التكلفة التعاقدية</h5>
+                                <h3 class="text-primary">{{ "{:,.2f}".format(project.total_contract_cost) }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h5 class="card-title">التكلفة الفعلية</h5>
+                                <h3 class="text-success">{{ "{:,.2f}".format(project.total_actual_cost) if project.total_actual_cost else "-" }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h5 class="card-title">الوفر/الزيادة</h5>
+                                <h3 class="{{ 'text-success' if project.total_savings > 0 else 'text-danger' if project.total_savings < 0 else '' }}">
+                                    {{ "{:,.2f}".format(project.total_savings) if project.total_savings != 0 else "-" }}
+                                </h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h5 class="card-title">نسبة الإنجاز</h5>
+                                <div class="progress mt-2" style="height: 25px;">
+                                    <div class="progress-bar bg-success" role="progressbar" style="width: {{ project.completion_percentage }}%">
+                                        {{ "{:.1f}%".format(project.completion_percentage) }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header bg-info text-white">
+        <h3 class="mb-0">تكامل Google Sheets</h3>
+    </div>
+    <div class="card-body">
+        {% if project.spreadsheet_id %}
+            <div class="alert alert-success">
+                <i class="fas fa-check-circle me-2"></i>
+                تم ربط المشروع بجدول بيانات Google Sheets.
+            </div>
+            
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <p class="mb-0">معرف الجدول: <code>{{ project.spreadsheet_id }}</code></p>
+                    <a href="https://docs.google.com/spreadsheets/d/{{ project.spreadsheet_id }}" target="_blank" class="btn btn-sm btn-outline-primary mt-2">
+                        <i class="fas fa-external-link-alt me-1"></i> فتح جدول البيانات
+                    </a>
+                </div>
+                
+                <div class="btn-group">
+                    <form action="{{ url_for('sheets.sync_project', project_id=project.id) }}" method="POST">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-sync me-1"></i> مزامنة البيانات
+                        </button>
+                    </form>
+                    <form action="{{ url_for('sheets.import_from_sheet', project_id=project.id) }}" method="POST" class="ms-2">
+                        <button type="submit" class="btn btn-secondary">
+                            <i class="fas fa-download me-1"></i> استيراد من الجدول
+                        </button>
+                    </form>
+                </div>
+            </div>
+        {% else %}
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                لم يتم ربط المشروع بجدول بيانات Google Sheets بعد.
+            </div>
+            
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <p>يمكنك إنشاء جدول بيانات جديد أو ربط المشروع بجدول موجود.</p>
+                </div>
+                
+                <div class="btn-group">
+                    <form action="{{ url_for('sheets.create_sheet', project_id=project.id) }}" method="POST">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-plus me-1"></i> إنشاء جدول بيانات جديد
+                        </button>
+                    </form>
+                    <a href="{{ url_for('project.edit_project', project_id=project.id) }}" class="btn btn-secondary ms-2">
+                        <i class="fas fa-link me-1"></i> ربط بجدول موجود
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="d-flex justify-content-between mt-4">
+    <a href="{{ url_for('project.get_projects') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-right me-1"></i> العودة للمشاريع
+    </a>
+    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteProjectModal">
+        <i class="fas fa-trash me-1"></i> حذف المشروع
+    </button>
+</div>
+
+<!-- Modal for Delete Confirmation -->
+<div class="modal fade" id="deleteProjectModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">تأكيد الحذف</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>هل أنت متأكد من حذف هذا المشروع؟ سيتم حذف جميع البنود المرتبطة به أيضاً. هذا الإجراء لا يمكن التراجع عنه.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <form action="{{ url_for('project.delete_project', project_id=project.id) }}" method="POST">
+                    <input type="hidden" name="_method" value="DELETE">
+                    <button type="submit" class="btn btn-danger">حذف</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>

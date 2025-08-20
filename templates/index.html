@@ -1,0 +1,112 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}الرئيسية - نظام حساب تكاليف المشاريع{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 text-center mb-5">
+        <h1 class="display-4">نظام حساب تكاليف المشاريع</h1>
+        <p class="lead">
+            نظام متكامل لإدارة وحساب تكاليف المشاريع مع إمكانية الربط المباشر مع Google Sheets
+        </p>
+        <div class="mt-4">
+            <a href="{{ url_for('project.get_projects') }}" class="btn btn-primary btn-lg">
+                <i class="fas fa-project-diagram me-2"></i> عرض المشاريع
+            </a>
+            <a href="{{ url_for('project.new_project') }}" class="btn btn-success btn-lg ms-2">
+                <i class="fas fa-plus me-2"></i> إضافة مشروع جديد
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-tasks fa-3x text-primary mb-3"></i>
+                <h3 class="card-title">إدارة المشاريع</h3>
+                <p class="card-text">
+                    إضافة وتعديل وحذف المشاريع مع إمكانية تتبع التكاليف التعاقدية والفعلية.
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-file-invoice-dollar fa-3x text-success mb-3"></i>
+                <h3 class="card-title">حساب التكاليف</h3>
+                <p class="card-text">
+                    حساب تلقائي للتكاليف الإجمالية والوفر والزيادة في المشاريع.
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-table fa-3x text-info mb-3"></i>
+                <h3 class="card-title">تكامل Google Sheets</h3>
+                <p class="card-text">
+                    مزامنة البيانات مباشرة مع Google Sheets للمشاركة والتعاون.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">كيفية استخدام النظام</h4>
+            </div>
+            <div class="card-body">
+                <ol class="list-group list-group-flush list-group-numbered">
+                    <li class="list-group-item">إنشاء مشروع جديد مع المعلومات الأساسية</li>
+                    <li class="list-group-item">إضافة بنود المشروع مع التكاليف التعاقدية</li>
+                    <li class="list-group-item">تحديث البيانات الفعلية أثناء تنفيذ المشروع</li>
+                    <li class="list-group-item">مراقبة الوفر والزيادة في التكاليف</li>
+                    <li class="list-group-item">مزامنة البيانات مع Google Sheets للمشاركة</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0">المميزات الرئيسية</h4>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        واجهة مستخدم سهلة وبسيطة باللغة العربية
+                    </li>
+                    <li class="list-group-item">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        حساب تلقائي للتكاليف والوفر والزيادة
+                    </li>
+                    <li class="list-group-item">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        تتبع حالة البنود والمدفوعات
+                    </li>
+                    <li class="list-group-item">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        تقارير وإحصائيات مفصلة
+                    </li>
+                    <li class="list-group-item">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        تكامل مباشر مع Google Sheets
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>

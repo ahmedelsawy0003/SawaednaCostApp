@@ -1,0 +1,282 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}تعديل البند - {{ item.item_number }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header bg-warning text-dark">
+        <h2 class="mb-0">
+            <i class="fas fa-edit me-2"></i>
+            تعديل البند: {{ item.item_number }}
+        </h2>
+    </div>
+    <div class="card-body">
+        <form id="editItemForm" method="POST" action="{{ url_for('item.update_item', item_id=item.id) }}">
+            <input type="hidden" name="_method" value="PUT">
+            
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label for="item_number" class="form-label">رقم البند <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="item_number" name="item_number" value="{{ item.item_number }}" required>
+                </div>
+                <div class="col-md-4">
+                    <label for="unit" class="form-label">الوحدة <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="unit" name="unit" value="{{ item.unit }}" required>
+                </div>
+                <div class="col-md-4">
+                    <label for="status" class="form-label">الحالة</label>
+                    <select class="form-select" id="status" name="status">
+                        <option value="نشط" {% if item.status == 'نشط' %}selected{% endif %}>نشط</option>
+                        <option value="مكتمل" {% if item.status == 'مكتمل' %}selected{% endif %}>مكتمل</option>
+                        <option value="متوقف" {% if item.status == 'متوقف' %}selected{% endif %}>متوقف</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-md-12">
+                    <label for="description" class="form-label">وصف البند <span class="text-danger">*</span></label>
+                    <textarea class="form-control" id="description" name="description" rows="3" required>{{ item.description }}</textarea>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">البيانات التعاقدية</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="contract_quantity" class="form-label">الكمية التعاقدية <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="contract_quantity" name="contract_quantity" step="0.01" min="0" value="{{ item.contract_quantity }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="contract_unit_cost" class="form-label">التكلفة الإفرادية التعاقدية <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="contract_unit_cost" name="contract_unit_cost" step="0.01" min="0" value="{{ item.contract_unit_cost }}" required>
+                                <span class="input-group-text">ريال</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-12">
+                            <label for="contract_total_cost" class="form-label">التكلفة الإجمالية التعاقدية</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="contract_total_cost" step="0.01" min="0" value="{{ item.contract_total_cost }}" readonly>
+                                <span class="input-group-text">ريال</span>
+                            </div>
+                            <small class="form-text text-muted">يتم حساب هذه القيمة تلقائياً (الكمية × التكلفة الإفرادية)</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">البيانات الفعلية</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="actual_quantity" class="form-label">الكمية الفعلية المنفذة</label>
+                            <input type="number" class="form-control" id="actual_quantity" name="actual_quantity" step="0.01" min="0" value="{{ item.actual_quantity or '' }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="actual_unit_cost" class="form-label">التكلفة الإفرادية الفعلية</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="actual_unit_cost" name="actual_unit_cost" step="0.01" min="0" value="{{ item.actual_unit_cost or '' }}">
+                                <span class="input-group-text">ريال</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-12">
+                            <label for="actual_total_cost" class="form-label">التكلفة الإجمالية الفعلية</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="actual_total_cost" step="0.01" min="0" value="{{ item.actual_total_cost or '' }}" readonly>
+                                <span class="input-group-text">ريال</span>
+                            </div>
+                            <small class="form-text text-muted">يتم حساب هذه القيمة تلقائياً (الكمية × التكلفة الإفرادية)</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">بيانات التنفيذ</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="execution_method" class="form-label">طريقة التنفيذ</label>
+                            <select class="form-select" id="execution_method" name="execution_method">
+                                <option value="" {% if not item.execution_method %}selected{% endif %}>اختر طريقة التنفيذ</option>
+                                <option value="تنفيذ مباشر" {% if item.execution_method == 'تنفيذ مباشر' %}selected{% endif %}>تنفيذ مباشر من الشركة</option>
+                                <option value="تعاقد من الباطن" {% if item.execution_method == 'تعاقد من الباطن' %}selected{% endif %}>تعاقد من الباطن</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="contractor_name" class="form-label">اسم المقاول/المورد</label>
+                            <input type="text" class="form-control" id="contractor_name" name="contractor_name" value="{{ item.contractor_name or '' }}">
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="paid_amount" class="form-label">المبلغ المدفوع حتى تاريخه</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="paid_amount" name="paid_amount" step="0.01" min="0" value="{{ item.paid_amount or 0 }}">
+                                <span class="input-group-text">ريال</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="remaining_amount" class="form-label">المبلغ المتبقي</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="remaining_amount" step="0.01" min="0" value="{{ item.remaining_amount or '' }}" readonly>
+                                <span class="input-group-text">ريال</span>
+                            </div>
+                            <small class="form-text text-muted">يتم حساب هذه القيمة تلقائياً (التكلفة الإجمالية الفعلية - المبلغ المدفوع)</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-md-12">
+                    <label for="notes" class="form-label">ملاحظات</label>
+                    <textarea class="form-control" id="notes" name="notes" rows="2">{{ item.notes or '' }}</textarea>
+                </div>
+            </div>
+            
+            <div class="d-flex justify-content-between mt-4">
+                <a href="{{ url_for('item.get_items', project_id=item.project_id) }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-right me-1"></i> رجوع
+                </a>
+                <div>
+                    <button type="button" class="btn btn-danger me-2" data-bs-toggle="modal" data-bs-target="#deleteItemModal">
+                        <i class="fas fa-trash me-1"></i> حذف البند
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i> حفظ التغييرات
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal for Delete Confirmation -->
+<div class="modal fade" id="deleteItemModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">تأكيد الحذف</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>هل أنت متأكد من حذف هذا البند؟ هذا الإجراء لا يمكن التراجع عنه.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <form action="{{ url_for('item.delete_item', item_id=item.id) }}" method="POST">
+                    <input type="hidden" name="_method" value="DELETE">
+                    <button type="submit" class="btn btn-danger">حذف</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Calculate contract total cost automatically
+        const contractQuantityInput = document.getElementById('contract_quantity');
+        const contractUnitCostInput = document.getElementById('contract_unit_cost');
+        const contractTotalCostInput = document.getElementById('contract_total_cost');
+        
+        function calculateContractTotal() {
+            const quantity = parseFloat(contractQuantityInput.value) || 0;
+            const unitCost = parseFloat(contractUnitCostInput.value) || 0;
+            const total = quantity * unitCost;
+            contractTotalCostInput.value = total.toFixed(2);
+        }
+        
+        contractQuantityInput.addEventListener('input', calculateContractTotal);
+        contractUnitCostInput.addEventListener('input', calculateContractTotal);
+        
+        // Calculate actual total cost automatically
+        const actualQuantityInput = document.getElementById('actual_quantity');
+        const actualUnitCostInput = document.getElementById('actual_unit_cost');
+        const actualTotalCostInput = document.getElementById('actual_total_cost');
+        
+        function calculateActualTotal() {
+            const quantity = parseFloat(actualQuantityInput.value) || 0;
+            const unitCost = parseFloat(actualUnitCostInput.value) || 0;
+            const total = quantity * unitCost;
+            actualTotalCostInput.value = total > 0 ? total.toFixed(2) : '';
+            
+            // Also update remaining amount
+            calculateRemainingAmount();
+        }
+        
+        actualQuantityInput.addEventListener('input', calculateActualTotal);
+        actualUnitCostInput.addEventListener('input', calculateActualTotal);
+        
+        // Calculate remaining amount
+        const paidAmountInput = document.getElementById('paid_amount');
+        const remainingAmountInput = document.getElementById('remaining_amount');
+        
+        function calculateRemainingAmount() {
+            const actualTotal = parseFloat(actualTotalCostInput.value) || 0;
+            const paidAmount = parseFloat(paidAmountInput.value) || 0;
+            
+            if (actualTotal > 0) {
+                const remaining = actualTotal - paidAmount;
+                remainingAmountInput.value = remaining.toFixed(2);
+            } else {
+                const contractTotal = parseFloat(contractTotalCostInput.value) || 0;
+                const remaining = contractTotal - paidAmount;
+                remainingAmountInput.value = remaining.toFixed(2);
+            }
+        }
+        
+        paidAmountInput.addEventListener('input', calculateRemainingAmount);
+        
+        // Show/hide contractor name based on execution method
+        const executionMethodSelect = document.getElementById('execution_method');
+        const contractorNameInput = document.getElementById('contractor_name');
+        const contractorNameFormGroup = contractorNameInput.closest('.col-md-6');
+        
+        executionMethodSelect.addEventListener('change', function() {
+            if (this.value === 'تعاقد من الباطن') {
+                contractorNameFormGroup.style.display = 'block';
+                contractorNameInput.setAttribute('required', 'required');
+            } else {
+                contractorNameFormGroup.style.display = 'block';
+                contractorNameInput.removeAttribute('required');
+            }
+        });
+        
+        // Initialize calculations
+        calculateContractTotal();
+        calculateActualTotal();
+        calculateRemainingAmount();
+        
+        // Form validation
+        const form = document.getElementById('editItemForm');
+        form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        }, false);
+    });
+</script>
+{% endblock %}
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
