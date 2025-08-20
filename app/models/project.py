@@ -12,14 +12,38 @@ class Project(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    # العلاقة مع بنود المشروع
     items = db.relationship('Item', backref='project', lazy=True, cascade='all, delete-orphan')
     
-    def __repr__(self):
-        return f'<Project {self.name}>'
-    
+    @property
+    def total_contract_cost(self):
+        """حساب إجمالي التكلفة التعاقدية كخاصية"""
+        return sum(item.contract_total_cost for item in self.items if item.contract_total_cost)
+
+    @property
+    def total_actual_cost(self):
+        """حساب إجمالي التكلفة الفعلية كخاصية"""
+        return sum(item.actual_total_cost for item in self.items if item.actual_total_cost)
+
+    @property
+    def total_savings(self):
+        """حساب إجمالي الوفر/الزيادة كخاصية"""
+        return self.total_contract_cost - self.total_actual_cost
+
+    @property
+    def completion_percentage(self):
+        """حساب نسبة الإنجاز كخاصية"""
+        if not self.items:
+            return 0
+        
+        completed_items_cost = sum(item.actual_total_cost or 0 for item in self.items if item.status == 'مكتمل')
+        total_cost = self.total_contract_cost
+        if total_cost == 0:
+            return 0
+            
+        return (completed_items_cost / total_cost) * 100
+
     def to_dict(self):
-        """تحويل المشروع إلى قاموس"""
+        """تحويل المشروع إلى قاموس لواجهات API"""
         return {
             'id': self.id,
             'name': self.name,
@@ -28,28 +52,8 @@ class Project(db.Model):
             'spreadsheet_id': self.spreadsheet_id,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
-            'total_contract_cost': self.get_total_contract_cost(),
-            'total_actual_cost': self.get_total_actual_cost(),
-            'total_savings': self.get_total_savings(),
-            'completion_percentage': self.get_completion_percentage()
+            'total_contract_cost': self.total_contract_cost,
+            'total_actual_cost': self.total_actual_cost,
+            'total_savings': self.total_savings,
+            'completion_percentage': self.completion_percentage
         }
-    
-    def get_total_contract_cost(self):
-        """حساب إجمالي التكلفة التعاقدية"""
-        return sum(item.contract_total_cost for item in self.items if item.contract_total_cost)
-    
-    def get_total_actual_cost(self):
-        """حساب إجمالي التكلفة الفعلية"""
-        return sum(item.actual_total_cost for item in self.items if item.actual_total_cost)
-    
-    def get_total_savings(self):
-        """حساب إجمالي الوفر/الزيادة"""
-        return self.get_total_contract_cost() - self.get_total_actual_cost()
-    
-    def get_completion_percentage(self):
-        """حساب نسبة الإنجاز"""
-        if not self.items or self.get_total_contract_cost() == 0:
-            return 0
-        
-        completed_items = sum(1 for item in self.items if item.status == 'مكتمل')
-        return (completed_items / len(self.items)) * 100
