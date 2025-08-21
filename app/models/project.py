@@ -26,10 +26,9 @@ class Project(db.Model):
 
     @property
     def total_actual_quantity(self):
-        """(مُصحح) حساب إجمالي الكمية الفعلية من تفاصيل التكلفة"""
+        """حساب إجمالي الكمية الفعلية من تفاصيل التكلفة"""
         total_qty = 0
         for item in self.items:
-            # نجمع الكميات من تفاصيل التكلفة المرتبطة بكل بند
             total_qty += sum(detail.quantity for detail in item.cost_details if detail.quantity is not None)
         return total_qty
 
@@ -39,8 +38,13 @@ class Project(db.Model):
         return sum(item.paid_amount for item in self.items if item.paid_amount is not None)
 
     @property
+    def total_remaining_amount(self):
+        """(جديد) حساب إجمالي المبلغ المتبقي للمشروع"""
+        return self.total_actual_cost - self.total_paid_amount
+
+    @property
     def total_savings(self):
-        """حساب إجمالي الوفر/الزيادة كخاصية"""
+        """حساب إجمالي الوفر/الزيادة (الربح) كخاصية"""
         return self.total_contract_cost - self.total_actual_cost
 
     @property
@@ -77,6 +81,7 @@ class Project(db.Model):
             'total_actual_cost': self.total_actual_cost,
             'total_actual_quantity': self.total_actual_quantity,
             'total_paid_amount': self.total_paid_amount,
+            'total_remaining_amount': self.total_remaining_amount, # تمت إضافة هذا السطر
             'total_savings': self.total_savings,
             'completion_percentage': self.completion_percentage,
             'financial_completion_percentage': self.financial_completion_percentage
