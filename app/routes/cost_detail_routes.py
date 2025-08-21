@@ -32,6 +32,31 @@ def add_cost_detail(item_id):
 
     return redirect(url_for('item.edit_item', item_id=item_id))
 
+# **** الدالة الجديدة التي تمت إضافتها ****
+@cost_detail_bp.route('/<int:detail_id>/update', methods=['POST'])
+def update_cost_detail(detail_id):
+    """تحديث تفصيل تكلفة موجود"""
+    detail = CostDetail.query.get_or_404(detail_id)
+    data = request.form
+
+    try:
+        quantity = float(data.get('quantity', 1))
+        unit_cost = float(data.get('unit_cost', 0))
+        
+        detail.description = data.get('description')
+        detail.unit = data.get('unit')
+        detail.quantity = quantity
+        detail.unit_cost = unit_cost
+        detail.total_cost = quantity * unit_cost # إعادة حساب الإجمالي
+        
+        db.session.commit()
+        flash('تم تحديث تفصيل التكلفة بنجاح.', 'success')
+    except (ValueError, TypeError):
+        flash('بيانات التحديث غير صالحة.', 'danger')
+
+    return redirect(url_for('item.edit_item', item_id=detail.item_id))
+# **** نهاية الدالة الجديدة ****
+
 @cost_detail_bp.route('/<int:detail_id>/delete', methods=['POST'])
 def delete_cost_detail(detail_id):
     """حذف تفصيل تكلفة"""
