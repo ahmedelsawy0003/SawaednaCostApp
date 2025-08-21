@@ -16,6 +16,9 @@ class Item(db.Model):
     contract_total_cost = db.Column(db.Float, nullable=False)
 
     actual_quantity = db.Column(db.Float, nullable=True)
+    
+    # **** هذا هو الحقل الجديد الذي سيتم إدخاله يدوياً ****
+    actual_unit_cost = db.Column(db.Float, nullable=True)
 
     status = db.Column(db.String(20), default='نشط')
     execution_method = db.Column(db.String(50), nullable=True)
@@ -28,31 +31,37 @@ class Item(db.Model):
 
     cost_details = db.relationship('CostDetail', backref='item', lazy='dynamic', cascade='all, delete-orphan')
 
+    # **** تم تغيير منطق هذه الدالة بالكامل ****
     @property
     def actual_total_cost(self):
-        return sum(detail.total_cost for detail in self.cost_details)
+        """(مُعدل) حساب التكلفة الإجمالية الفعلية من حاصل ضرب الكمية في سعر الوحدة المدخل يدوياً"""
+        quantity = self.actual_quantity or 0
+        unit_cost = self.actual_unit_cost or 0
+        return quantity * unit_cost
 
-    @property
-    def actual_unit_cost(self):
-        if self.actual_quantity and self.actual_quantity > 0:
-            return self.actual_total_cost / self.actual_quantity
-        return 0
+    # **** تم حذف الدالة الحسابية السابقة لـ actual_unit_cost ****
 
     @property
     def quantity_variance(self):
+        """حساب الفرق في الكميات كخاصية"""
         if self.actual_quantity is not None:
              return self.actual_quantity - self.contract_quantity
         return 0
 
     @property
     def cost_variance(self):
+        """حساب الفرق في التكاليف كخاصية"""
         return self.contract_total_cost - self.actual_total_cost
 
     @property
     def remaining_amount(self):
-        return self.actual_total_cost - (self.paid_amount or 0)
+        """حساب المبلغ المتبقي كخاصية"""
+        # تم تعديلها لتعتمد على المدفوعات فقط بالنسبة للبند
+        paid_amount = self.paid_amount or 0
+        return self.actual_total_cost - paid_amount
 
     def to_dict(self):
+        """تحويل البند إلى قاموس (مُحدّث)"""
         return {
             'id': self.id,
             'project_id': self.project_id,
