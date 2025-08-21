@@ -12,7 +12,6 @@
     </div>
     <div class="card-body">
         <form id="editItemForm" method="POST" action="{{ url_for('item.update_item', item_id=item.id) }}">
-            <input type="hidden" name="_method" value="PUT">
             
             <div class="row mb-3">
                 <div class="col-md-4">
@@ -141,7 +140,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for detail in item.cost_details %}\
+                        {% for detail in item.cost_details %}
                         <tr>
                             <td>{{ detail.description }}</td>
                             <td class="text-end">{{ detail.quantity }}</td>
@@ -222,10 +221,9 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
                 <form action="{{ url_for('item.delete_item', item_id=item.id) }}" method="POST">
-                    <input type="hidden" name="_method" value="DELETE">
-                    <button type="submit" class="btn btn-danger">حذف</button>
+                    <button type="submit" class="btn btn-danger">نعم, قم بالحذف</button>
                 </form>
-            </div>
+                </div>
         </div>
     </div>
 </div>
@@ -237,16 +235,11 @@
         // Calculate contract total cost automatically
         const contractQuantityInput = document.getElementById('contract_quantity');
         const contractUnitCostInput = document.getElementById('contract_unit_cost');
-        const contractTotalCostInput = document.getElementById('contract_total_cost');
         
         function calculateContractTotal() {
             const quantity = parseFloat(contractQuantityInput.value) || 0;
             const unitCost = parseFloat(contractUnitCostInput.value) || 0;
             const total = quantity * unitCost;
-            // This field does not exist in the provided HTML, but keeping the logic in case it's added back
-            if (contractTotalCostInput) {
-                contractTotalCostInput.value = total.toFixed(2);
-            }
         }
         
         if (contractQuantityInput && contractUnitCostInput) {

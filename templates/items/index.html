@@ -79,10 +79,10 @@
                                     <button type="button" class="btn btn-info item-details" data-id="{{ item.id }}" title="تفاصيل">
                                         <i class="fas fa-eye"></i>
                                     </button>
-                                    <button type="button" class="btn btn-danger delete-item" data-id="{{ item.id }}" data-bs-toggle="modal" data-bs-target="#deleteItemModal" title="حذف">
+                                    <button type="button" class="btn btn-danger delete-item" data-bs-toggle="modal" data-bs-target="#deleteItemModal-{{ item.id }}" title="حذف">
                                         <i class="fas fa-trash"></i>
                                     </button>
-                                </div>
+                                    </div>
                             </td>
                         </tr>
                         {% endfor %}
@@ -341,7 +341,8 @@
     </div>
 </div>
 
-<div class="modal fade" id="deleteItemModal" tabindex="-1">
+{% for item in items %}
+<div class="modal fade" id="deleteItemModal-{{ item.id }}" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header bg-danger text-white">
@@ -349,18 +350,18 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <p>هل أنت متأكد من حذف هذا البند؟ هذا الإجراء لا يمكن التراجع عنه.</p>
+                <p>هل أنت متأكد من حذف البند "{{ item.description }}"؟ هذا الإجراء لا يمكن التراجع عنه.</p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                <form id="deleteItemForm" method="POST">
-                    <input type="hidden" name="_method" value="DELETE">
-                    <button type="submit" class="btn btn-danger">حذف</button>
+                <form action="{{ url_for('item.delete_item', item_id=item.id) }}" method="POST">
+                    <button type="submit" class="btn btn-danger">نعم, قم بالحذف</button>
                 </form>
             </div>
         </div>
     </div>
 </div>
+{% endfor %}
 {% endblock %}
 
 {% block scripts %}
@@ -452,18 +453,7 @@
             });
         });
         
-        // Delete item confirmation
-        const deleteButtons = document.querySelectorAll('.delete-item');
-        const deleteForm = document.getElementById('deleteItemForm');
-        const deleteModal = new bootstrap.Modal(document.getElementById('deleteItemModal'));
-        
-        deleteButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                const itemId = this.getAttribute('data-id');
-                deleteForm.action = `/items/${itemId}`;
-                deleteModal.show();
-            });
-        });
+        // The old, incorrect delete script is removed from here.
     });
 </script>
 {% endblock %}

@@ -89,7 +89,7 @@ def update_item(item_id):
             item.contract_unit_cost = float(data.get('contract_unit_cost'))
             item.contract_total_cost = item.contract_quantity * item.contract_unit_cost
         
-        # **** السطر الجديد لحفظ الكمية الفعلية ****
+        # السطر الجديد لحفظ الكمية الفعلية
         if data.get('actual_quantity'):
             item.actual_quantity = float(data.get('actual_quantity'))
         else:
@@ -114,12 +114,13 @@ def update_item(item_id):
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return jsonify(item.to_dict())
         
-        return redirect(url_for('item.get_items', project_id=item.project_id))
+        return redirect(url_for('item.edit_item', item_id=item_id))
     
     except ValueError:
         return jsonify({'error': 'قيم غير صالحة للكمية أو التكلفة'}), 400
 
-@item_bp.route('/<int:item_id>', methods=['DELETE'])
+# **** هذا هو الجزء الذي تم تعديله ****
+@item_bp.route('/<int:item_id>/delete', methods=['POST'])
 def delete_item(item_id):
     """حذف بند محدد"""
     item = Item.query.get_or_404(item_id)
@@ -132,6 +133,7 @@ def delete_item(item_id):
         return jsonify({'message': 'تم حذف البند بنجاح'})
     
     return redirect(url_for('item.get_items', project_id=project_id))
+# **** نهاية الجزء المعدل ****
 
 @item_bp.route('/<int:item_id>/status', methods=['POST'])
 def update_item_status(item_id):
@@ -143,8 +145,6 @@ def update_item_status(item_id):
     if not status:
         return jsonify({'error': 'يجب توفير الحالة'}), 400
     
-    if item.update_status(status):
-        db.session.commit()
-        return jsonify(item.to_dict())
-    else:
-        return jsonify({'error': 'حالة غير صالحة'}), 400
+    item.status = status
+    db.session.commit()
+    return jsonify(item.to_dict())
