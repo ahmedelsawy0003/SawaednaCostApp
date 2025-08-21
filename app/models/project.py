@@ -13,7 +13,7 @@ class Project(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     items = db.relationship('Item', backref='project', lazy=True, cascade='all, delete-orphan')
-    
+
     @property
     def total_contract_cost(self):
         """حساب إجمالي التكلفة التعاقدية كخاصية"""
@@ -25,25 +25,35 @@ class Project(db.Model):
         return sum(item.actual_total_cost for item in self.items if item.actual_total_cost)
 
     @property
+    def total_actual_quantity(self):
+        """(جديد) حساب إجمالي الكمية الفعلية كخاصية"""
+        return sum(item.actual_quantity for item in self.items if item.actual_quantity is not None)
+
+    @property
     def total_savings(self):
         """حساب إجمالي الوفر/الزيادة كخاصية"""
         return self.total_contract_cost - self.total_actual_cost
 
     @property
     def completion_percentage(self):
-        """حساب نسبة الإنجاز كخاصية"""
+        """(تعديل) حساب نسبة الإنجاز بناءً على عدد البنود"""
         if not self.items:
             return 0
         
-        completed_items_cost = sum(item.actual_total_cost or 0 for item in self.items if item.status == 'مكتمل')
-        total_cost = self.total_contract_cost
-        if total_cost == 0:
+        completed_count = sum(1 for item in self.items if item.status == 'مكتمل')
+        total_count = len(self.items)
+        
+        return (completed_count / total_count) * 100
+
+    @property
+    def financial_completion_percentage(self):
+        """(جديد) حساب نسبة الإنجاز المالي بناءً على التكلفة"""
+        if self.total_contract_cost == 0:
             return 0
-            
-        return (completed_items_cost / total_cost) * 100
+        return (self.total_actual_cost / self.total_contract_cost) * 100
 
     def to_dict(self):
-        """تحويل المشروع إلى قاموس لواجهات API"""
+        """تحويل المشروع إلى قاموس لواجهات API (مُحدّث ليشمل كل الخصائص)"""
         return {
             'id': self.id,
             'name': self.name,
@@ -54,6 +64,8 @@ class Project(db.Model):
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
             'total_contract_cost': self.total_contract_cost,
             'total_actual_cost': self.total_actual_cost,
+            'total_actual_quantity': self.total_actual_quantity,
             'total_savings': self.total_savings,
-            'completion_percentage': self.completion_percentage
+            'completion_percentage': self.completion_percentage,
+            'financial_completion_percentage': self.financial_completion_percentage
         }
