@@ -39,14 +39,15 @@
                             <th>رقم البند</th>
                             <th>وصف البند</th>
                             <th>الوحدة</th>
-                            <th>الكمية التعاقدية</th>
-                            <th>التكلفة الإفرادية</th>
-                            <th>التكلفة الإجمالية</th>
-                            <th>الكمية الفعلية</th>
-                            <th>التكلفة الإفرادية الفعلية</th> <th>التكلفة الفعلية الإجمالية</th>
-                            <th>الوفر/الزيادة</th>
-                            <th>الحالة</th>
-                            <th>الإجراءات</th>
+                            <th class="text-end">الكمية التعاقدية</th>
+                            <th class="text-end">التكلفة الإفرادية</th>
+                            <th class="text-end">التكلفة الإجمالية</th>
+                            <th class="text-end">الكمية الفعلية</th>
+                            <th class="text-end">التكلفة الإفرادية الفعلية</th>
+                            <th class="text-end">التكلفة الفعلية الإجمالية</th>
+                            <th class="text-end">الوفر/الزيادة</th>
+                            <th class="text-center">الحالة</th>
+                            <th class="text-center">الإجراءات</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -64,12 +65,12 @@
                             <td class="text-end {{ 'text-success' if item.cost_variance > 0 else 'text-danger' if item.cost_variance < 0 else '' }}">
                                 {{ "{:,.2f}".format(item.cost_variance) if item.cost_variance != 0 else "-" }}
                             </td>
-                            <td>
+                            <td class="text-center">
                                 <span class="badge {{ 'bg-warning' if item.status == 'نشط' else 'bg-success' if item.status == 'مكتمل' else 'bg-danger' }}">
                                     {{ item.status }}
                                 </span>
                             </td>
-                            <td>
+                            <td class="text-center">
                                 <div class="btn-group btn-group-sm">
                                     <a href="{{ url_for('item.edit_item', item_id=item.id) }}" class="btn btn-warning" title="تعديل">
                                         <i class="fas fa-edit"></i>
