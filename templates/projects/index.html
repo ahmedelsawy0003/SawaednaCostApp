@@ -22,7 +22,8 @@
                     <th>التكلفة التعاقدية</th>
                     <th>التكلفة الفعلية</th>
                     <th>الوفر/الزيادة</th>
-                    <th>نسبة الإنجاز</th>
+                    <th>إنجاز البنود (بالعدد)</th>
+                    <th>الإنجاز المالي (بالتكلفة)</th>
                     <th>الإجراءات</th>
                 </tr>
             </thead>
@@ -30,7 +31,7 @@
                 {% for project in projects %}
                 <tr>
                     <td>{{ loop.index }}</td>
-                    <td>{{ project.name }}</td>
+                    <td><a href="{{ url_for('project.get_project', project_id=project.id) }}">{{ project.name }}</a></td>
                     <td>{{ project.manager }}</td>
                     <td>{{ project.location }}</td>
                     <td class="text-end">{{ "{:,.2f}".format(project.total_contract_cost) }}</td>
@@ -40,8 +41,15 @@
                     </td>
                     <td>
                         <div class="progress">
-                            <div class="progress-bar bg-success" role="progressbar" style="width: {{ project.completion_percentage }}%">
+                            <div class="progress-bar bg-info" role="progressbar" style="width: {{ project.completion_percentage }}%">
                                 {{ "{:.1f}%".format(project.completion_percentage) }}
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="progress">
+                            <div class="progress-bar bg-success" role="progressbar" style="width: {{ project.financial_completion_percentage }}%">
+                                {{ "{:.1f}%".format(project.financial_completion_percentage) }}
                             </div>
                         </div>
                     </td>
@@ -59,7 +67,7 @@
                             <a href="{{ url_for('item.get_items', project_id=project.id) }}" class="btn btn-success" title="البنود">
                                 <i class="fas fa-list"></i>
                             </a>
-                            <button type="button" class="btn btn-danger delete-project" data-id="{{ project.id }}" title="حذف">
+                            <button type="button" class="btn btn-danger delete-project" data-id="{{ project.id }}" data-bs-toggle="modal" data-bs-target="#deleteProjectModal" title="حذف">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </div>
@@ -76,7 +84,6 @@
     </div>
 {% endif %}
 
-<!-- Modal for Delete Confirmation -->
 <div class="modal fade" id="deleteProjectModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -105,16 +112,14 @@
         // Delete project confirmation
         const deleteButtons = document.querySelectorAll('.delete-project');
         const deleteForm = document.getElementById('deleteProjectForm');
-        const deleteModal = new bootstrap.Modal(document.getElementById('deleteProjectModal'));
         
         deleteButtons.forEach(button => {
             button.addEventListener('click', function() {
                 const projectId = this.getAttribute('data-id');
-                deleteForm.action = `/projects/${projectId}`;
-                deleteModal.show();
+                // Set the form action dynamically when a delete button is clicked
+                deleteForm.action = `{{ url_for('project.get_projects') }}${projectId}`;
             });
         });
     });
 </script>
 {% endblock %}
-<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>

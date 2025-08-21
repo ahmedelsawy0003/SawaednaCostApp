@@ -56,53 +56,70 @@
     <div class="col-md-6">
         <div class="card mb-4">
             <div class="card-header bg-success text-white">
-                <h3 class="mb-0">ملخص التكاليف</h3>
+                <h3 class="mb-0">ملخص التكاليف والكميات</h3>
             </div>
             <div class="card-body">
                 <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <div class="card bg-light">
+                    <div class="col-lg-6 mb-3">
+                        <div class="card bg-light h-100">
                             <div class="card-body text-center">
-                                <h5 class="card-title">التكلفة التعاقدية</h5>
-                                <h3 class="text-primary">{{ "{:,.2f}".format(project.total_contract_cost) }}</h3>
+                                <h6 class="card-title text-muted">التكلفة التعاقدية</h6>
+                                <h4 class="text-primary">{{ "{:,.2f}".format(project.total_contract_cost) }} ريال</h4>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <div class="card bg-light">
+                    <div class="col-lg-6 mb-3">
+                        <div class="card bg-light h-100">
                             <div class="card-body text-center">
-                                <h5 class="card-title">التكلفة الفعلية</h5>
-                                <h3 class="text-success">{{ "{:,.2f}".format(project.total_actual_cost) if project.total_actual_cost else "-" }}</h3>
+                                <h6 class="card-title text-muted">التكلفة الفعلية</h6>
+                                <h4 class="text-success">{{ "{:,.2f}".format(project.total_actual_cost) if project.total_actual_cost else "-" }} ريال</h4>
                             </div>
                         </div>
                     </div>
-                </div>
-                
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <div class="card bg-light">
+                    <div class="col-lg-6 mb-3">
+                        <div class="card bg-light h-100">
                             <div class="card-body text-center">
-                                <h5 class="card-title">الوفر/الزيادة</h5>
-                                <h3 class="{{ 'text-success' if project.total_savings > 0 else 'text-danger' if project.total_savings < 0 else '' }}">
-                                    {{ "{:,.2f}".format(project.total_savings) if project.total_savings != 0 else "-" }}
-                                </h3>
+                                <h6 class="card-title text-muted">الوفر/الزيادة</h6>
+                                <h4 class="{{ 'text-success' if project.total_savings > 0 else 'text-danger' if project.total_savings < 0 else '' }}">
+                                    {{ "{:,.2f}".format(project.total_savings) if project.total_savings != 0 else "-" }} ريال
+                                </h4>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <div class="card bg-light">
+                    <div class="col-lg-6 mb-3">
+                        <div class="card bg-light h-100">
                             <div class="card-body text-center">
-                                <h5 class="card-title">نسبة الإنجاز</h5>
+                                <h6 class="card-title text-muted">إجمالي الكمية المنفذة</h6>
+                                <h4 class="text-dark">{{ "{:,.2f}".format(project.total_actual_quantity) if project.total_actual_quantity else "0.00" }}</h4>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 mb-3">
+                        <div class="card bg-light h-100">
+                            <div class="card-body text-center">
+                                <h6 class="card-title text-muted">إنجاز البنود (بالعدد)</h6>
                                 <div class="progress mt-2" style="height: 25px;">
-                                    <div class="progress-bar bg-success" role="progressbar" style="width: {{ project.completion_percentage }}%">
+                                    <div class="progress-bar bg-info" role="progressbar" style="width: {{ project.completion_percentage }}%">
                                         {{ "{:.1f}%".format(project.completion_percentage) }}
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+                    <div class="col-lg-6 mb-3">
+                        <div class="card bg-light h-100">
+                            <div class="card-body text-center">
+                                <h6 class="card-title text-muted">الإنجاز المالي (بالتكلفة)</h6>
+                                <div class="progress mt-2" style="height: 25px;">
+                                    <div class="progress-bar bg-success" role="progressbar" style="width: {{ project.financial_completion_percentage }}%">
+                                        {{ "{:.1f}%".format(project.financial_completion_percentage) }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
+                </div>
         </div>
     </div>
 </div>
@@ -174,7 +191,6 @@
     </button>
 </div>
 
-<!-- Modal for Delete Confirmation -->
 <div class="modal fade" id="deleteProjectModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -196,4 +212,3 @@
     </div>
 </div>
 {% endblock %}
-<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
