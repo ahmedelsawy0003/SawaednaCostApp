@@ -58,49 +58,6 @@
                             </div>
                         </div>
                     </div>
-                    
-                    <div class="row">
-                        <div class="col-md-12">
-                            <label for="contract_total_cost" class="form-label">التكلفة الإجمالية التعاقدية</label>
-                            <div class="input-group">
-                                <input type="number" class="form-control" id="contract_total_cost" step="0.01" min="0" value="{{ item.contract_total_cost }}" readonly>
-                                <span class="input-group-text">ريال</span>
-                            </div>
-                            <small class="form-text text-muted">يتم حساب هذه القيمة تلقائياً (الكمية × التكلفة الإفرادية)</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="card mb-4">
-                <div class="card-header bg-success text-white">
-                    <h5 class="mb-0">البيانات الفعلية</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="actual_quantity" class="form-label">الكمية الفعلية المنفذة</label>
-                            <input type="number" class="form-control" id="actual_quantity" name="actual_quantity" step="0.01" min="0" value="{{ item.actual_quantity or '' }}">
-                        </div>
-                        <div class="col-md-6">
-                            <label for="actual_unit_cost" class="form-label">التكلفة الإفرادية الفعلية</label>
-                            <div class="input-group">
-                                <input type="number" class="form-control" id="actual_unit_cost" name="actual_unit_cost" step="0.01" min="0" value="{{ item.actual_unit_cost or '' }}">
-                                <span class="input-group-text">ريال</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-12">
-                            <label for="actual_total_cost" class="form-label">التكلفة الإجمالية الفعلية</label>
-                            <div class="input-group">
-                                <input type="number" class="form-control" id="actual_total_cost" step="0.01" min="0" value="{{ item.actual_total_cost or '' }}" readonly>
-                                <span class="input-group-text">ريال</span>
-                            </div>
-                            <small class="form-text text-muted">يتم حساب هذه القيمة تلقائياً (الكمية × التكلفة الإفرادية)</small>
-                        </div>
-                    </div>
                 </div>
             </div>
             
@@ -110,7 +67,7 @@
                 </div>
                 <div class="card-body">
                     <div class="row mb-3">
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <label for="execution_method" class="form-label">طريقة التنفيذ</label>
                             <select class="form-select" id="execution_method" name="execution_method">
                                 <option value="" {% if not item.execution_method %}selected{% endif %}>اختر طريقة التنفيذ</option>
@@ -118,57 +75,124 @@
                                 <option value="تعاقد من الباطن" {% if item.execution_method == 'تعاقد من الباطن' %}selected{% endif %}>تعاقد من الباطن</option>
                             </select>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <label for="contractor_name" class="form-label">اسم المقاول/المورد</label>
                             <input type="text" class="form-control" id="contractor_name" name="contractor_name" value="{{ item.contractor_name or '' }}">
                         </div>
-                    </div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="paid_amount" class="form-label">المبلغ المدفوع حتى تاريخه</label>
-                            <div class="input-group">
+                        <div class="col-md-4">
+                            <label for="paid_amount" class="form-label">إجمالي المبلغ المدفوع لهذا البند</label>
+                             <div class="input-group">
                                 <input type="number" class="form-control" id="paid_amount" name="paid_amount" step="0.01" min="0" value="{{ item.paid_amount or 0 }}">
                                 <span class="input-group-text">ريال</span>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <label for="remaining_amount" class="form-label">المبلغ المتبقي</label>
-                            <div class="input-group">
-                                <input type="number" class="form-control" id="remaining_amount" step="0.01" min="0" value="{{ item.remaining_amount or '' }}" readonly>
-                                <span class="input-group-text">ريال</span>
-                            </div>
-                            <small class="form-text text-muted">يتم حساب هذه القيمة تلقائياً (التكلفة الإجمالية الفعلية - المبلغ المدفوع)</small>
+                    </div>
+                     <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label for="notes" class="form-label">ملاحظات</label>
+                            <textarea class="form-control" id="notes" name="notes" rows="2">{{ item.notes or '' }}</textarea>
                         </div>
                     </div>
                 </div>
             </div>
             
-            <div class="row mb-3">
-                <div class="col-md-12">
-                    <label for="notes" class="form-label">ملاحظات</label>
-                    <textarea class="form-control" id="notes" name="notes" rows="2">{{ item.notes or '' }}</textarea>
-                </div>
-            </div>
-            
-            <div class="d-flex justify-content-between mt-4">
-                <a href="{{ url_for('item.get_items', project_id=item.project_id) }}" class="btn btn-secondary">
-                    <i class="fas fa-arrow-right me-1"></i> رجوع
-                </a>
-                <div>
-                    <button type="button" class="btn btn-danger me-2" data-bs-toggle="modal" data-bs-target="#deleteItemModal">
-                        <i class="fas fa-trash me-1"></i> حذف البند
-                    </button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save me-1"></i> حفظ التغييرات
-                    </button>
-                </div>
+            <div class="d-flex justify-content-end">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save me-1"></i> حفظ التغييرات الأساسية
+                </button>
             </div>
         </form>
+        
+        <hr class="my-4">
+
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">تفاصيل التكاليف الفعلية (الفروع)</h5>
+                    <h5 class="mb-0">الإجمالي: {{ "{:,.2f}".format(item.actual_total_cost) }} ريال</h5>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-striped mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>الوصف</th>
+                            <th class="text-end">الكمية</th>
+                            <th class="text-end">الوحدة</th>
+                            <th class="text-end">سعر الوحدة</th>
+                            <th class="text-end">الإجمالي</th>
+                            <th class="text-center">إجراء</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for detail in item.cost_details %}
+                        <tr>
+                            <td>{{ detail.description }}</td>
+                            <td class="text-end">{{ detail.quantity }}</td>
+                            <td class="text-end">{{ detail.unit }}</td>
+                            <td class="text-end">{{ "{:,.2f}".format(detail.unit_cost) }}</td>
+                            <td class="text-end">{{ "{:,.2f}".format(detail.total_cost) }}</td>
+                            <td class="text-center">
+                                <form method="POST" action="{{ url_for('cost_detail.delete_cost_detail', detail_id=detail.id) }}" onsubmit="return confirm('هل أنت متأكد من حذف هذا التفصيل؟');">
+                                    <button type="submit" class="btn btn-danger btn-sm" title="حذف التفصيل">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted">لا توجد تفاصيل تكلفة مضافة لهذا البند بعد.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">إضافة تفصيل تكلفة جديد</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('cost_detail.add_cost_detail', item_id=item.id) }}">
+                    <div class="row align-items-end g-3">
+                        <div class="col-md-4">
+                            <label for="detail_description" class="form-label">الوصف (مثال: أسمنت)</label>
+                            <input type="text" name="description" id="detail_description" class="form-control" required>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="detail_quantity" class="form-label">الكمية</label>
+                            <input type="number" name="quantity" id="detail_quantity" class="form-control" step="any" value="1" required>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="detail_unit" class="form-label">الوحدة (طن, م3)</label>
+                            <input type="text" name="unit" id="detail_unit" class="form-control">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="detail_unit_cost" class="form-label">سعر الوحدة</label>
+                            <input type="number" name="unit_cost" id="detail_unit_cost" class="form-control" step="any" required>
+                        </div>
+                        <div class="col-md-1">
+                            <button type="submit" class="btn btn-success w-100" title="إضافة التفصيل">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="d-flex justify-content-between mt-4">
+            <a href="{{ url_for('item.get_items', project_id=item.project_id) }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-right me-1"></i> رجوع
+            </a>
+            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteItemModal">
+                <i class="fas fa-trash me-1"></i> حذف البند بالكامل
+            </button>
+        </div>
     </div>
 </div>
 
-<!-- Modal for Delete Confirmation -->
 <div class="modal fade" id="deleteItemModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -177,7 +201,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <p>هل أنت متأكد من حذف هذا البند؟ هذا الإجراء لا يمكن التراجع عنه.</p>
+                <p>هل أنت متأكد من حذف هذا البند وكل تفاصيله؟ هذا الإجراء لا يمكن التراجع عنه.</p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
@@ -209,64 +233,6 @@
         contractQuantityInput.addEventListener('input', calculateContractTotal);
         contractUnitCostInput.addEventListener('input', calculateContractTotal);
         
-        // Calculate actual total cost automatically
-        const actualQuantityInput = document.getElementById('actual_quantity');
-        const actualUnitCostInput = document.getElementById('actual_unit_cost');
-        const actualTotalCostInput = document.getElementById('actual_total_cost');
-        
-        function calculateActualTotal() {
-            const quantity = parseFloat(actualQuantityInput.value) || 0;
-            const unitCost = parseFloat(actualUnitCostInput.value) || 0;
-            const total = quantity * unitCost;
-            actualTotalCostInput.value = total > 0 ? total.toFixed(2) : '';
-            
-            // Also update remaining amount
-            calculateRemainingAmount();
-        }
-        
-        actualQuantityInput.addEventListener('input', calculateActualTotal);
-        actualUnitCostInput.addEventListener('input', calculateActualTotal);
-        
-        // Calculate remaining amount
-        const paidAmountInput = document.getElementById('paid_amount');
-        const remainingAmountInput = document.getElementById('remaining_amount');
-        
-        function calculateRemainingAmount() {
-            const actualTotal = parseFloat(actualTotalCostInput.value) || 0;
-            const paidAmount = parseFloat(paidAmountInput.value) || 0;
-            
-            if (actualTotal > 0) {
-                const remaining = actualTotal - paidAmount;
-                remainingAmountInput.value = remaining.toFixed(2);
-            } else {
-                const contractTotal = parseFloat(contractTotalCostInput.value) || 0;
-                const remaining = contractTotal - paidAmount;
-                remainingAmountInput.value = remaining.toFixed(2);
-            }
-        }
-        
-        paidAmountInput.addEventListener('input', calculateRemainingAmount);
-        
-        // Show/hide contractor name based on execution method
-        const executionMethodSelect = document.getElementById('execution_method');
-        const contractorNameInput = document.getElementById('contractor_name');
-        const contractorNameFormGroup = contractorNameInput.closest('.col-md-6');
-        
-        executionMethodSelect.addEventListener('change', function() {
-            if (this.value === 'تعاقد من الباطن') {
-                contractorNameFormGroup.style.display = 'block';
-                contractorNameInput.setAttribute('required', 'required');
-            } else {
-                contractorNameFormGroup.style.display = 'block';
-                contractorNameInput.removeAttribute('required');
-            }
-        });
-        
-        // Initialize calculations
-        calculateContractTotal();
-        calculateActualTotal();
-        calculateRemainingAmount();
-        
         // Form validation
         const form = document.getElementById('editItemForm');
         form.addEventListener('submit', function(event) {
@@ -279,4 +245,3 @@
     });
 </script>
 {% endblock %}
-<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
