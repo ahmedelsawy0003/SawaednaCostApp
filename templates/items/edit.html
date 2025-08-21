@@ -148,12 +148,17 @@
                             <td class="text-end">{{ "{:,.2f}".format(detail.unit_cost) }}</td>
                             <td class="text-end">{{ "{:,.2f}".format(detail.total_cost) }}</td>
                             <td class="text-center">
-                                <form method="POST" action="{{ url_for('cost_detail.delete_cost_detail', detail_id=detail.id) }}" onsubmit="return confirm('هل أنت متأكد من حذف هذا التفصيل؟');">
-                                    <button type="submit" class="btn btn-danger btn-sm" title="حذف التفصيل">
-                                        <i class="fas fa-trash"></i>
+                                <div class="btn-group btn-group-sm">
+                                    <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#editDetailModal-{{ detail.id }}" title="تعديل التفصيل">
+                                        <i class="fas fa-edit"></i>
                                     </button>
-                                </form>
-                            </td>
+                                    <form method="POST" action="{{ url_for('cost_detail.delete_cost_detail', detail_id=detail.id) }}" onsubmit="return confirm('هل أنت متأكد من حذف هذا التفصيل؟');" style="display:inline;">
+                                        <button type="submit" class="btn btn-danger" title="حذف التفصيل">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                                </td>
                         </tr>
                         {% else %}
                         <tr>
@@ -223,31 +228,55 @@
                 <form action="{{ url_for('item.delete_item', item_id=item.id) }}" method="POST">
                     <button type="submit" class="btn btn-danger">نعم, قم بالحذف</button>
                 </form>
-                </div>
+            </div>
         </div>
     </div>
 </div>
+
+{% for detail in item.cost_details %}
+<div class="modal fade" id="editDetailModal-{{ detail.id }}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title">تعديل تفصيل التكلفة</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editDetailForm-{{ detail.id }}" method="POST" action="{{ url_for('cost_detail.update_cost_detail', detail_id=detail.id) }}">
+                    <div class="mb-3">
+                        <label for="edit_description_{{ detail.id }}" class="form-label">الوصف</label>
+                        <input type="text" name="description" id="edit_description_{{ detail.id }}" class="form-control" value="{{ detail.description }}" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="edit_quantity_{{ detail.id }}" class="form-label">الكمية</label>
+                            <input type="number" name="quantity" id="edit_quantity_{{ detail.id }}" class="form-control" step="any" value="{{ detail.quantity }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="edit_unit_{{ detail.id }}" class="form-label">الوحدة</label>
+                            <input type="text" name="unit" id="edit_unit_{{ detail.id }}" class="form-control" value="{{ detail.unit or '' }}">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_unit_cost_{{ detail.id }}" class="form-label">سعر الوحدة</label>
+                        <input type="number" name="unit_cost" id="edit_unit_cost_{{ detail.id }}" class="form-control" step="any" value="{{ detail.unit_cost }}" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="submit" form="editDetailForm-{{ detail.id }}" class="btn btn-primary">حفظ التغييرات</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
 {% endblock %}
 
 {% block scripts %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Calculate contract total cost automatically
-        const contractQuantityInput = document.getElementById('contract_quantity');
-        const contractUnitCostInput = document.getElementById('contract_unit_cost');
-        
-        function calculateContractTotal() {
-            const quantity = parseFloat(contractQuantityInput.value) || 0;
-            const unitCost = parseFloat(contractUnitCostInput.value) || 0;
-            const total = quantity * unitCost;
-        }
-        
-        if (contractQuantityInput && contractUnitCostInput) {
-            contractQuantityInput.addEventListener('input', calculateContractTotal);
-            contractUnitCostInput.addEventListener('input', calculateContractTotal);
-        }
-        
-        // Form validation
+        // ... (الجافاسكريبت الحالي يبقى كما هو)
         const form = document.getElementById('editItemForm');
         form.addEventListener('submit', function(event) {
             if (!form.checkValidity()) {
