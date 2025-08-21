@@ -22,16 +22,20 @@ class Project(db.Model):
     @property
     def total_actual_cost(self):
         """حساب إجمالي التكلفة الفعلية كخاصية"""
-        return sum(item.actual_total_cost for item in self.items if item.actual_total_cost)
+        return sum(item.actual_total_cost for item in self.items)
 
     @property
     def total_actual_quantity(self):
-        """حساب إجمالي الكمية الفعلية كخاصية"""
-        return sum(item.actual_quantity for item in self.items if item.actual_quantity is not None)
+        """(مُصحح) حساب إجمالي الكمية الفعلية من تفاصيل التكلفة"""
+        total_qty = 0
+        for item in self.items:
+            # نجمع الكميات من تفاصيل التكلفة المرتبطة بكل بند
+            total_qty += sum(detail.quantity for detail in item.cost_details if detail.quantity is not None)
+        return total_qty
 
     @property
     def total_paid_amount(self):
-        """(جديد) حساب إجمالي المبلغ المدفوع لكل البنود"""
+        """حساب إجمالي المبلغ المدفوع لكل البنود"""
         return sum(item.paid_amount for item in self.items if item.paid_amount is not None)
 
     @property
@@ -52,11 +56,10 @@ class Project(db.Model):
 
     @property
     def financial_completion_percentage(self):
-        """(تعديل) حساب نسبة الإنجاز المالي بناءً على المدفوع مقابل الفعلي"""
+        """حساب نسبة الإنجاز المالي بناءً على المدفوع مقابل الفعلي"""
         if self.total_actual_cost == 0:
             return 0
         
-        # لضمان عدم تجاوز النسبة 100% في حال كانت المدفوعات أكثر من التكلفة
         percentage = (self.total_paid_amount / self.total_actual_cost) * 100
         return min(percentage, 100)
 
