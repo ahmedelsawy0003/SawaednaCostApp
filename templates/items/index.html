@@ -166,6 +166,10 @@
                 <p class="fs-4 text-info">{{ "{:,.2f}".format(project.total_paid_amount) }} ريال</p>
             </div>
             <div class="col">
+                <h5>المبلغ المتبقي</h5>
+                <p class="fs-4 text-danger">{{ "{:,.2f}".format(project.total_remaining_amount) }} ريال</p>
+            </div>
+            <div class="col">
                 <h5>إجمالي الربح / الخسارة</h5>
                 <p class="fs-4 {{ 'text-success' if project.total_savings >= 0 else 'text-danger' }}">
                     {{ "{:,.2f}".format(project.total_savings) }} ريال
