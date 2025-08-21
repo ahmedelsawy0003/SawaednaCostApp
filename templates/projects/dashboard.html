@@ -164,7 +164,7 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // بيانات المشروع
-        const projectData = {{ project|tojson }};
+        const projectData = {{ project.to_dict()|tojson }};
         
         // الحصول على بنود المشروع
         fetch(`/items/project/${projectData.id}`, {
