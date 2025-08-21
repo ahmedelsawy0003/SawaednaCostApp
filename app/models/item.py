@@ -19,6 +19,9 @@ class Item(db.Model):
     contract_unit_cost = db.Column(db.Float, nullable=False)
     contract_total_cost = db.Column(db.Float, nullable=False)
 
+    # **** الحقل الجديد الذي تمت إضافته ****
+    actual_quantity = db.Column(db.Float, nullable=True)
+
     # بيانات التنفيذ (مع إزالة حقول التكلفة الفعلية)
     status = db.Column(db.String(20), default='نشط')
     execution_method = db.Column(db.String(50), nullable=True)
@@ -38,11 +41,20 @@ class Item(db.Model):
         """(مُعدل) حساب التكلفة الفعلية الإجمالية من مجموع تفاصيل التكلفة"""
         return sum(detail.total_cost for detail in self.cost_details)
 
+    # **** الدالة الذكية الجديدة التي تمت إضافتها ****
+    @property
+    def actual_unit_cost(self):
+        """(جديد) حساب التكلفة الإفرادية الفعلية بناءً على الكمية الفعلية المدخلة"""
+        if self.actual_quantity and self.actual_quantity > 0:
+            return self.actual_total_cost / self.actual_quantity
+        return 0
+
     @property
     def quantity_variance(self):
         """حساب الفرق في الكميات كخاصية"""
-        # بما أن الكمية الفعلية لم تعد موجودة بشكل مباشر، يمكن تعديل هذه الدالة لاحقاً
-        return 0
+        if self.actual_quantity is not None:
+             return self.actual_quantity - self.contract_quantity
+        return 0 # أو أي قيمة افتراضية أخرى
 
     @property
     def cost_variance(self):
@@ -65,7 +77,13 @@ class Item(db.Model):
             'contract_quantity': self.contract_quantity,
             'contract_unit_cost': self.contract_unit_cost,
             'contract_total_cost': self.contract_total_cost,
+            
+            # **** الحقول الجديدة المضافة للـ API ****
+            'actual_quantity': self.actual_quantity,
+            'actual_unit_cost': self.actual_unit_cost,
+            
             'actual_total_cost': self.actual_total_cost, # سيتم حسابه تلقائياً
+            'quantity_variance': self.quantity_variance,
             'cost_variance': self.cost_variance,
             'status': self.status,
             'execution_method': self.execution_method,

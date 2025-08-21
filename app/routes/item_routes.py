@@ -89,6 +89,12 @@ def update_item(item_id):
             item.contract_unit_cost = float(data.get('contract_unit_cost'))
             item.contract_total_cost = item.contract_quantity * item.contract_unit_cost
         
+        # **** السطر الجديد لحفظ الكمية الفعلية ****
+        if data.get('actual_quantity'):
+            item.actual_quantity = float(data.get('actual_quantity'))
+        else:
+            item.actual_quantity = None
+            
         # تحديث بيانات أخرى
         item.item_number = data.get('item_number', item.item_number)
         item.description = data.get('description', item.description)

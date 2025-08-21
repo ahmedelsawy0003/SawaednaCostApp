@@ -59,7 +59,8 @@
                             <td class="text-end">{{ "{:,.2f}".format(item.contract_quantity) }}</td>
                             <td class="text-end">{{ "{:,.2f}".format(item.contract_unit_cost) }}</td>
                             <td class="text-end">{{ "{:,.2f}".format(item.contract_total_cost) }}</td>
-                            <td class="text-end">{{ "{:,.2f}".format(item.actual_quantity) if item.actual_quantity else "-" }}</td>
+                            
+                            <td class="text-end">{{ "{:,.2f}".format(item.actual_quantity) if item.actual_quantity is not none else "-" }}</td>
                             <td class="text-end">{{ "{:,.2f}".format(item.actual_unit_cost) if item.actual_unit_cost else "-" }}</td>
                             <td class="text-end">{{ "{:,.2f}".format(item.actual_total_cost) if item.actual_total_cost else "-" }}</td>
                             <td class="text-end {{ 'text-success' if item.cost_variance > 0 else 'text-danger' if item.cost_variance < 0 else '' }}">

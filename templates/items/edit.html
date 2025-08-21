@@ -63,9 +63,25 @@
             
             <div class="card mb-4">
                 <div class="card-header bg-info text-white">
-                    <h5 class="mb-0">بيانات التنفيذ</h5>
+                    <h5 class="mb-0">بيانات التنفيذ الفعلية</h5>
                 </div>
                 <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="actual_quantity" class="form-label">الكمية الفعلية المنفذة</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="actual_quantity" name="actual_quantity" step="0.01" min="0" value="{{ item.actual_quantity or '' }}">
+                                <span class="input-group-text">{{ item.unit }}</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="actual_unit_cost" class="form-label">التكلفة الإفرادية الفعلية (محسوبة)</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="actual_unit_cost" name="actual_unit_cost" value="{{ item.actual_unit_cost }}" readonly>
+                                <span class="input-group-text">ريال</span>
+                            </div>
+                        </div>
+                    </div>
                     <div class="row mb-3">
                         <div class="col-md-4">
                             <label for="execution_method" class="form-label">طريقة التنفيذ</label>
@@ -125,7 +141,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for detail in item.cost_details %}
+                        {% for detail in item.cost_details %}\
                         <tr>
                             <td>{{ detail.description }}</td>
                             <td class="text-end">{{ detail.quantity }}</td>
@@ -227,11 +243,16 @@
             const quantity = parseFloat(contractQuantityInput.value) || 0;
             const unitCost = parseFloat(contractUnitCostInput.value) || 0;
             const total = quantity * unitCost;
-            contractTotalCostInput.value = total.toFixed(2);
+            // This field does not exist in the provided HTML, but keeping the logic in case it's added back
+            if (contractTotalCostInput) {
+                contractTotalCostInput.value = total.toFixed(2);
+            }
         }
         
-        contractQuantityInput.addEventListener('input', calculateContractTotal);
-        contractUnitCostInput.addEventListener('input', calculateContractTotal);
+        if (contractQuantityInput && contractUnitCostInput) {
+            contractQuantityInput.addEventListener('input', calculateContractTotal);
+            contractUnitCostInput.addEventListener('input', calculateContractTotal);
+        }
         
         // Form validation
         const form = document.getElementById('editItemForm');
