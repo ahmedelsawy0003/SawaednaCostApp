@@ -26,8 +26,13 @@ class Project(db.Model):
 
     @property
     def total_actual_quantity(self):
-        """(جديد) حساب إجمالي الكمية الفعلية كخاصية"""
+        """حساب إجمالي الكمية الفعلية كخاصية"""
         return sum(item.actual_quantity for item in self.items if item.actual_quantity is not None)
+
+    @property
+    def total_paid_amount(self):
+        """(جديد) حساب إجمالي المبلغ المدفوع لكل البنود"""
+        return sum(item.paid_amount for item in self.items if item.paid_amount is not None)
 
     @property
     def total_savings(self):
@@ -36,7 +41,7 @@ class Project(db.Model):
 
     @property
     def completion_percentage(self):
-        """(تعديل) حساب نسبة الإنجاز بناءً على عدد البنود"""
+        """حساب نسبة الإنجاز بناءً على عدد البنود"""
         if not self.items:
             return 0
         
@@ -47,10 +52,13 @@ class Project(db.Model):
 
     @property
     def financial_completion_percentage(self):
-        """(جديد) حساب نسبة الإنجاز المالي بناءً على التكلفة"""
-        if self.total_contract_cost == 0:
+        """(تعديل) حساب نسبة الإنجاز المالي بناءً على المدفوع مقابل الفعلي"""
+        if self.total_actual_cost == 0:
             return 0
-        return (self.total_actual_cost / self.total_contract_cost) * 100
+        
+        # لضمان عدم تجاوز النسبة 100% في حال كانت المدفوعات أكثر من التكلفة
+        percentage = (self.total_paid_amount / self.total_actual_cost) * 100
+        return min(percentage, 100)
 
     def to_dict(self):
         """تحويل المشروع إلى قاموس لواجهات API (مُحدّث ليشمل كل الخصائص)"""
@@ -65,6 +73,7 @@ class Project(db.Model):
             'total_contract_cost': self.total_contract_cost,
             'total_actual_cost': self.total_actual_cost,
             'total_actual_quantity': self.total_actual_quantity,
+            'total_paid_amount': self.total_paid_amount,
             'total_savings': self.total_savings,
             'completion_percentage': self.completion_percentage,
             'financial_completion_percentage': self.financial_completion_percentage
