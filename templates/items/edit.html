@@ -131,7 +131,7 @@
             <div class="card-header bg-success text-white">
                 <div class="d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">تفاصيل التكاليف الفعلية (للمرجعية فقط)</h5>
-                    <h5 class="mb-0">إجمالي المصروفات: {{ "{:,.2f}".format(item.cost_details.sum(attribute='total_cost')) }} ريال</h5>
+                    <h5 class="mb-0">إجمالي المصروفات: {{ "{:,.2f}".format(item.cost_details|sum(attribute='total_cost')) }} ريال</h5>
                 </div>
             </div>
             <div class="card-body p-0">
