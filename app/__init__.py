@@ -2,10 +2,7 @@ from flask import Flask
 from .extensions import db, migrate, login_manager
 
 def create_app():
-    # <<< تم التعديل هنا: أضفنا مسار مجلد القوالب
-    # هذا السطر يخبر فلاسك بالخروج من مجلد "app" والبحث عن مجلد اسمه "templates"
     app = Flask(__name__, template_folder='../templates', static_folder='../static')
-
     app.config.from_object('config.Config')
 
     db.init_app(app)
@@ -14,6 +11,11 @@ def create_app():
     login_manager.login_view = 'auth.login'
 
     from .models.user import User
+    from .models.project import Project
+    from .models.item import Item
+    from .models.payment import Payment
+    from .models.cost_detail import CostDetail
+
 
     @login_manager.user_loader
     def load_user(user_id):
@@ -33,8 +35,12 @@ def create_app():
     app.register_blueprint(payment_bp)
     app.register_blueprint(cost_detail_bp)
 
-
+    # <<< ابدأ التعديل هنا
     with app.app_context():
+        # الأمر التالي سيحذف كل الجداول القديمة
+        db.drop_all()
+        # الأمر التالي سيعيد بناء كل الجداول بالشكل الصحيح
         db.create_all()
+    # <<< انتهى التعديل هنا
 
     return app
