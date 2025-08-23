@@ -2,7 +2,8 @@ from app.extensions import db
 
 class Item(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    project_id = db.Column(db.Integer, db.ForeignKey(\'project.id\'), nullable=False)
+    # <<< تم التعديل هنا: تم حذف الشرطة المائلة للخلف \
+    project_id = db.Column(db.Integer, db.ForeignKey('project.id'), nullable=False)
     item_number = db.Column(db.String(255), nullable=False)
     description = db.Column(db.Text, nullable=False)
     unit = db.Column(db.String(50))
@@ -10,13 +11,13 @@ class Item(db.Model):
     contract_unit_cost = db.Column(db.Float)
     actual_quantity = db.Column(db.Float)
     actual_unit_cost = db.Column(db.Float)
-    status = db.Column(db.String(50), default=\'نشط\') # نشط, مكتمل, معلق
+    status = db.Column(db.String(50), default='نشط') # نشط, مكتمل, معلق
     execution_method = db.Column(db.String(100)) # مقاولة, توريد, عمالة, ذاتي
     contractor = db.Column(db.String(255))
     paid_amount = db.Column(db.Float, default=0.0)
     notes = db.Column(db.Text)
 
-    project = db.relationship(\'Project\', backref=db.backref(\'items\', lazy=True))
+    project = db.relationship('Project', backref=db.backref('items', lazy=True))
 
     @property
     def contract_total_cost(self):
@@ -43,6 +44,4 @@ class Item(db.Model):
         return self.actual_total_cost - self.paid_amount
 
     def __repr__(self):
-        return f\'<Item {self.item_number} - {self.description}>\'
-
-
+        return f'<Item {self.item_number} - {self.description}>'

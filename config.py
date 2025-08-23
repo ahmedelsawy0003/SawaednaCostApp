@@ -1,8 +1,12 @@
 import os
 
 class Config:
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'you-will-never-guess'
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-        'postgresql://user:password@host:port/database'
+    # يقرأ المفتاح السري من متغير البيئة الذي أنشأته في Vercel
+    SECRET_KEY = os.environ.get('SECRET_KEY')
+    
+    # يقرأ رابط قاعدة البيانات من متغير البيئة DATABASE_URL
+    # Vercel يستخدم هذا الاسم افتراضياً لقواعد البيانات
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
+    
+    # هذا الإعداد يُفضل إبقاؤه لإيقاف رسائل غير ضرورية
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-
