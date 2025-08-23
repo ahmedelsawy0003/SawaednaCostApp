@@ -96,5 +96,4 @@ def get_item_details(item_id):
         "paid_amount": item.paid_amount,
         "remaining_amount": item.remaining_amount,
         "notes": item.notes
-    }))
-
+    }) # <<< تم التعديل هنا: تم حذف القوس الزائد
