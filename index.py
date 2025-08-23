@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import os
 from flask import Flask, render_template, request, jsonify, redirect, url_for
 from dotenv import load_dotenv
@@ -61,3 +62,17 @@ with app.app_context():
 
 if __name__ == '__main__':
     app.run(debug=False)
+=======
+from app import create_app
+from flask import redirect, url_for
+
+app = create_app()
+
+@app.route('/')
+def index():
+    return redirect(url_for('project.get_projects'))
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
+>>>>>>> 7a3713e (Initial commit with updated files)

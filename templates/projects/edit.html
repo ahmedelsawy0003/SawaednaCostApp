@@ -1,0 +1,66 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}تعديل المشروع - {{ project.name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>تعديل المشروع: {{ project.name }}</h1>
+    <a href="{{ url_for("project.get_project", project_id=project.id) }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-right me-1"></i> العودة للمشروع
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h3 class="mb-0">بيانات المشروع</h3>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for("project.edit_project", project_id=project.id) }}" data-auto-save id="editProjectForm">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">اسم المشروع</label>
+                        <input type="text" class="form-control" id="name" name="name" value="{{ project.name }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="location" class="form-label">الموقع</label>
+                        <input type="text" class="form-control" id="location" name="location" value="{{ project.location if project.location else "" }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="status" class="form-label">الحالة</label>
+                        <select class="form-select" id="status" name="status" required>
+                            <option value="قيد التنفيذ" {% if project.status == "قيد التنفيذ" %}selected{% endif %}>قيد التنفيذ</option>
+                            <option value="مكتمل" {% if project.status == "مكتمل" %}selected{% endif %}>مكتمل</option>
+                            <option value="معلق" {% if project.status == "معلق" %}selected{% endif %}>معلق</option>
+                            <option value="ملغي" {% if project.status == "ملغي" %}selected{% endif %}>ملغي</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="start_date" class="form-label">تاريخ البداية</label>
+                        <input type="date" class="form-control" id="start_date" name="start_date" value="{{ project.start_date if project.start_date else "" }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="end_date" class="form-label">تاريخ النهاية</label>
+                        <input type="date" class="form-control" id="end_date" name="end_date" value="{{ project.end_date if project.end_date else "" }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="spreadsheet_id" class="form-label">معرّف Google Sheets (اختياري)</label>
+                        <input type="text" class="form-control" id="spreadsheet_id" name="spreadsheet_id" value="{{ project.spreadsheet_id if project.spreadsheet_id else "" }}">
+                        <div class="form-text">يمكنك العثور على معرّف جدول البيانات في رابط Google Sheet الخاص بك</div>
+                    </div>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label for="notes" class="form-label">ملاحظات</label>
+                <textarea class="form-control" id="notes" name="notes" rows="4">{{ project.notes if project.notes else "" }}</textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save me-1"></i> تحديث المشروع
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+

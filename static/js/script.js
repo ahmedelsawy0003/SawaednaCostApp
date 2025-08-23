@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /**
  * Main JavaScript file for Project Cost Management System
  */
@@ -97,11 +98,37 @@ function setupSearch() {
                         row.style.display = '';
                     } else {
                         row.style.display = 'none';
+=======
+document.addEventListener("DOMContentLoaded", function() {
+    // Auto-dismiss flash messages after 5 seconds
+    const alerts = document.querySelectorAll(".alert");
+    alerts.forEach(alert => {
+        setTimeout(() => {
+            new bootstrap.Alert(alert).close();
+        }, 5000);
+    });
+
+    // Generic search/filter for tables
+    const searchInputs = document.querySelectorAll("input[type=\"search\"]");
+    searchInputs.forEach(input => {
+        input.addEventListener("keyup", function() {
+            const searchTerm = this.value.toLowerCase();
+            const table = this.closest(".card-body").querySelector("table");
+            if (table) {
+                const rows = table.querySelectorAll("tbody tr");
+                rows.forEach(row => {
+                    const textContent = row.textContent.toLowerCase();
+                    if (textContent.includes(searchTerm)) {
+                        row.style.display = "";
+                    } else {
+                        row.style.display = "none";
+>>>>>>> 7a3713e (Initial commit with updated files)
                     }
                 });
             }
         });
     });
+<<<<<<< HEAD
 }
 
 /**
@@ -597,3 +624,16 @@ function formatPercentage(value) {
         maximumFractionDigits: 1
     }) + '%';
 }
+=======
+
+    // Auto-save functionality for forms with data-auto-save attribute
+    const autoSaveForms = document.querySelectorAll("form[data-auto-save]");
+    autoSaveForms.forEach(form => {
+        let timeoutId;
+        form.addEventListener("input", function() {
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(() => {
+                // In a real application, you'd send an AJAX request here
+                // For now, we'll just log that it's 
+
+>>>>>>> 7a3713e (Initial commit with updated files)

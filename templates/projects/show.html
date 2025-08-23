@@ -1,5 +1,6 @@
 {% extends "layouts/base.html" %}
 
+<<<<<<< HEAD
 {% block title %}{{ project.name }} - نظام حساب تكاليف المشاريع{% endblock %}
 
 {% block content %}
@@ -15,16 +16,41 @@
         <a href="{{ url_for('project.project_dashboard', project_id=project.id) }}" class="btn btn-info">
             <i class="fas fa-chart-bar me-1"></i> لوحة التحكم
         </a>
+=======
+{% block title %}تفاصيل المشروع - {{ project.name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>تفاصيل المشروع: {{ project.name }}</h1>
+    <div class="btn-group">
+        <a href="{{ url_for("item.get_items_by_project", project_id=project.id) }}" class="btn btn-primary">
+            <i class="fas fa-list me-1"></i> عرض البنود
+        </a>
+        <a href="{{ url_for("project.project_dashboard", project_id=project.id) }}" class="btn btn-info">
+            <i class="fas fa-chart-bar me-1"></i> لوحة التحكم
+        </a>
+        <a href="{{ url_for("payment.get_payments", project_id=project.id) }}" class="btn btn-success">
+            <i class="fas fa-money-bill-wave me-1"></i> الدفعات
+        </a>
+        <a href="{{ url_for("project.edit_project", project_id=project.id) }}" class="btn btn-warning">
+            <i class="fas fa-edit me-1"></i> تعديل
+        </a>
+>>>>>>> 7a3713e (Initial commit with updated files)
     </div>
 </div>
 
 <div class="row">
+<<<<<<< HEAD
     <div class="col-md-6">
+=======
+    <div class="col-md-8">
+>>>>>>> 7a3713e (Initial commit with updated files)
         <div class="card mb-4">
             <div class="card-header bg-primary text-white">
                 <h3 class="mb-0">معلومات المشروع</h3>
             </div>
             <div class="card-body">
+<<<<<<< HEAD
                 <table class="table table-striped">
                     <tbody>
                         <tr>
@@ -212,3 +238,145 @@
     </div>
 </div>
 {% endblock %}
+=======
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>اسم المشروع:</strong> {{ project.name }}</p>
+                        <p><strong>الموقع:</strong> {{ project.location if project.location else "غير محدد" }}</p>
+                        <p><strong>الحالة:</strong> 
+                            <span class="badge {{ "bg-warning" if project.status == "قيد التنفيذ" else "bg-success" if project.status == "مكتمل" else "bg-info" if project.status == "معلق" else "bg-danger" }}">
+                                {{ project.status }}
+                            </span>
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>تاريخ البداية:</strong> {{ project.start_date if project.start_date else "غير محدد" }}</p>
+                        <p><strong>تاريخ النهاية:</strong> {{ project.end_date if project.end_date else "غير محدد" }}</p>
+                        <p><strong>Google Sheets ID:</strong> {{ project.spreadsheet_id if project.spreadsheet_id else "غير مربوط" }}</p>
+                    </div>
+                </div>
+                {% if project.notes %}
+                <hr>
+                <p><strong>ملاحظات:</strong></p>
+                <p>{{ project.notes }}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if project.spreadsheet_id %}
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h3 class="mb-0">خيارات Google Sheets</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <form action="{{ url_for("sheets.export_project", project_id=project.id) }}" method="POST">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-file-export me-1"></i> تصدير البنود
+                            </button>
+                        </form>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <a href="{{ url_for("sheets.import_contractual_items", project_id=project.id) }}" class="btn btn-info w-100">
+                            <i class="fas fa-file-import me-1"></i> استيراد بنود تعاقدية
+                        </a>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <a href="{{ url_for("sheets.import_actual_items", project_id=project.id) }}" class="btn btn-warning w-100">
+                            <i class="fas fa-file-import me-1"></i> استيراد بنود فعلية
+                        </a>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <form action="{{ url_for("sheets.export_summary", project_id=project.id) }}" method="POST">
+                            <button type="submit" class="btn btn-secondary w-100">
+                                <i class="fas fa-chart-pie me-1"></i> تصدير ملخص المشروع
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header bg-dark text-white">
+                <h3 class="mb-0">الملخص المالي</h3>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <h6>التكلفة التعاقدية</h6>
+                    <h4 class="text-primary">{{ "{:,.2f}".format(project.total_contract_cost) }} ريال</h4>
+                </div>
+                <div class="mb-3">
+                    <h6>التكلفة الفعلية</h6>
+                    <h4 class="text-success">{{ "{:,.2f}".format(project.total_actual_cost) }} ريال</h4>
+                </div>
+                <div class="mb-3">
+                    <h6>الوفر / الزيادة</h6>
+                    <h4 class="{{ "text-success" if project.total_savings >= 0 else "text-danger" }}">
+                        {{ "{:,.2f}".format(project.total_savings) }} ريال
+                    </h4>
+                </div>
+                <div class="mb-3">
+                    <h6>إجمالي المدفوع</h6>
+                    <h4 class="text-info">{{ "{:,.2f}".format(project.total_paid_amount) }} ريال</h4>
+                </div>
+                <div class="mb-3">
+                    <h6>المبلغ المتبقي</h6>
+                    <h4 class="text-danger">{{ "{:,.2f}".format(project.total_remaining_amount) }} ريال</h4>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <h3 class="mb-0">نسب الإنجاز</h3>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <h6>نسبة إنجاز البنود</h6>
+                    <div class="progress" style="height: 25px;">
+                        <div class="progress-bar bg-info" role="progressbar" style="width: {{ project.completion_percentage }}%">
+                            {{ "{:.1f}%".format(project.completion_percentage) }}
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <h6>نسبة الإنجاز المالي</h6>
+                    <div class="progress" style="height: 25px;">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: {{ project.financial_completion_percentage }}%">
+                            {{ "{:.1f}%".format(project.financial_completion_percentage) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header bg-secondary text-white">
+                <h3 class="mb-0">إحصائيات البنود</h3>
+            </div>
+            <div class="card-body">
+                <p><strong>إجمالي البنود:</strong> {{ project.items|length }}</p>
+                <p><strong>البنود المكتملة:</strong> {{ project.items|selectattr("status", "equalto", "مكتمل")|list|length }}</p>
+                <p><strong>البنود النشطة:</strong> {{ project.items|selectattr("status", "equalto", "نشط")|list|length }}</p>
+                <p><strong>البنود المعلقة:</strong> {{ project.items|selectattr("status", "equalto", "معلق")|list|length }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="d-flex justify-content-between mt-4">
+    <a href="{{ url_for("project.get_projects") }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-right me-1"></i> العودة للمشاريع
+    </a>
+</div>
+
+{% endblock %}
+
+>>>>>>> 7a3713e (Initial commit with updated files)

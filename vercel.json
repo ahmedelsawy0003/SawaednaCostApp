@@ -4,14 +4,18 @@
     {
       "src": "index.py",
       "use": "@vercel/python"
+<<<<<<< HEAD
     },
     {
       "src": "static/**",
       "use": "@vercel/static"
+=======
+>>>>>>> 7a3713e (Initial commit with updated files)
     }
   ],
   "routes": [
     {
+<<<<<<< HEAD
       "src": "/static/(.*)",
       "dest": "/static/$1"
     },
@@ -24,3 +28,11 @@
     "FLASK_ENV": "production"
   }
 }
+=======
+      "src": "/(.*)",
+      "dest": "index.py"
+    }
+  ]
+}
+
+>>>>>>> 7a3713e (Initial commit with updated files)

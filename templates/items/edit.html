@@ -3,6 +3,7 @@
 {% block title %}تعديل البند - {{ item.item_number }}{% endblock %}
 
 {% block content %}
+<<<<<<< HEAD
 <div class="card">
     <div class="card-header bg-warning text-dark">
         <h2 class="mb-0">
@@ -308,3 +309,84 @@
     });
 </script>
 {% endblock %}
+=======
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>تعديل البند: {{ item.item_number }} - {{ item.description }}</h1>
+    <a href="{{ url_for("item.get_items_by_project", project_id=project.id) }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-right me-1"></i> العودة للبنود
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h3 class="mb-0">بيانات البند</h3>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for("item.edit_item", item_id=item.id) }}">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="item_number" class="form-label">رقم البند</label>
+                        <input type="text" class="form-control" id="item_number" name="item_number" value="{{ item.item_number }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">الوصف</label>
+                        <textarea class="form-control" id="description" name="description" rows="3" required>{{ item.description }}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="unit" class="form-label">الوحدة</label>
+                        <input type="text" class="form-control" id="unit" name="unit" value="{{ item.unit if item.unit else "" }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="contract_quantity" class="form-label">الكمية التعاقدية</label>
+                        <input type="number" step="0.01" class="form-control" id="contract_quantity" name="contract_quantity" value="{{ item.contract_quantity }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="contract_unit_cost" class="form-label">التكلفة الإفرادية التعاقدية</label>
+                        <input type="number" step="0.01" class="form-control" id="contract_unit_cost" name="contract_unit_cost" value="{{ item.contract_unit_cost }}" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="actual_quantity" class="form-label">الكمية الفعلية (اختياري)</label>
+                        <input type="number" step="0.01" class="form-control" id="actual_quantity" name="actual_quantity" value="{{ item.actual_quantity if item.actual_quantity is not none else "" }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="actual_unit_cost" class="form-label">التكلفة الإفرادية الفعلية (اختياري)</label>
+                        <input type="number" step="0.01" class="form-control" id="actual_unit_cost" name="actual_unit_cost" value="{{ item.actual_unit_cost if item.actual_unit_cost is not none else "" }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="status" class="form-label">الحالة</label>
+                        <select class="form-select" id="status" name="status" required>
+                            <option value="نشط" {% if item.status == "نشط" %}selected{% endif %}>نشط</option>
+                            <option value="مكتمل" {% if item.status == "مكتمل" %}selected{% endif %}>مكتمل</option>
+                            <option value="معلق" {% if item.status == "معلق" %}selected{% endif %}>معلق</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="execution_method" class="form-label">طريقة التنفيذ (اختياري)</label>
+                        <input type="text" class="form-control" id="execution_method" name="execution_method" value="{{ item.execution_method if item.execution_method else "" }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="contractor" class="form-label">المقاول/المورد (اختياري)</label>
+                        <input type="text" class="form-control" id="contractor" name="contractor" value="{{ item.contractor if item.contractor else "" }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="paid_amount" class="form-label">المبلغ المدفوع (اختياري)</label>
+                        <input type="number" step="0.01" class="form-control" id="paid_amount" name="paid_amount" value="{{ item.paid_amount if item.paid_amount is not none else "" }}">
+                    </div>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label for="notes" class="form-label">ملاحظات (اختياري)</label>
+                <textarea class="form-control" id="notes" name="notes" rows="3">{{ item.notes if item.notes else "" }}</textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save me-1"></i> تحديث البند
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+>>>>>>> 7a3713e (Initial commit with updated files)

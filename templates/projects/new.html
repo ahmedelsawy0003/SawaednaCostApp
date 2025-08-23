@@ -1,5 +1,6 @@
 {% extends "layouts/base.html" %}
 
+<<<<<<< HEAD
 {% block title %}إضافة مشروع جديد - نظام حساب تكاليف المشاريع{% endblock %}
 
 {% block content %}
@@ -115,3 +116,69 @@
 </script>
 {% endblock %}
 <script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+=======
+{% block title %}إضافة مشروع جديد{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>إضافة مشروع جديد</h1>
+    <a href="{{ url_for("project.get_projects") }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-right me-1"></i> العودة للمشاريع
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h3 class="mb-0">بيانات المشروع</h3>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for("project.new_project") }}" data-auto-save id="newProjectForm">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">اسم المشروع</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="location" class="form-label">الموقع</label>
+                        <input type="text" class="form-control" id="location" name="location">
+                    </div>
+                    <div class="mb-3">
+                        <label for="status" class="form-label">الحالة</label>
+                        <select class="form-select" id="status" name="status" required>
+                            <option value="قيد التنفيذ">قيد التنفيذ</option>
+                            <option value="مكتمل">مكتمل</option>
+                            <option value="معلق">معلق</option>
+                            <option value="ملغي">ملغي</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="start_date" class="form-label">تاريخ البداية</label>
+                        <input type="date" class="form-control" id="start_date" name="start_date">
+                    </div>
+                    <div class="mb-3">
+                        <label for="end_date" class="form-label">تاريخ النهاية</label>
+                        <input type="date" class="form-control" id="end_date" name="end_date">
+                    </div>
+                    <div class="mb-3">
+                        <label for="spreadsheet_id" class="form-label">معرّف Google Sheets (اختياري)</label>
+                        <input type="text" class="form-control" id="spreadsheet_id" name="spreadsheet_id">
+                        <div class="form-text">يمكنك العثور على معرّف جدول البيانات في رابط Google Sheet الخاص بك</div>
+                    </div>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label for="notes" class="form-label">ملاحظات</label>
+                <textarea class="form-control" id="notes" name="notes" rows="4"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save me-1"></i> إضافة المشروع
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+>>>>>>> 7a3713e (Initial commit with updated files)

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /* Main Styles for Project Cost Management System */
 
 /* RTL Support */
@@ -20,11 +21,28 @@ body {
 }
 
 /* Header & Navigation */
+=======
+/* General Body Styles */
+body {
+    font-family: 'Arial', sans-serif; /* Or any preferred Arabic-friendly font */
+    background-color: #f8f9fa;
+    color: #333;
+    direction: rtl; /* Right-to-left for Arabic */
+    text-align: right;
+}
+
+/* Navbar Styles */
+.navbar {
+    margin-bottom: 20px;
+}
+
+>>>>>>> 7a3713e (Initial commit with updated files)
 .navbar-brand {
     font-weight: bold;
     font-size: 1.5rem;
 }
 
+<<<<<<< HEAD
 .navbar {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
@@ -63,6 +81,36 @@ body {
     box-shadow: 0 0 0 0.2rem rgba(25, 118, 210, 0.25);
 }
 
+=======
+.navbar-nav .nav-link {
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.navbar-nav .nav-link:hover {
+    color: rgba(255, 255, 255, 1);
+}
+
+/* Container and Card Styles */
+.container {
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
+.card {
+    border-radius: 0.5rem;
+    border: none;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.05);
+}
+
+.card-header {
+    border-top-left-radius: 0.5rem;
+    border-top-right-radius: 0.5rem;
+    padding: 1rem 1.5rem;
+    font-size: 1.25rem;
+    font-weight: bold;
+}
+
+>>>>>>> 7a3713e (Initial commit with updated files)
 /* Buttons */
 .btn {
     border-radius: 0.3rem;
@@ -70,6 +118,7 @@ body {
 }
 
 .btn-primary {
+<<<<<<< HEAD
     background-color: var(--primary-color);
     border-color: var(--primary-color);
 }
@@ -200,10 +249,90 @@ footer {
 /* Tooltips */
 .tooltip {
     font-size: 0.8rem;
+=======
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+    border-color: #0056b3;
+}
+
+.btn-success {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+.btn-success:hover {
+    background-color: #218838;
+    border-color: #218838;
+}
+
+.btn-warning {
+    background-color: #ffc107;
+    border-color: #ffc107;
+    color: #212529; /* Dark text for warning */
+}
+
+.btn-warning:hover {
+    background-color: #e0a800;
+    border-color: #e0a800;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+.btn-danger:hover {
+    background-color: #c82333;
+    border-color: #c82333;
+}
+
+.btn-info {
+    background-color: #17a2b8;
+    border-color: #17a2b8;
+}
+
+.btn-info:hover {
+    background-color: #138496;
+    border-color: #138496;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    border-color: #6c757d;
+}
+
+.btn-secondary:hover {
+    background-color: #545b62;
+    border-color: #545b62;
+}
+
+/* Table Styles */
+.table {
+    margin-bottom: 0;
+}
+
+.table thead th {
+    border-bottom: 2px solid #dee2e6;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* Forms */
+.form-control,
+.form-select {
+    border-radius: 0.3rem;
+>>>>>>> 7a3713e (Initial commit with updated files)
 }
 
 /* Alerts */
 .alert {
+<<<<<<< HEAD
     border-radius: 0.5rem;
     border: none;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
@@ -226,3 +355,48 @@ footer {
 ::-webkit-scrollbar-thumb:hover {
     background: #555;
 }
+=======
+    border-radius: 0.3rem;
+}
+
+/* Badges */
+.badge {
+    padding: 0.5em 0.7em;
+    font-size: 0.85em;
+    font-weight: bold;
+    border-radius: 0.25rem;
+}
+
+/* Auth Pages Specific Styles */
+.auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 100px); /* Adjust based on navbar/footer height */
+}
+
+.auth-card {
+    max-width: 450px;
+    width: 100%;
+    padding: 2rem;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .card-header {
+        font-size: 1rem;
+    }
+
+    .btn {
+        font-size: 0.9rem;
+        padding: 0.4rem 0.8rem;
+    }
+
+    .table th,
+    .table td {
+        font-size: 0.9rem;
+    }
+}
+
+
+>>>>>>> 7a3713e (Initial commit with updated files)

@@ -1,4 +1,5 @@
 from app.extensions import db
+<<<<<<< HEAD
 from datetime import datetime
 
 class CostDetail(db.Model):
@@ -29,3 +30,19 @@ class CostDetail(db.Model):
             'total_cost': self.total_cost,
             'created_at': self.created_at.isoformat() if self.created_at else None
         }
+=======
+
+class CostDetail(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    item_id = db.Column(db.Integer, db.ForeignKey(\'item.id\'), nullable=False)
+    date = db.Column(db.String(10)) # YYYY-MM-DD
+    description = db.Column(db.Text)
+    amount = db.Column(db.Float)
+
+    item = db.relationship(\'Item\', backref=db.backref(\'cost_details\', lazy=True))
+
+    def __repr__(self):
+        return f\' <CostDetail {self.description} - {self.amount}>\'
+
+
+>>>>>>> 7a3713e (Initial commit with updated files)
