@@ -10,9 +10,9 @@ class Project(db.Model):
     notes = db.Column(db.Text)
     spreadsheet_id = db.Column(db.String(255)) # Google Sheets ID
 
-    # Relationships
-    items = db.relationship(\'Item\', backref=\'project\', lazy=True, cascade=\'all, delete-orphan\')
-    payments = db.relationship(\'Payment\', backref=\'project\', lazy=True, cascade=\'all, delete-orphan\')
+    # Relationships <<< تم التعديل هنا
+    items = db.relationship('Item', lazy=True, cascade='all, delete-orphan')
+    payments = db.relationship('Payment', lazy=True, cascade='all, delete-orphan')
 
     @property
     def total_contract_cost(self):
@@ -31,7 +31,7 @@ class Project(db.Model):
         total_items = len(self.items)
         if total_items == 0:
             return 0
-        completed_items = sum(1 for item in self.items if item.status == \'مكتمل\')
+        completed_items = sum(1 for item in self.items if item.status == 'مكتمل')
         return (completed_items / total_items) * 100
 
     @property
@@ -42,13 +42,12 @@ class Project(db.Model):
 
     @property
     def total_paid_amount(self):
-        return sum(payment.amount for payment in self.payments)
+        # This relationship is defined in the Payment model now, accessed via backref
+        return sum(payment.amount for payment in self.payments_project)
 
     @property
     def total_remaining_amount(self):
         return self.total_actual_cost - self.total_paid_amount
 
     def __repr__(self):
-        return f\' <Project {self.name}>\'
-
-
+        return f'<Project {self.name}>'
