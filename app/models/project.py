@@ -10,9 +10,8 @@ class Project(db.Model):
     notes = db.Column(db.Text)
     spreadsheet_id = db.Column(db.String(255)) # Google Sheets ID
 
-    # Relationships <<< تم التعديل هنا
-    items = db.relationship('Item', lazy=True, cascade='all, delete-orphan')
-    payments = db.relationship('Payment', lazy=True, cascade='all, delete-orphan')
+    # <<< تم التعديل هنا: تم حذف تعريف علاقات items و payments المكررة
+    # سيتم إنشاؤها تلقائياً من خلال الـ backref في ملفات item.py و payment.py
 
     @property
     def total_contract_cost(self):
@@ -42,8 +41,7 @@ class Project(db.Model):
 
     @property
     def total_paid_amount(self):
-        # This relationship is defined in the Payment model now, accessed via backref
-        return sum(payment.amount for payment in self.payments_project)
+        return sum(payment.amount for payment in self.payments)
 
     @property
     def total_remaining_amount(self):
