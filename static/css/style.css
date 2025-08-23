@@ -1,26 +1,3 @@
-/* Main Styles for Project Cost Management System */
-
-/* RTL Support */
-body {
-    direction: rtl;
-    text-align: right;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-/* Custom Colors */
-:root {
-    --primary-color: #1976d2;
-    --secondary-color: #6c757d;
-    --success-color: #28a745;
-    --danger-color: #dc3545;
-    --warning-color: #ffc107;
-    --info-color: #17a2b8;
-    --light-color: #f8f9fa;
-    --dark-color: #343a40;
-}
-
-/* Header & Navigation */
-
 /* General Body Styles */
 body {
     font-family: 'Arial', sans-serif; /* Or any preferred Arabic-friendly font */
@@ -35,51 +12,10 @@ body {
     margin-bottom: 20px;
 }
 
->>>>>>> 7a3713e (Initial commit with updated files)
 .navbar-brand {
     font-weight: bold;
     font-size: 1.5rem;
 }
-
-<<<<<<< HEAD
-.navbar {
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-/* Cards */
-.card {
-    border-radius: 0.5rem;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    margin-bottom: 1.5rem;
-    border: none;
-}
-
-.card-header {
-    border-radius: 0.5rem 0.5rem 0 0 !important;
-    font-weight: bold;
-}
-
-/* Tables */
-.table th {
-    font-weight: bold;
-    background-color: #f8f9fa;
-	color: #343a40; /* أضف هذا السطر لجعل لون الخط رمادي داكن */
-}
-
-.table-hover tbody tr:hover {
-    background-color: rgba(0, 123, 255, 0.05);
-}
-
-/* Forms */
-.form-label {
-    font-weight: 600;
-}
-
-.form-control:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 0.2rem rgba(25, 118, 210, 0.25);
-}
-
 
 .navbar-nav .nav-link {
     color: rgba(255, 255, 255, 0.75);
@@ -116,137 +52,6 @@ body {
 }
 
 .btn-primary {
-    background-color: var(--primary-color);
-    border-color: var(--primary-color);
-}
-
-.btn-primary:hover {
-    background-color: #1565c0;
-    border-color: #1565c0;
-}
-
-/* Dashboard Cards */
-.dashboard-card {
-    transition: transform 0.3s;
-}
-
-.dashboard-card:hover {
-    transform: translateY(-5px);
-}
-
-/* Progress Bars */
-.progress {
-    height: 1.5rem;
-    border-radius: 0.5rem;
-}
-
-.progress-bar {
-    font-weight: bold;
-}
-
-/* Stats Cards */
-.stat-card {
-    border-right: 5px solid var(--primary-color);
-    transition: all 0.3s;
-}
-
-.stat-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
-}
-
-.stat-card .stat-value {
-    font-size: 2rem;
-    font-weight: bold;
-}
-
-.stat-card .stat-title {
-    color: #6c757d;
-    font-size: 0.9rem;
-}
-
-/* Status Badges */
-.status-badge {
-    padding: 0.5rem 1rem;
-    border-radius: 2rem;
-    font-weight: bold;
-}
-
-/* Footer */
-footer {
-    border-top: 1px solid #e9ecef;
-}
-
-/* Responsive Adjustments */
-@media (max-width: 768px) {
-    .card-title {
-        font-size: 1.2rem;
-    }
-    
-    .table-responsive {
-        font-size: 0.9rem;
-    }
-    
-    .btn-group-sm > .btn {
-        padding: 0.25rem 0.4rem;
-        font-size: 0.75rem;
-    }
-}
-
-/* Print Styles */
-@media print {
-    .no-print {
-        display: none !important;
-    }
-    
-    .card {
-        box-shadow: none;
-        border: 1px solid #ddd;
-    }
-    
-    .table td, .table th {
-        background-color: #fff !important;
-    }
-}
-
-/* Custom Animations */
-.fade-in {
-    animation: fadeIn 0.5s;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-/* Custom Form Controls */
-.custom-control-input:checked ~ .custom-control-label::before {
-    background-color: var(--primary-color);
-    border-color: var(--primary-color);
-}
-
-/* Modal Customization */
-.modal-header {
-    border-radius: 0.5rem 0.5rem 0 0;
-}
-
-.modal-content {
-    border-radius: 0.5rem;
-    border: none;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-}
-
-/* Charts */
-.chart-container {
-    position: relative;
-    height: 300px;
-    width: 100%;
-}
-
-/* Tooltips */
-.tooltip {
-    font-size: 0.8rem;
-
     background-color: #007bff;
     border-color: #007bff;
 }
@@ -328,29 +133,6 @@ footer {
 
 /* Alerts */
 .alert {
-    border-radius: 0.5rem;
-    border: none;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-    width: 8px;
-}
-
-::-webkit-scrollbar-track {
-    background: #f1f1f1;
-}
-
-::-webkit-scrollbar-thumb {
-    background: #888;
-    border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: #555;
-}
-=======
     border-radius: 0.3rem;
 }
 
