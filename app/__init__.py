@@ -1,8 +1,11 @@
 from flask import Flask
-from app.extensions import db, migrate, login_manager
+from .extensions import db, migrate, login_manager
 
 def create_app():
-    app = Flask(__name__)
+    # <<< تم التعديل هنا: أضفنا مسار مجلد القوالب
+    # هذا السطر يخبر فلاسك بالخروج من مجلد "app" والبحث عن مجلد اسمه "templates"
+    app = Flask(__name__, template_folder='../templates', static_folder='../static')
+
     app.config.from_object('config.Config')
 
     db.init_app(app)
@@ -10,26 +13,28 @@ def create_app():
     login_manager.init_app(app)
     login_manager.login_view = 'auth.login'
 
-    from app.models.user import User
+    from .models.user import User
 
     @login_manager.user_loader
     def load_user(user_id):
         return User.query.get(int(user_id))
 
-    from app.routes.project_routes import project_bp
-    from app.routes.item_routes import item_bp
-    from app.routes.google_sheets_routes import sheets_bp
-    from app.routes.auth_routes import auth_bp
-    from app.routes.payment_routes import payment_bp
+    from .routes.project_routes import project_bp
+    from .routes.item_routes import item_bp
+    from .routes.google_sheets_routes import sheets_bp
+    from .routes.auth_routes import auth_bp
+    from .routes.payment_routes import payment_bp
+    from .routes.cost_detail_routes import cost_detail_bp
 
     app.register_blueprint(project_bp)
     app.register_blueprint(item_bp)
     app.register_blueprint(sheets_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(payment_bp)
+    app.register_blueprint(cost_detail_bp)
+
 
     with app.app_context():
         db.create_all()
 
     return app
-
