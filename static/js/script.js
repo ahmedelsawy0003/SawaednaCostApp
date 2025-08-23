@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 /**
  * Main JavaScript file for Project Cost Management System
  */
@@ -98,7 +97,7 @@ function setupSearch() {
                         row.style.display = '';
                     } else {
                         row.style.display = 'none';
-=======
+
 document.addEventListener("DOMContentLoaded", function() {
     // Auto-dismiss flash messages after 5 seconds
     const alerts = document.querySelectorAll(".alert");
@@ -122,13 +121,11 @@ document.addEventListener("DOMContentLoaded", function() {
                         row.style.display = "";
                     } else {
                         row.style.display = "none";
->>>>>>> 7a3713e (Initial commit with updated files)
                     }
                 });
             }
         });
     });
-<<<<<<< HEAD
 }
 
 /**
@@ -624,7 +621,7 @@ function formatPercentage(value) {
         maximumFractionDigits: 1
     }) + '%';
 }
-=======
+
 
     // Auto-save functionality for forms with data-auto-save attribute
     const autoSaveForms = document.querySelectorAll("form[data-auto-save]");
@@ -636,4 +633,3 @@ function formatPercentage(value) {
                 // In a real application, you'd send an AJAX request here
                 // For now, we'll just log that it's 
 
->>>>>>> 7a3713e (Initial commit with updated files)

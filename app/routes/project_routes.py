@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 from flask import Blueprint, request, jsonify, render_template, redirect, url_for
 from app.models.project import Project
 from app.extensions import db
@@ -103,7 +102,7 @@ def project_dashboard(project_id):
     project = Project.query.get_or_404(project_id)
     # تم التعديل هنا: نمرر كائن المشروع الأصلي مباشرة
     return render_template('projects/dashboard.html', project=project)
-=======
+
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from app.models.project import Project
 from app.models.item import Item
@@ -245,4 +244,3 @@ def all_projects_dashboard():
     )
 
 
->>>>>>> 7a3713e (Initial commit with updated files)

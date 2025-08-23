@@ -1,5 +1,4 @@
 from app.extensions import db
-<<<<<<< HEAD
 from datetime import datetime
 
 class Item(db.Model):
@@ -87,7 +86,7 @@ class Item(db.Model):
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }
-=======
+
 
 class Item(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -135,4 +134,3 @@ class Item(db.Model):
         return f\'<Item {self.item_number} - {self.description}>\'
 
 
->>>>>>> 7a3713e (Initial commit with updated files)

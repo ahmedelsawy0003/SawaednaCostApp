@@ -1,6 +1,5 @@
 {% extends "layouts/base.html" %}
 
-<<<<<<< HEAD
 {% block title %}{{ project.name }} - نظام حساب تكاليف المشاريع{% endblock %}
 
 {% block content %}
@@ -16,7 +15,7 @@
         <a href="{{ url_for('project.project_dashboard', project_id=project.id) }}" class="btn btn-info">
             <i class="fas fa-chart-bar me-1"></i> لوحة التحكم
         </a>
-=======
+
 {% block title %}تفاصيل المشروع - {{ project.name }}{% endblock %}
 
 {% block content %}
@@ -35,22 +34,18 @@
         <a href="{{ url_for("project.edit_project", project_id=project.id) }}" class="btn btn-warning">
             <i class="fas fa-edit me-1"></i> تعديل
         </a>
->>>>>>> 7a3713e (Initial commit with updated files)
     </div>
 </div>
 
 <div class="row">
-<<<<<<< HEAD
     <div class="col-md-6">
-=======
+
     <div class="col-md-8">
->>>>>>> 7a3713e (Initial commit with updated files)
         <div class="card mb-4">
             <div class="card-header bg-primary text-white">
                 <h3 class="mb-0">معلومات المشروع</h3>
             </div>
             <div class="card-body">
-<<<<<<< HEAD
                 <table class="table table-striped">
                     <tbody>
                         <tr>
@@ -238,7 +233,7 @@
     </div>
 </div>
 {% endblock %}
-=======
+
                 <div class="row">
                     <div class="col-md-6">
                         <p><strong>اسم المشروع:</strong> {{ project.name }}</p>
@@ -379,4 +374,3 @@
 
 {% endblock %}
 
->>>>>>> 7a3713e (Initial commit with updated files)

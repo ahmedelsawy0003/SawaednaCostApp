@@ -1,5 +1,4 @@
 from app.extensions import db
-<<<<<<< HEAD
 from datetime import datetime
 
 class CostDetail(db.Model):
@@ -30,7 +29,7 @@ class CostDetail(db.Model):
             'total_cost': self.total_cost,
             'created_at': self.created_at.isoformat() if self.created_at else None
         }
-=======
+
 
 class CostDetail(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -45,4 +44,3 @@ class CostDetail(db.Model):
         return f\' <CostDetail {self.description} - {self.amount}>\'
 
 
->>>>>>> 7a3713e (Initial commit with updated files)

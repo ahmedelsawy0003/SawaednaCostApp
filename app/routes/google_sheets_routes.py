@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 from flask import Blueprint, request, jsonify, redirect, url_for, flash
 from app.models.project import Project
 from app.models.item import Item
@@ -165,7 +164,7 @@ def get_sheet_url(project_id):
         'spreadsheet_id': project.spreadsheet_id,
         'url': f"https://docs.google.com/spreadsheets/d/{project.spreadsheet_id}"
     })
-=======
+
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from app.services.google_sheets_service import GoogleSheetsService
 from app.models.project import Project
@@ -352,4 +351,3 @@ def export_summary(project_id):
     return redirect(url_for("project.get_project", project_id=project_id))
 
 
->>>>>>> 7a3713e (Initial commit with updated files)

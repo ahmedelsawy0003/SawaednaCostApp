@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 /* Main Styles for Project Cost Management System */
 
 /* RTL Support */
@@ -21,7 +20,7 @@ body {
 }
 
 /* Header & Navigation */
-=======
+
 /* General Body Styles */
 body {
     font-family: 'Arial', sans-serif; /* Or any preferred Arabic-friendly font */
@@ -81,7 +80,7 @@ body {
     box-shadow: 0 0 0 0.2rem rgba(25, 118, 210, 0.25);
 }
 
-=======
+
 .navbar-nav .nav-link {
     color: rgba(255, 255, 255, 0.75);
 }
@@ -110,7 +109,6 @@ body {
     font-weight: bold;
 }
 
->>>>>>> 7a3713e (Initial commit with updated files)
 /* Buttons */
 .btn {
     border-radius: 0.3rem;
@@ -118,7 +116,6 @@ body {
 }
 
 .btn-primary {
-<<<<<<< HEAD
     background-color: var(--primary-color);
     border-color: var(--primary-color);
 }
@@ -249,7 +246,7 @@ footer {
 /* Tooltips */
 .tooltip {
     font-size: 0.8rem;
-=======
+
     background-color: #007bff;
     border-color: #007bff;
 }
@@ -327,12 +324,10 @@ footer {
 .form-control,
 .form-select {
     border-radius: 0.3rem;
->>>>>>> 7a3713e (Initial commit with updated files)
 }
 
 /* Alerts */
 .alert {
-<<<<<<< HEAD
     border-radius: 0.5rem;
     border: none;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
@@ -399,4 +394,3 @@ footer {
 }
 
 
->>>>>>> 7a3713e (Initial commit with updated files)

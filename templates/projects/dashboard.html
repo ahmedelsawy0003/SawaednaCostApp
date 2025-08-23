@@ -1,6 +1,5 @@
 {% extends "layouts/base.html" %}
 
-<<<<<<< HEAD
 {% block title %}لوحة تحكم {{ project.name }} - نظام حساب تكاليف المشاريع{% endblock %}
 
 {% block content %}
@@ -56,7 +55,7 @@
                             <div class="progress-bar bg-success" role="progressbar" style="width: {{ project.completion_percentage }}%">
                                 {{ "{:.1f}%".format(project.completion_percentage) }}
                             </div>
-=======
+
 {% block title %}لوحة تحكم المشروع - {{ project.name }}{% endblock %}
 
 {% block content %}
@@ -105,7 +104,6 @@
                     <div class="progress" style="height: 25px;">
                         <div class="progress-bar bg-success" role="progressbar" style="width: {{ project.financial_completion_percentage }}%">
                             {{ "{:.1f}%".format(project.financial_completion_percentage) }}
->>>>>>> 7a3713e (Initial commit with updated files)
                         </div>
                     </div>
                 </div>
@@ -114,7 +112,6 @@
     </div>
 </div>
 
-<<<<<<< HEAD
 <div class="row">
     <div class="col-md-6 mb-4">
         <div class="card h-100">
@@ -422,7 +419,7 @@
         })
         .catch(error => {
             console.error('Error fetching project items:', error);
-=======
+
 <div class="card mb-4">
     <div class="card-header bg-dark text-white">
         <h3 class="mb-0">مقارنة التكاليف (تعاقدية وفعلية)</h3>
@@ -469,13 +466,10 @@
                     }
                 }
             }
->>>>>>> 7a3713e (Initial commit with updated files)
         });
     });
 </script>
 {% endblock %}
-<<<<<<< HEAD
 <script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
 =======
 
->>>>>>> 7a3713e (Initial commit with updated files)

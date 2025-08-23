@@ -1,5 +1,4 @@
 from app.extensions import db
-<<<<<<< HEAD
 from datetime import datetime
 
 class Project(db.Model):
@@ -46,7 +45,7 @@ class Project(db.Model):
     @property
     def total_savings(self):
         """حساب إجمالي الوفر/الزيادة (الربح) كخاصية"""
-=======
+
 
 class Project(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -72,12 +71,10 @@ class Project(db.Model):
 
     @property
     def total_savings(self):
->>>>>>> 7a3713e (Initial commit with updated files)
         return self.total_contract_cost - self.total_actual_cost
 
     @property
     def completion_percentage(self):
-<<<<<<< HEAD
         """حساب نسبة الإنجاز بناءً على عدد البنود"""
         if not self.items:
             return 0
@@ -115,7 +112,7 @@ class Project(db.Model):
             'completion_percentage': self.completion_percentage,
             'financial_completion_percentage': self.financial_completion_percentage
         }
-=======
+
         total_items = len(self.items)
         if total_items == 0:
             return 0
@@ -140,4 +137,3 @@ class Project(db.Model):
         return f\' <Project {self.name}>\'
 
 
->>>>>>> 7a3713e (Initial commit with updated files)

@@ -1,24 +1,19 @@
 {% extends "layouts/base.html" %}
 
-<<<<<<< HEAD
 {% block title %}المشاريع - نظام حساب تكاليف المشاريع{% endblock %}
 =======
 {% block title %}المشاريع{% endblock %}
->>>>>>> 7a3713e (Initial commit with updated files)
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1>المشاريع</h1>
-<<<<<<< HEAD
     <a href="{{ url_for('project.new_project') }}" class="btn btn-success">
 =======
     <a href="{{ url_for("project.new_project") }}" class="btn btn-success">
->>>>>>> 7a3713e (Initial commit with updated files)
         <i class="fas fa-plus me-1"></i> إضافة مشروع جديد
     </a>
 </div>
 
-<<<<<<< HEAD
 {% if projects %}
     <div class="table-responsive">
         <table class="table table-striped table-hover">
@@ -95,7 +90,7 @@
 
 <div class="modal fade" id="deleteProjectModal" tabindex="-1">
     <div class="modal-dialog">
-=======
+
 <div class="card mb-4">
     <div class="card-header bg-primary text-white">
         <h3 class="mb-0">قائمة المشاريع</h3>
@@ -169,44 +164,38 @@
 {% for project in projects %}
 <div class="modal fade" id="deleteProjectModal-{{ project.id }}" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
->>>>>>> 7a3713e (Initial commit with updated files)
         <div class="modal-content">
             <div class="modal-header bg-danger text-white">
                 <h5 class="modal-title">تأكيد الحذف</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-<<<<<<< HEAD
                 <p>هل أنت متأكد من حذف هذا المشروع؟ هذا الإجراء لا يمكن التراجع عنه.</p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
                 <form id="deleteProjectForm" method="POST">
                     <input type="hidden" name="_method" value="DELETE">
-=======
+
                 <p>هل أنت متأكد أنك تريد حذف المشروع <strong>{{ project.name }}</strong>؟</p>
                 <p class="text-danger"><i class="fas fa-exclamation-triangle me-2"></i>سيتم حذف جميع البنود والدفعات المرتبطة بهذا المشروع.</p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
                 <form action="{{ url_for("project.delete_project", project_id=project.id) }}" method="POST" class="d-inline">
->>>>>>> 7a3713e (Initial commit with updated files)
                     <button type="submit" class="btn btn-danger">حذف</button>
                 </form>
             </div>
         </div>
     </div>
 </div>
-<<<<<<< HEAD
-=======
+
 {% endfor %}
 
->>>>>>> 7a3713e (Initial commit with updated files)
 {% endblock %}
 
 {% block scripts %}
 <script>
-<<<<<<< HEAD
     document.addEventListener('DOMContentLoaded', function() {
         // Delete project confirmation
         const deleteButtons = document.querySelectorAll('.delete-project');
@@ -229,4 +218,3 @@
 </script>
 {% endblock %}
 
->>>>>>> 7a3713e (Initial commit with updated files)

@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<<<<<<< HEAD
     <title>{% block title %}نظام حساب تكاليف المشاريع{% endblock %}</title>
     
     <!-- Bootstrap RTL CSS -->
@@ -41,7 +40,7 @@
                             <i class="fas fa-project-diagram"></i> المشاريع
                         </a>
                     </li>
-=======
+
     <title>SawaednaCostApp - {% block title %}{% endblock %}</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -77,12 +76,10 @@
                         <a class="nav-link" href="{{ url_for("auth.register") }}">تسجيل جديد</a>
                     </li>
                     {% endif %}
->>>>>>> 7a3713e (Initial commit with updated files)
                 </ul>
             </div>
         </div>
     </nav>
-<<<<<<< HEAD
     
     <!-- Flash Messages -->
     <div class="container mt-3">
@@ -92,7 +89,7 @@
                     <div class="alert alert-{{ category if category != 'message' else 'info' }} alert-dismissible fade show">
                         {{ message }}
                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-=======
+
 
     <div class="container mt-4">
         {% with messages = get_flashed_messages(with_categories=true) %}
@@ -101,12 +98,10 @@
                     <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
                         {{ message }}
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
->>>>>>> 7a3713e (Initial commit with updated files)
                     </div>
                 {% endfor %}
             {% endif %}
         {% endwith %}
-<<<<<<< HEAD
     </div>
     
     <!-- Main Content -->
@@ -138,7 +133,7 @@
     {% block scripts %}{% endblock %}
 </body>
 </html>
-=======
+
         {% block content %}{% endblock %}
     </div>
 
@@ -151,4 +146,3 @@
 </html>
 
 
->>>>>>> 7a3713e (Initial commit with updated files)

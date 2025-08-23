@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 from flask import Blueprint, request, jsonify, render_template, redirect, url_for
 from app.models.project import Project
 from app.models.item import Item
@@ -90,7 +89,7 @@ def update_item(item_id):
         return redirect(url_for('item.edit_item', item_id=item_id))
 
 @item_bp.route('/<int:item_id>/delete', methods=['POST'])
-=======
+
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from app.models.item import Item
 from app.models.project import Project
@@ -177,7 +176,7 @@ def update_item_status(item_id):
     item.status = status
     db.session.commit()
     return jsonify(item.to_dict())
-=======
+
     flash("تم حذف البند بنجاح!", "success")
     return redirect(url_for("item.get_items_by_project", project_id=project_id))
 
@@ -205,4 +204,3 @@ def get_item_details(item_id):
         "notes": item.notes
     }))
 
->>>>>>> 7a3713e (Initial commit with updated files)

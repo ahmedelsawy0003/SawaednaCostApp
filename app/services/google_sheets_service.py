@@ -1,5 +1,4 @@
 import os
-<<<<<<< HEAD
 import json
 from googleapiclient.discovery import build
 from google.oauth2 import service_account
@@ -246,7 +245,7 @@ class GoogleSheetsService:
             items.append(item)
         
         return items
-=======
+
 import pickle
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
@@ -294,4 +293,3 @@ class GoogleSheetsService:
         return result
 
 
->>>>>>> 7a3713e (Initial commit with updated files)

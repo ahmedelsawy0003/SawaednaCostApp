@@ -5,7 +5,6 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1>بنود المشروع: {{ project.name }}</h1>
-<<<<<<< HEAD
     <div class="btn-group">
         <a href="{{ url_for('item.new_item', project_id=project.id) }}" class="btn btn-success">
             <i class="fas fa-plus me-1"></i> إضافة بند جديد
@@ -17,16 +16,14 @@
             <i class="fas fa-chart-bar me-1"></i> لوحة التحكم
         </a>
     </div>
-=======
+
     <a href="{{ url_for("item.new_item", project_id=project.id) }}" class="btn btn-success">
         <i class="fas fa-plus me-1"></i> إضافة بند جديد
     </a>
->>>>>>> 7a3713e (Initial commit with updated files)
 </div>
 
 <div class="card mb-4">
     <div class="card-header bg-primary text-white">
-<<<<<<< HEAD
         <div class="d-flex justify-content-between align-items-center">
             <h3 class="mb-0">قائمة البنود</h3>
             <div class="input-group" style="max-width: 300px;">
@@ -54,7 +51,7 @@
                             <th class="text-end">التكلفة الفعلية الإجمالية</th>
                             <th class="text-end">الوفر/الزيادة</th>
                             <th class="text-center">الحالة</th>
-=======
+
         <h3 class="mb-0">قائمة البنود</h3>
     </div>
     <div class="card-body">
@@ -76,7 +73,6 @@
                             <th>التكلفة الإفرادية الفعلية</th>
                             <th>التكلفة الإجمالية الفعلية</th>
                             <th>الحالة</th>
->>>>>>> 7a3713e (Initial commit with updated files)
                             <th class="text-center">الإجراءات</th>
                         </tr>
                     </thead>
@@ -86,7 +82,6 @@
                             <td>{{ item.item_number }}</td>
                             <td>{{ item.description }}</td>
                             <td>{{ item.unit }}</td>
-<<<<<<< HEAD
                             <td class="text-end">{{ "{:,.2f}".format(item.contract_quantity) }}</td>
                             <td class="text-end">{{ "{:,.2f}".format(item.contract_unit_cost) }}</td>
                             <td class="text-end">{{ "{:,.2f}".format(item.contract_total_cost) }}</td>
@@ -99,7 +94,7 @@
                             </td>
                             <td class="text-center">
                                 <span class="badge {{ 'bg-warning' if item.status == 'نشط' else 'bg-success' if item.status == 'مكتمل' else 'bg-danger' }}">
-=======
+
                             <td>{{ "{:,.2f}".format(item.contract_quantity) }}</td>
                             <td>{{ "{:,.2f}".format(item.contract_unit_cost) }}</td>
                             <td>{{ "{:,.2f}".format(item.contract_total_cost) }}</td>
@@ -108,13 +103,11 @@
                             <td>{{ "{:,.2f}".format(item.actual_total_cost) if item.actual_total_cost is not none else "-" }}</td>
                             <td>
                                 <span class="badge {{ "bg-warning" if item.status == "نشط" else "bg-success" if item.status == "مكتمل" else "bg-info" }}">
->>>>>>> 7a3713e (Initial commit with updated files)
                                     {{ item.status }}
                                 </span>
                             </td>
                             <td class="text-center">
                                 <div class="btn-group btn-group-sm">
-<<<<<<< HEAD
                                     <a href="{{ url_for('item.edit_item', item_id=item.id) }}" class="btn btn-warning" title="تعديل">
                                         <i class="fas fa-edit"></i>
                                     </a>
@@ -133,12 +126,10 @@
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </div>
->>>>>>> 7a3713e (Initial commit with updated files)
                             </td>
                         </tr>
                         {% endfor %}
                     </tbody>
-<<<<<<< HEAD
                     <tfoot>
                         <tr class="table-primary">
                             <th colspan="5">الإجمالي</th>
@@ -151,24 +142,20 @@
                             <th colspan="2"></th>
                         </tr>
                     </tfoot>
-=======
->>>>>>> 7a3713e (Initial commit with updated files)
+
                 </table>
             </div>
         {% else %}
             <div class="alert alert-info">
                 <i class="fas fa-info-circle me-2"></i>
-<<<<<<< HEAD
                 لا توجد بنود في هذا المشروع حالياً. يمكنك إضافة بند جديد من خلال الزر أعلاه.
-=======
+
                 لا توجد بنود مسجلة لهذا المشروع حالياً. ابدأ بإضافة بند جديد!
->>>>>>> 7a3713e (Initial commit with updated files)
             </div>
         {% endif %}
     </div>
 </div>
 
-<<<<<<< HEAD
 <div class="card mb-4">
     <div class="card-header bg-success text-white">
         <h3 class="mb-0">ملخص البنود</h3>
@@ -403,25 +390,23 @@
 {% for item in items %}
 <div class="modal fade" id="deleteItemModal-{{ item.id }}" tabindex="-1">
     <div class="modal-dialog">
-=======
+
 {% for item in items %}
 <div class="modal fade" id="deleteItemModal-{{ item.id }}" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
->>>>>>> 7a3713e (Initial commit with updated files)
         <div class="modal-content">
             <div class="modal-header bg-danger text-white">
                 <h5 class="modal-title">تأكيد الحذف</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-<<<<<<< HEAD
                 <p>هل أنت متأكد من حذف البند "{{ item.description }}"؟ هذا الإجراء لا يمكن التراجع عنه.</p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
                 <form action="{{ url_for('item.delete_item', item_id=item.id) }}" method="POST">
                     <button type="submit" class="btn btn-danger">نعم, قم بالحذف</button>
-=======
+
                 <p>هل أنت متأكد أنك تريد حذف البند <strong>{{ item.item_number }} - {{ item.description }}</strong>؟</p>
                 <p class="text-danger"><i class="fas fa-exclamation-triangle me-2"></i>لا يمكن التراجع عن هذا الإجراء.</p>
             </div>
@@ -429,22 +414,18 @@
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
                 <form action="{{ url_for("item.delete_item", item_id=item.id) }}" method="POST" class="d-inline">
                     <button type="submit" class="btn btn-danger">حذف</button>
->>>>>>> 7a3713e (Initial commit with updated files)
                 </form>
             </div>
         </div>
     </div>
 </div>
 {% endfor %}
-<<<<<<< HEAD
-=======
 
->>>>>>> 7a3713e (Initial commit with updated files)
+
 {% endblock %}
 
 {% block scripts %}
 <script>
-<<<<<<< HEAD
     document.addEventListener('DOMContentLoaded', function() {
         // Search functionality
         const searchInput = document.getElementById('itemSearch');
@@ -536,11 +517,10 @@
     });
 </script>
 {% endblock %}
-=======
+
     document.addEventListener("DOMContentLoaded", function() {
         // Any specific JavaScript for items index page can go here
     });
 </script>
 {% endblock %}
 
->>>>>>> 7a3713e (Initial commit with updated files)
