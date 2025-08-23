@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import os
 from flask import Flask, render_template, request, jsonify, redirect, url_for
 from dotenv import load_dotenv
@@ -75,4 +74,3 @@ def index():
 if __name__ == '__main__':
     app.run(debug=True)
 
->>>>>>> 7a3713e (Initial commit with updated files)
