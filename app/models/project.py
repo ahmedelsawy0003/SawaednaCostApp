@@ -43,12 +43,14 @@ class Project(db.Model):
         completed_items = sum(1 for item in self.items if item.status == 'مكتمل')
         return (completed_items / len(self.items)) * 100
 
+    # START: Corrected Financial Completion Percentage
     @property
     def financial_completion_percentage(self):
         # Correct calculation should be based on actual cost vs contract cost
         if self.total_contract_cost == 0:
             return 0.0
         return (self.total_actual_cost / self.total_contract_cost) * 100
+    # END: Corrected Formula
 
     @property
     def total_paid_amount(self):
