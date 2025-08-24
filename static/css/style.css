@@ -175,4 +175,17 @@ body {
     }
 }
 
+/* Password toggle icon styles */
+.password-container {
+    position: relative;
+}
 
+.password-toggle-icon {
+    position: absolute;
+    top: 50%;
+    /* For RTL layout, position on the left */
+    left: 15px; 
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #6c757d; /* Bootstrap secondary color */
+}

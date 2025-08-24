@@ -37,3 +37,17 @@ document.addEventListener("DOMContentLoaded", function() {
                 // In a real application, you'd send an AJAX request here
                 // For now, we'll just log that it's 
 
+// Password toggle visibility
+    const togglePassword = document.querySelector("#togglePassword");
+    if (togglePassword) {
+        togglePassword.addEventListener("click", function () {
+            const password = document.querySelector("#password");
+            // Toggle the type
+            const type = password.getAttribute("type") === "password" ? "text" : "password";
+            password.setAttribute("type", type);
+            // Toggle the icon
+            this.classList.toggle("fa-eye");
+            this.classList.toggle("fa-eye-slash");
+        });
+    }
+	
