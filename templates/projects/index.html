@@ -5,10 +5,12 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1>المشاريع</h1>
+    {% if current_user.role == 'admin' %}
     <a href="{{ url_for("project.new_project") }}" class="btn btn-success">
         <i class="fas fa-plus me-1"></i> إضافة مشروع جديد
     </a>
-</div>
+    {% endif %}
+    </div>
 
 <div class="card mb-4">
     <div class="card-header bg-primary text-white">
@@ -28,10 +30,14 @@
                             <th>تاريخ البداية</th>
                             <th>تاريخ النهاية</th>
                             <th>الحالة</th>
+                            {% if current_user.role == 'admin' %}
                             <th>التكلفة التعاقدية</th>
+                            {% endif %}
                             <th>التكلفة الفعلية</th>
-                            <th>الوفر/الزيادة</th>
-                            <th class="text-center">الإجراءات</th>
+                             {% if current_user.role == 'admin' %}
+                             <th>الوفر/الزيادة</th>
+                             {% endif %}
+                             <th class="text-center">الإجراءات</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -46,13 +52,17 @@
                                     {{ project.status }}
                                 </span>
                             </td>
+                            {% if current_user.role == 'admin' %}
                             <td>{{ "{:,.2f}".format(project.total_contract_cost) }}</td>
+                            {% endif %}
                             <td>{{ "{:,.2f}".format(project.total_actual_cost) }}</td>
+                            {% if current_user.role == 'admin' %}
                             <td>
                                 <span class="{{ "text-success" if project.total_savings >= 0 else "text-danger" }}">
                                     {{ "{:,.2f}".format(project.total_savings) }}
                                 </span>
                             </td>
+                            {% endif %}
                             <td class="text-center">
                                 <div class="btn-group btn-group-sm">
                                     <a href="{{ url_for("project.get_project", project_id=project.id) }}" class="btn btn-info" title="عرض التفاصيل">
@@ -61,9 +71,11 @@
                                     <a href="{{ url_for("project.edit_project", project_id=project.id) }}" class="btn btn-warning" title="تعديل">
                                         <i class="fas fa-edit"></i>
                                     </a>
+                                    {% if current_user.role == 'admin' %}
                                     <button type="button" class="btn btn-danger delete-project" data-bs-toggle="modal" data-bs-target="#deleteProjectModal-{{ project.id }}" title="حذف">
                                         <i class="fas fa-trash"></i>
                                     </button>
+                                    {% endif %}
                                 </div>
                             </td>
                         </tr>
@@ -74,7 +86,7 @@
         {% else %}
             <div class="alert alert-info">
                 <i class="fas fa-info-circle me-2"></i>
-                لا توجد مشاريع مسجلة حالياً. ابدأ بإضافة مشروع جديد!
+                لا توجد مشاريع مسجلة حالياً. {% if current_user.role == 'admin' %} ابدأ بإضافة مشروع جديد! {% endif %}
             </div>
         {% endif %}
     </div>
@@ -104,12 +116,3 @@
 {% endfor %}
 
 {% endblock %}
-
-{% block scripts %}
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        // Any specific JavaScript for projects index page can go here
-    });
-</script>
-{% endblock %}
-

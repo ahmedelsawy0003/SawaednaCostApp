@@ -1,7 +1,5 @@
 from app.extensions import db
-# START: Import the new association table
 from .user import user_project_association
-# END: Import
 
 class Project(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -13,7 +11,6 @@ class Project(db.Model):
     notes = db.Column(db.Text)
     spreadsheet_id = db.Column(db.String(255))
     
-    # This defines the relationship back to the User model
     users = db.relationship(
         'User', 
         secondary=user_project_association,
@@ -43,11 +40,14 @@ class Project(db.Model):
         completed_items = sum(1 for item in self.items if item.status == 'مكتمل')
         return (completed_items / len(self.items)) * 100
 
+    # START: Modified function
     @property
     def financial_completion_percentage(self):
         if self.total_contract_cost == 0:
             return 0.0
-        return (self.total_paid_amount / self.total_contract_cost) * 100
+        # Calculation is now based on total_actual_cost
+        return (self.total_actual_cost / self.total_contract_cost) * 100
+    # END: Modified function
 
     @property
     def total_paid_amount(self):

@@ -15,10 +15,12 @@
         <a href="{{ url_for("payment.get_payments", project_id=project.id) }}" class="btn btn-success">
             <i class="fas fa-money-bill-wave me-1"></i> الدفعات
         </a>
+        {% if current_user.role == 'admin' %}
         <a href="{{ url_for("project.edit_project", project_id=project.id) }}" class="btn btn-warning">
             <i class="fas fa-edit me-1"></i> تعديل
         </a>
-    </div>
+        {% endif %}
+        </div>
 </div>
 
 <div class="row">
@@ -97,20 +99,25 @@
                 <h3 class="mb-0">الملخص المالي</h3>
             </div>
             <div class="card-body">
+                {% if current_user.role == 'admin' %}
                 <div class="mb-3">
                     <h6>التكلفة التعاقدية</h6>
                     <h4 class="text-primary">{{ "{:,.2f}".format(project.total_contract_cost) }} ريال</h4>
                 </div>
+                {% endif %}
                 <div class="mb-3">
                     <h6>التكلفة الفعلية</h6>
                     <h4 class="text-success">{{ "{:,.2f}".format(project.total_actual_cost) }} ريال</h4>
                 </div>
+                
+                {% if current_user.role == 'admin' %}
                 <div class="mb-3">
                     <h6>الوفر / الزيادة</h6>
                     <h4 class="{{ "text-success" if project.total_savings >= 0 else "text-danger" }}">
                         {{ "{:,.2f}".format(project.total_savings) }} ريال
                     </h4>
                 </div>
+                {% endif %}
                 <div class="mb-3">
                     <h6>إجمالي المدفوع</h6>
                     <h4 class="text-info">{{ "{:,.2f}".format(project.total_paid_amount) }} ريال</h4>
@@ -165,6 +172,4 @@
         <i class="fas fa-arrow-right me-1"></i> العودة للمشاريع
     </a>
 </div>
-
 {% endblock %}
-
