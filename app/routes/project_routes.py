@@ -1,29 +1,26 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, abort
 from app.models.project import Project
 from app.models.item import Item
 from app.extensions import db
-from flask_login import login_required, current_user # <<< Make sure current_user is imported
+from flask_login import login_required, current_user
+from app.utils import check_project_permission # <<< 1. Import the new function
 
 project_bp = Blueprint("project", __name__)
 
-# START: Modified get_projects route to enforce permissions
 @project_bp.route("/projects")
 @login_required
 def get_projects():
     if current_user.role == 'admin':
-        # Admin can see all projects
         projects = Project.query.all()
     else:
-        # Regular users can only see projects assigned to them
         projects = current_user.projects
-    
     return render_template("projects/index.html", projects=projects)
-# END: Modified route
 
 @project_bp.route("/projects/new", methods=["GET", "POST"])
 @login_required
 def new_project():
     if request.method == "POST":
+        # ... (code for creating a new project remains the same)
         name = request.form["name"]
         location = request.form["location"]
         start_date = request.form["start_date"]
@@ -36,7 +33,6 @@ def new_project():
                               end_date=end_date, status=status, notes=notes,
                               spreadsheet_id=spreadsheet_id)
         
-        # If the creator is not an admin, automatically assign them to the new project
         if current_user.role != 'admin':
             new_project.users.append(current_user)
             
@@ -46,17 +42,18 @@ def new_project():
         return redirect(url_for("project.get_projects"))
     return render_template("projects/new.html")
 
-# ... (rest of the file remains the same for now) ...
 @project_bp.route("/projects/<int:project_id>")
 @login_required
 def get_project(project_id):
     project = Project.query.get_or_404(project_id)
+    check_project_permission(project) # <<< 2. Add permission check
     return render_template("projects/show.html", project=project)
 
 @project_bp.route("/projects/<int:project_id>/edit", methods=["GET", "POST"])
 @login_required
 def edit_project(project_id):
     project = Project.query.get_or_404(project_id)
+    check_project_permission(project) # <<< 3. Add permission check
     if request.method == "POST":
         project.name = request.form["name"]
         project.location = request.form["location"]
@@ -74,6 +71,10 @@ def edit_project(project_id):
 @login_required
 def delete_project(project_id):
     project = Project.query.get_or_404(project_id)
+    check_project_permission(project) # <<< 4. Add permission check
+    # Only admins should be able to delete projects
+    if current_user.role != 'admin':
+        abort(403)
     db.session.delete(project)
     db.session.commit()
     flash("تم حذف المشروع بنجاح!", "success")
@@ -83,6 +84,7 @@ def delete_project(project_id):
 @login_required
 def project_dashboard(project_id):
     project = Project.query.get_or_404(project_id)
+    check_project_permission(project) # <<< 5. Add permission check
     items = Item.query.filter_by(project_id=project.id).all()
 
     contract_costs = [item.contract_total_cost for item in items]
@@ -107,10 +109,12 @@ def project_dashboard(project_id):
 
     return render_template("projects/dashboard.html", project=project, chart_data=chart_data)
 
+# ... (rest of the file remains the same) ...
 @project_bp.route("/projects/<int:project_id>/summary")
 @login_required
 def project_summary(project_id):
     project = Project.query.get_or_404(project_id)
+    check_project_permission(project) # <<< 6. Add permission check
     return jsonify({
         "total_contract_cost": project.total_contract_cost,
         "total_actual_cost": project.total_actual_cost,
@@ -122,8 +126,12 @@ def project_summary(project_id):
 @project_bp.route("/dashboard")
 @login_required
 def all_projects_dashboard():
+    # This page is for admins only to see all projects summary
+    if current_user.role != 'admin':
+        abort(403)
+
     projects = Project.query.all()
-    
+    # ... (rest of the function is okay)
     total_contract_cost_all = sum(p.total_contract_cost for p in projects)
     total_actual_cost_all = sum(p.total_actual_cost for p in projects)
     total_savings_all = sum(p.total_savings for p in projects)
