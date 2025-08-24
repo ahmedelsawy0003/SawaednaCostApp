@@ -10,9 +10,6 @@ class Project(db.Model):
     notes = db.Column(db.Text)
     spreadsheet_id = db.Column(db.String(255)) # Google Sheets ID
 
-    # <<< تم التعديل هنا: تم حذف تعريف علاقات items و payments المكررة
-    # سيتم إنشاؤها تلقائياً من خلال الـ backref في ملفات item.py و payment.py
-
     @property
     def total_contract_cost(self):
         return sum(item.contract_total_cost for item in self.items)
@@ -27,11 +24,11 @@ class Project(db.Model):
 
     @property
     def completion_percentage(self):
-        total_items = len(self.items)
-        if total_items == 0:
+        # The 'items' backref comes from the Item model
+        if not self.items:
             return 0
         completed_items = sum(1 for item in self.items if item.status == 'مكتمل')
-        return (completed_items / total_items) * 100
+        return (completed_items / len(self.items)) * 100
 
     @property
     def financial_completion_percentage(self):
@@ -41,6 +38,8 @@ class Project(db.Model):
 
     @property
     def total_paid_amount(self):
+        # <<< تم التعديل هنا: تم تصحيح اسم المتغير إلى self.payments
+        # The 'payments' backref comes from the Payment model
         return sum(payment.amount for payment in self.payments)
 
     @property
