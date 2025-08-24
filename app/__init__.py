@@ -1,6 +1,6 @@
 from flask import Flask
 from .extensions import db, migrate, login_manager
-from . import commands  # <<< الخطوة 1: استيراد ملف الأوامر
+from . import commands
 
 def create_app():
     app = Flask(__name__, template_folder='../templates', static_folder='../static')
@@ -11,14 +11,13 @@ def create_app():
     login_manager.init_app(app)
     login_manager.login_view = 'auth.login'
     
-    commands.init_app(app) # <<< الخطوة 2: تفعيل الأوامر في التطبيق
+    commands.init_app(app)
 
     from .models.user import User
     from .models.project import Project
     from .models.item import Item
     from .models.payment import Payment
     from .models.cost_detail import CostDetail
-
 
     @login_manager.user_loader
     def load_user(user_id):
@@ -38,16 +37,9 @@ def create_app():
     app.register_blueprint(payment_bp)
     app.register_blueprint(cost_detail_bp)
     
-    # in app/__init__.py
-    # ... (imports)
-    def create_app():
-    # ... (app config)
-
-    # Add these lines temporarily
+    # This block will reset your database with the new structure
     with app.app_context():
         db.drop_all()
         db.create_all()
 
     return app
-
-   
