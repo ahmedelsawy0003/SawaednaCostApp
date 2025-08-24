@@ -2,15 +2,23 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from app.models.project import Project
 from app.models.item import Item
 from app.extensions import db
-from flask_login import login_required
+from flask_login import login_required, current_user # <<< Make sure current_user is imported
 
 project_bp = Blueprint("project", __name__)
 
+# START: Modified get_projects route to enforce permissions
 @project_bp.route("/projects")
 @login_required
 def get_projects():
-    projects = Project.query.all()
+    if current_user.role == 'admin':
+        # Admin can see all projects
+        projects = Project.query.all()
+    else:
+        # Regular users can only see projects assigned to them
+        projects = current_user.projects
+    
     return render_template("projects/index.html", projects=projects)
+# END: Modified route
 
 @project_bp.route("/projects/new", methods=["GET", "POST"])
 @login_required
@@ -22,17 +30,23 @@ def new_project():
         end_date = request.form["end_date"]
         status = request.form["status"]
         notes = request.form["notes"]
-        spreadsheet_id = request.form.get("spreadsheet_id") # Optional
+        spreadsheet_id = request.form.get("spreadsheet_id")
 
         new_project = Project(name=name, location=location, start_date=start_date, 
                               end_date=end_date, status=status, notes=notes,
                               spreadsheet_id=spreadsheet_id)
+        
+        # If the creator is not an admin, automatically assign them to the new project
+        if current_user.role != 'admin':
+            new_project.users.append(current_user)
+            
         db.session.add(new_project)
         db.session.commit()
         flash("تم إضافة المشروع بنجاح!", "success")
         return redirect(url_for("project.get_projects"))
     return render_template("projects/new.html")
 
+# ... (rest of the file remains the same for now) ...
 @project_bp.route("/projects/<int:project_id>")
 @login_required
 def get_project(project_id):
@@ -71,12 +85,10 @@ def project_dashboard(project_id):
     project = Project.query.get_or_404(project_id)
     items = Item.query.filter_by(project_id=project.id).all()
 
-    # Calculate data for charts
     contract_costs = [item.contract_total_cost for item in items]
     actual_costs = [item.actual_total_cost for item in items if item.actual_total_cost is not None]
     item_descriptions = [item.description for item in items]
 
-    # Prepare data for JSON response
     chart_data = {
         "labels": item_descriptions,
         "datasets": [
@@ -118,7 +130,6 @@ def all_projects_dashboard():
     total_paid_amount_all = sum(p.total_paid_amount for p in projects)
     total_remaining_amount_all = sum(p.total_remaining_amount for p in projects)
 
-    # Data for charts (example: status distribution across all projects)
     status_counts = {}
     for project in projects:
         status_counts[project.status] = status_counts.get(project.status, 0) + 1
@@ -137,5 +148,3 @@ def all_projects_dashboard():
         status_labels=status_labels,
         status_data=status_data
     )
-
-
