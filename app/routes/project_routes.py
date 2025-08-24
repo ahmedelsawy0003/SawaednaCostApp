@@ -19,10 +19,8 @@ def get_projects():
 @project_bp.route("/projects/new", methods=["GET", "POST"])
 @login_required
 def new_project():
-    # START: Add permission check for admin only
     if current_user.role != 'admin':
         abort(403)
-    # END: Add permission check
 
     if request.method == "POST":
         name = request.form["name"]
@@ -43,8 +41,6 @@ def new_project():
         return redirect(url_for("project.get_projects"))
     return render_template("projects/new.html")
 
-# ... (بقية الملف يبقى كما هو) ...
-
 @project_bp.route("/projects/<int:project_id>")
 @login_required
 def get_project(project_id):
@@ -56,7 +52,11 @@ def get_project(project_id):
 @login_required
 def edit_project(project_id):
     project = Project.query.get_or_404(project_id)
-    check_project_permission(project)
+    # START: Modified security check
+    if current_user.role != 'admin':
+        abort(403)
+    # END: Modified security check
+    
     if request.method == "POST":
         project.name = request.form["name"]
         project.location = request.form["location"]
@@ -74,9 +74,11 @@ def edit_project(project_id):
 @login_required
 def delete_project(project_id):
     project = Project.query.get_or_404(project_id)
-    check_project_permission(project)
+    # START: Modified security check (already correct but kept for consistency)
     if current_user.role != 'admin':
         abort(403)
+    # END: Modified security check
+        
     db.session.delete(project)
     db.session.commit()
     flash("تم حذف المشروع بنجاح!", "success")

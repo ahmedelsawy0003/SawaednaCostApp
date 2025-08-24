@@ -68,14 +68,16 @@
                                     <a href="{{ url_for("project.get_project", project_id=project.id) }}" class="btn btn-info" title="عرض التفاصيل">
                                         <i class="fas fa-eye"></i>
                                     </a>
+                                    {# START: Modified Buttons Visibility #}
+                                    {% if current_user.role == 'admin' %}
                                     <a href="{{ url_for("project.edit_project", project_id=project.id) }}" class="btn btn-warning" title="تعديل">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    {% if current_user.role == 'admin' %}
                                     <button type="button" class="btn btn-danger delete-project" data-bs-toggle="modal" data-bs-target="#deleteProjectModal-{{ project.id }}" title="حذف">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                     {% endif %}
+                                    {# END: Modified Buttons Visibility #}
                                 </div>
                             </td>
                         </tr>

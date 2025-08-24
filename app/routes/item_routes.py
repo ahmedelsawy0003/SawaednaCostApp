@@ -53,14 +53,18 @@ def edit_item(item_id):
     check_project_permission(item.project)
     project = item.project
     if request.method == "POST":
-        # Only admins can update contractual fields
+        # START: Re-Modified permission logic
+        # Only admins can update contractual unit cost
         if current_user.role == 'admin':
-            item.contract_quantity = float(request.form.get("contract_quantity", 0.0))
             item.contract_unit_cost = float(request.form.get("contract_unit_cost", 0.0))
         
+        # Users with project access can update these fields
         item.item_number = request.form["item_number"]
         item.description = request.form["description"]
         item.unit = request.form["unit"]
+        item.contract_quantity = float(request.form.get("contract_quantity", 0.0))
+        
+        # All authenticated users with project access can update actual progress
         item.actual_quantity = float(request.form.get("actual_quantity") or 0.0)
         item.actual_unit_cost = float(request.form.get("actual_unit_cost") or 0.0)
         item.status = request.form["status"]
@@ -68,6 +72,8 @@ def edit_item(item_id):
         item.contractor = request.form.get("contractor")
         item.paid_amount = float(request.form.get("paid_amount") or 0.0)
         item.notes = request.form.get("notes")
+        # END: Re-Modified permission logic
+
         db.session.commit()
         flash("تم تحديث البند بنجاح!", "success")
         return redirect(url_for("item.get_items_by_project", project_id=item.project_id))
@@ -79,6 +85,9 @@ def delete_item(item_id):
     item = Item.query.get_or_404(item_id)
     check_project_permission(item.project)
     project_id = item.project_id
+    # Add admin check for delete
+    if current_user.role != 'admin':
+        abort(403)
     db.session.delete(item)
     db.session.commit()
     flash("تم حذف البند بنجاح!", "success")

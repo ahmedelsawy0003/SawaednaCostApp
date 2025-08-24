@@ -31,16 +31,25 @@
                         <input type="text" class="form-control" id="unit" name="unit" value="{{ item.unit if item.unit else "" }}">
                     </div>
                     
-                    {% if current_user.role == 'admin' %}
                     <div class="mb-3">
                         <label for="contract_quantity" class="form-label">الكمية التعاقدية</label>
                         <input type="number" step="0.01" class="form-control" id="contract_quantity" name="contract_quantity" value="{{ item.contract_quantity }}" required>
                     </div>
+
+                    {# START: Modified Field Visibility #}
+                    {% if current_user.role == 'admin' %}
                     <div class="mb-3">
                         <label for="contract_unit_cost" class="form-label">التكلفة الإفرادية التعاقدية</label>
                         <input type="number" step="0.01" class="form-control" id="contract_unit_cost" name="contract_unit_cost" value="{{ item.contract_unit_cost }}" required>
                     </div>
+                    {% else %}
+                    <div class="mb-3">
+                        <label for="contract_unit_cost_disabled" class="form-label">التكلفة الإفرادية التعاقدية</label>
+                        <input type="number" step="0.01" class="form-control" id="contract_unit_cost_disabled" name="contract_unit_cost_disabled" value="{{ item.contract_unit_cost }}" disabled>
+                        <div class="form-text">هذا الحقل يمكن تعديله بواسطة المدير فقط.</div>
+                    </div>
                     {% endif %}
+                    {# END: Modified Field Visibility #}
                 </div>
                 <div class="col-md-6">
                     <div class="mb-3">
