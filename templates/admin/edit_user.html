@@ -30,6 +30,24 @@
                 <input type="password" class="form-control" id="password" name="password" placeholder="اتركه فارغاً لعدم التغيير">
                 <div class="form-text">إذا تركت هذا الحقل فارغاً، لن يتم تغيير كلمة المرور الحالية.</div>
             </div>
+            
+            <hr>
+            <div class="mb-3">
+                <label class="form-label">صلاحيات الوصول للمشاريع</label>
+                {% if projects %}
+                    {% for project in projects %}
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="projects" value="{{ project.id }}" id="project-{{ project.id }}"
+                                   {% if project in user.projects %}checked{% endif %}>
+                            <label class="form-check-label" for="project-{{ project.id }}">
+                                {{ project.name }}
+                            </label>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted">لا توجد مشاريع لإسنادها حالياً.</p>
+                {% endif %}
+            </div>
             <button type="submit" class="btn btn-primary">
                 <i class="fas fa-save me-1"></i> تحديث البيانات
             </button>

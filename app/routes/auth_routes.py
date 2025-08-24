@@ -1,11 +1,12 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, abort
 from flask_login import login_user, logout_user, login_required, current_user
 from app.models.user import User
+from app.models.project import Project # <<< Add this import
 from app.extensions import db
 
 auth_bp = Blueprint("auth", __name__)
 
-# ... (كل الدوال السابقة تبقى كما هي) ...
+# ... (كل الدوال الأخرى تبقى كما هي) ...
 
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
@@ -91,39 +92,50 @@ def demote_user(user_id):
     flash(f"تم تخفيض صلاحيات المستخدم {user_to_demote.username} إلى User بنجاح.", "warning")
     return redirect(url_for('auth.admin_dashboard'))
 
-@auth_bp.route('/admin/user/<int:user_id>/edit', methods=['GET', 'POST'])
-@login_required
-def edit_user(user_id):
-    if current_user.role != 'admin':
-        abort(403)
-    user_to_edit = User.query.get_or_404(user_id)
-    if request.method == 'POST':
-        user_to_edit.username = request.form['username']
-        user_to_edit.email = request.form['email']
-        new_password = request.form.get('password')
-        if new_password:
-            user_to_edit.set_password(new_password)
-        db.session.commit()
-        flash(f"تم تحديث بيانات المستخدم {user_to_edit.username} بنجاح.", "success")
-        return redirect(url_for('auth.admin_dashboard'))
-    return render_template('admin/edit_user.html', user=user_to_edit)
-
-# START: New route for deleting a user
 @auth_bp.route('/admin/user/<int:user_id>/delete', methods=['POST'])
 @login_required
 def delete_user(user_id):
     if current_user.role != 'admin':
         abort(403)
-
     user_to_delete = User.query.get_or_404(user_id)
-
-    # Safety check: Admin cannot delete themselves
     if user_to_delete.id == current_user.id:
         flash("لا يمكنك حذف حسابك الخاص.", "danger")
         return redirect(url_for('auth.admin_dashboard'))
-
     db.session.delete(user_to_delete)
     db.session.commit()
     flash(f"تم حذف المستخدم {user_to_delete.username} بنجاح.", "success")
     return redirect(url_for('auth.admin_dashboard'))
-# END: New route
+
+# START: Modified edit_user route
+@auth_bp.route('/admin/user/<int:user_id>/edit', methods=['GET', 'POST'])
+@login_required
+def edit_user(user_id):
+    if current_user.role != 'admin':
+        abort(403)
+    
+    user_to_edit = User.query.get_or_404(user_id)
+    
+    if request.method == 'POST':
+        # Update user details
+        user_to_edit.username = request.form['username']
+        user_to_edit.email = request.form['email']
+        new_password = request.form.get('password')
+        if new_password:
+            user_to_edit.set_password(new_password)
+        
+        # Update project associations
+        assigned_project_ids = request.form.getlist('projects')
+        user_to_edit.projects.clear()
+        for project_id in assigned_project_ids:
+            project = Project.query.get(project_id)
+            if project:
+                user_to_edit.projects.append(project)
+
+        db.session.commit()
+        flash(f"تم تحديث بيانات المستخدم {user_to_edit.username} بنجاح.", "success")
+        return redirect(url_for('auth.admin_dashboard'))
+
+    # Fetch all projects to display in the form for GET request
+    projects = Project.query.all()
+    return render_template('admin/edit_user.html', user=user_to_edit, projects=projects)
+# END: Modified route
