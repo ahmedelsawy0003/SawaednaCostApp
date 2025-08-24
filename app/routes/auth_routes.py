@@ -5,6 +5,7 @@ from app.extensions import db
 
 auth_bp = Blueprint("auth", __name__)
 
+# ... (كل دوال login, register, logout, profile تبقى كما هي) ...
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
     if current_user.is_authenticated:
@@ -16,7 +17,6 @@ def login():
         if user and user.check_password(password):
             login_user(user)
             flash("تم تسجيل الدخول بنجاح!", "success")
-            # Redirect to the intended page or projects page
             next_page = request.args.get('next')
             return redirect(next_page or url_for("project.get_projects"))
         else:
@@ -57,14 +57,42 @@ def logout():
 def profile():
     return render_template("auth/profile.html")
 
-# START: New Admin Dashboard Route
 @auth_bp.route("/admin/dashboard")
 @login_required
 def admin_dashboard():
-    # This line ensures only admins can access this page
     if current_user.role != 'admin':
-        abort(403)  # Forbidden error
-
+        abort(403)
     users = User.query.all()
     return render_template("admin/dashboard.html", users=users)
-# END: New Admin Dashboard Route
+
+# START: New routes for user role management
+@auth_bp.route('/admin/user/<int:user_id>/promote', methods=['POST'])
+@login_required
+def promote_user(user_id):
+    if current_user.role != 'admin':
+        abort(403)
+    
+    user_to_promote = User.query.get_or_404(user_id)
+    user_to_promote.role = 'admin'
+    db.session.commit()
+    flash(f"تمت ترقية المستخدم {user_to_promote.username} إلى Admin بنجاح.", "success")
+    return redirect(url_for('auth.admin_dashboard'))
+
+@auth_bp.route('/admin/user/<int:user_id>/demote', methods=['POST'])
+@login_required
+def demote_user(user_id):
+    if current_user.role != 'admin':
+        abort(403)
+
+    user_to_demote = User.query.get_or_404(user_id)
+    
+    # Safety check: Admin cannot demote themselves
+    if user_to_demote.id == current_user.id:
+        flash("لا يمكنك تخفيض صلاحيات حسابك.", "danger")
+        return redirect(url_for('auth.admin_dashboard'))
+
+    user_to_demote.role = 'user'
+    db.session.commit()
+    flash(f"تم تخفيض صلاحيات المستخدم {user_to_demote.username} إلى User بنجاح.", "warning")
+    return redirect(url_for('auth.admin_dashboard'))
+# END: New routes

@@ -39,9 +39,27 @@
                                 {% endif %}
                             </td>
                             <td class="text-center">
-                                <button class="btn btn-sm btn-warning" disabled>تعديل</button>
-                                <button class="btn btn-sm btn-danger" disabled>حذف</button>
-                            </td>
+                                <div class="btn-group btn-group-sm">
+                                    {% if user.id != current_user.id %} {# Safety check to not edit self #}
+                                        {% if user.role == 'user' %}
+                                            <form action="{{ url_for('auth.promote_user', user_id=user.id) }}" method="POST" class="d-inline">
+                                                <button type="submit" class="btn btn-success" title="ترقية إلى مسؤول">
+                                                    <i class="fas fa-user-shield"></i> ترقية
+                                                </button>
+                                            </form>
+                                        {% else %}
+                                            <form action="{{ url_for('auth.demote_user', user_id=user.id) }}" method="POST" class="d-inline">
+                                                <button type="submit" class="btn btn-secondary" title="تخفيض إلى مستخدم">
+                                                    <i class="fas fa-user"></i> تخفيض
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                    {% endif %}
+                                    <button class="btn btn-danger" disabled title="الحذف سيتم تفعيله لاحقاً">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                                </td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -52,6 +70,7 @@
                 لا يوجد مستخدمون مسجلون حالياً.
             </div>
         {% endif %}
-        </div>
+
+    </div>
 </div>
 {% endblock %}
