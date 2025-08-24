@@ -10,9 +10,6 @@ class Project(db.Model):
     notes = db.Column(db.Text)
     spreadsheet_id = db.Column(db.String(255))
 
-    # The 'items' and 'payments' properties are created automatically
-    # by the 'backref' in the Item and Payment models.
-
     @property
     def total_contract_cost(self):
         if not self.items:
@@ -44,6 +41,7 @@ class Project(db.Model):
 
     @property
     def total_paid_amount(self):
+        # The 'payments' property is created by the backref in the Payment model.
         if not self.payments:
             return 0.0
         return sum(payment.amount for payment in self.payments)
