@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask import Blueprint, render_template, redirect, url_for, flash, request, abort
 from flask_login import login_user, logout_user, login_required, current_user
 from app.models.user import User
 from app.extensions import db
@@ -16,7 +16,9 @@ def login():
         if user and user.check_password(password):
             login_user(user)
             flash("تم تسجيل الدخول بنجاح!", "success")
-            return redirect(url_for("project.get_projects"))
+            # Redirect to the intended page or projects page
+            next_page = request.args.get('next')
+            return redirect(next_page or url_for("project.get_projects"))
         else:
             flash("اسم المستخدم أو كلمة المرور غير صحيحة.", "danger")
     return render_template("auth/login.html")
@@ -55,4 +57,14 @@ def logout():
 def profile():
     return render_template("auth/profile.html")
 
+# START: New Admin Dashboard Route
+@auth_bp.route("/admin/dashboard")
+@login_required
+def admin_dashboard():
+    # This line ensures only admins can access this page
+    if current_user.role != 'admin':
+        abort(403)  # Forbidden error
 
+    users = User.query.all()
+    return render_template("admin/dashboard.html", users=users)
+# END: New Admin Dashboard Route

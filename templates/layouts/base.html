@@ -4,11 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SawaednaCostApp - {% block title %}{% endblock %}</title>
-    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for("static", filename="css/style.css") }}">
 </head>
 <body>
@@ -20,13 +17,21 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    {% if current_user.is_authenticated %}
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for("project.get_projects") }}">المشاريع</a>
                     </li>
-                    {% if current_user.is_authenticated %}
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for("auth.profile") }}">ملفي الشخصي</a>
                     </li>
+                    
+                    {% if current_user.role == 'admin' %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for("auth.admin_dashboard") }}">
+                            <i class="fas fa-user-shield me-1"></i> لوحة التحكم
+                        </a>
+                    </li>
+                    {% endif %}
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for("auth.logout") }}">تسجيل الخروج</a>
                     </li>
@@ -57,12 +62,8 @@
         {% block content %}{% endblock %}
     </div>
 
-    <!-- Bootstrap Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Custom JS -->
     <script src="{{ url_for("static", filename="js/script.js") }}"></script>
     {% block scripts %}{% endblock %}
 </body>
 </html>
-
-
