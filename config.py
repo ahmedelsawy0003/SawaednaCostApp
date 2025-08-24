@@ -1,12 +1,14 @@
 import os
 
 class Config:
-    # يقرأ المفتاح السري من متغير البيئة الذي أنشأته في Vercel
     SECRET_KEY = os.environ.get('SECRET_KEY')
-    
-    # يقرأ رابط قاعدة البيانات من متغير البيئة DATABASE_URL
-    # Vercel يستخدم هذا الاسم افتراضياً لقواعد البيانات
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
-    
-    # هذا الإعداد يُفضل إبقاؤه لإيقاف رسائل غير ضرورية
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+    # <<< ابدأ الإضافة هنا
+    # هذه الإعدادات ضرورية لجعل اتصال قاعدة البيانات مستقراً على Vercel
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        "pool_recycle": 280,
+        "pool_pre_ping": True,
+    }
+    # <<< انتهت الإضافة هنا

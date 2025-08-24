@@ -35,12 +35,4 @@ def create_app():
     app.register_blueprint(payment_bp)
     app.register_blueprint(cost_detail_bp)
 
-    # <<< ابدأ التعديل هنا
-    with app.app_context():
-        # الأمر التالي سيحذف كل الجداول القديمة
-        db.drop_all()
-        # الأمر التالي سيعيد بناء كل الجداول بالشكل الصحيح
-        db.create_all()
-    # <<< انتهى التعديل هنا
-
     return app
