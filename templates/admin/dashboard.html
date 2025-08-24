@@ -40,17 +40,20 @@
                             </td>
                             <td class="text-center">
                                 <div class="btn-group btn-group-sm">
-                                    {% if user.id != current_user.id %} {# Safety check to not edit self #}
+                                    <a href="{{ url_for('auth.edit_user', user_id=user.id) }}" class="btn btn-warning" title="تعديل">
+                                        <i class="fas fa-edit"></i> تعديل
+                                    </a>
+                                    {% if user.id != current_user.id %}
                                         {% if user.role == 'user' %}
                                             <form action="{{ url_for('auth.promote_user', user_id=user.id) }}" method="POST" class="d-inline">
                                                 <button type="submit" class="btn btn-success" title="ترقية إلى مسؤول">
-                                                    <i class="fas fa-user-shield"></i> ترقية
+                                                    <i class="fas fa-user-shield"></i>
                                                 </button>
                                             </form>
                                         {% else %}
                                             <form action="{{ url_for('auth.demote_user', user_id=user.id) }}" method="POST" class="d-inline">
                                                 <button type="submit" class="btn btn-secondary" title="تخفيض إلى مستخدم">
-                                                    <i class="fas fa-user"></i> تخفيض
+                                                    <i class="fas fa-user"></i>
                                                 </button>
                                             </form>
                                         {% endif %}
@@ -59,7 +62,7 @@
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </div>
-                                </td>
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>

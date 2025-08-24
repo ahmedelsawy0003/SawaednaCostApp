@@ -1,0 +1,39 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}تعديل المستخدم - {{ user.username }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>تعديل المستخدم: {{ user.username }}</h1>
+    <a href="{{ url_for('auth.admin_dashboard') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-right me-1"></i> العودة للوحة التحكم
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h3 class="mb-0">بيانات المستخدم</h3>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('auth.edit_user', user_id=user.id) }}">
+            <div class="mb-3">
+                <label for="username" class="form-label">اسم المستخدم</label>
+                <input type="text" class="form-control" id="username" name="username" value="{{ user.username }}" required>
+            </div>
+            <div class="mb-3">
+                <label for="email" class="form-label">البريد الإلكتروني</label>
+                <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}" required>
+            </div>
+            <hr>
+            <div class="mb-3">
+                <label for="password" class="form-label">كلمة المرور الجديدة (اختياري)</label>
+                <input type="password" class="form-control" id="password" name="password" placeholder="اتركه فارغاً لعدم التغيير">
+                <div class="form-text">إذا تركت هذا الحقل فارغاً، لن يتم تغيير كلمة المرور الحالية.</div>
+            </div>
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save me-1"></i> تحديث البيانات
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}
