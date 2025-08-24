@@ -66,31 +66,32 @@
         <h3 class="mb-0">مقارنة التكاليف (تعاقدية وفعلية)</h3>
     </div>
     <div class="card-body">
-        <div style="position: relative; height:40vh; width:80vw">
-            <canvas id="costComparisonChart"></canvas>
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div style="position: relative; height:400px;">
+                    <canvas id="costComparisonChart"></canvas>
+                </div>
+            </div>
         </div>
-        </div>
+    </div>
 </div>
 {% endif %}
+
 {% endblock %}
 
 {% block scripts %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        // Check if the chart element exists (it won't for non-admins)
         const ctx = document.getElementById("costComparisonChart");
         if (ctx) {
             const chartData = {{ chart_data | tojson }};
-
             new Chart(ctx.getContext("2d"), {
                 type: "bar",
                 data: chartData,
                 options: {
-                    // START: Add these options to fix resizing issue
                     responsive: true,
                     maintainAspectRatio: false,
-                    // END: Options for resizing
                     scales: {
                         x: {
                             beginAtZero: true,
