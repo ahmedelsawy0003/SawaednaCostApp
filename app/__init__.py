@@ -37,5 +37,17 @@ def create_app():
     app.register_blueprint(auth_bp)
     app.register_blueprint(payment_bp)
     app.register_blueprint(cost_detail_bp)
+    
+    # in app/__init__.py
+    # ... (imports)
+    def create_app():
+    # ... (app config)
+
+    # Add these lines temporarily
+    with app.app_context():
+        db.drop_all()
+        db.create_all()
 
     return app
+
+   
