@@ -1,5 +1,6 @@
 from flask import Flask
 from .extensions import db, migrate, login_manager
+from . import commands  # <<< الخطوة 1: استيراد ملف الأوامر
 
 def create_app():
     app = Flask(__name__, template_folder='../templates', static_folder='../static')
@@ -9,6 +10,8 @@ def create_app():
     migrate.init_app(app, db)
     login_manager.init_app(app)
     login_manager.login_view = 'auth.login'
+    
+    commands.init_app(app) # <<< الخطوة 2: تفعيل الأوامر في التطبيق
 
     from .models.user import User
     from .models.project import Project
