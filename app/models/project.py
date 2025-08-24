@@ -33,15 +33,17 @@ class Project(db.Model):
         completed_items = sum(1 for item in self.items if item.status == 'مكتمل')
         return (completed_items / len(self.items)) * 100
 
+    # START: This is the modified function
     @property
     def financial_completion_percentage(self):
         if self.total_contract_cost == 0:
             return 0.0
-        return (self.total_actual_cost / self.total_contract_cost) * 100
+        # The calculation is now based on total_paid_amount
+        return (self.total_paid_amount / self.total_contract_cost) * 100
+    # END: Modified function
 
     @property
     def total_paid_amount(self):
-        # The 'payments' property is created by the backref in the Payment model.
         if not self.payments:
             return 0.0
         return sum(payment.amount for payment in self.payments)
