@@ -37,9 +37,5 @@ def create_app():
     app.register_blueprint(payment_bp)
     app.register_blueprint(cost_detail_bp)
     
-    # This block will reset your database with the new structure
-    with app.app_context():
-        db.drop_all()
-        db.create_all()
-
+   
     return app
