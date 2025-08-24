@@ -1,8 +1,9 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, abort
 from app.models.item import Item
 from app.models.project import Project
 from app.extensions import db
-from flask_login import login_required
+from flask_login import login_required, current_user
+from app.utils import check_project_permission # <<< Import the function
 
 item_bp = Blueprint("item", __name__)
 
@@ -10,6 +11,7 @@ item_bp = Blueprint("item", __name__)
 @login_required
 def get_items_by_project(project_id):
     project = Project.query.get_or_404(project_id)
+    check_project_permission(project) # <<< Add permission check
     items = Item.query.filter_by(project_id=project_id).all()
     return render_template("items/index.html", project=project, items=items)
 
@@ -17,7 +19,9 @@ def get_items_by_project(project_id):
 @login_required
 def new_item(project_id):
     project = Project.query.get_or_404(project_id)
+    check_project_permission(project) # <<< Add permission check
     if request.method == "POST":
+        # ... (rest of the function is the same)
         item_number = request.form["item_number"]
         description = request.form["description"]
         unit = request.form["unit"]
@@ -28,7 +32,7 @@ def new_item(project_id):
         status = request.form["status"]
         execution_method = request.form.get("execution_method")
         contractor = request.form.get("contractor")
-        paid_amount = float(request.form["paid_amount"]) if request.form["paid_amount"] else 0.0
+        paid_amount = float(request.form.get("paid_amount") or 0.0)
         notes = request.form.get("notes")
 
         new_item = Item(project_id=project_id, item_number=item_number, description=description,
@@ -45,19 +49,21 @@ def new_item(project_id):
 @login_required
 def edit_item(item_id):
     item = Item.query.get_or_404(item_id)
-    project = Project.query.get_or_404(item.project_id)
+    check_project_permission(item.project) # <<< Add permission check (via item.project)
+    project = item.project
     if request.method == "POST":
+        # ... (rest of the function is the same)
         item.item_number = request.form["item_number"]
         item.description = request.form["description"]
         item.unit = request.form["unit"]
         item.contract_quantity = float(request.form["contract_quantity"])
         item.contract_unit_cost = float(request.form["contract_unit_cost"])
-        item.actual_quantity = float(request.form["actual_quantity"]) if request.form["actual_quantity"] else 0.0
-        item.actual_unit_cost = float(request.form["actual_unit_cost"]) if request.form["actual_unit_cost"] else 0.0
+        item.actual_quantity = float(request.form.get("actual_quantity") or 0.0)
+        item.actual_unit_cost = float(request.form.get("actual_unit_cost") or 0.0)
         item.status = request.form["status"]
         item.execution_method = request.form.get("execution_method")
         item.contractor = request.form.get("contractor")
-        item.paid_amount = float(request.form["paid_amount"]) if request.form["paid_amount"] else 0.0
+        item.paid_amount = float(request.form.get("paid_amount") or 0.0)
         item.notes = request.form.get("notes")
         db.session.commit()
         flash("تم تحديث البند بنجاح!", "success")
@@ -68,6 +74,7 @@ def edit_item(item_id):
 @login_required
 def delete_item(item_id):
     item = Item.query.get_or_404(item_id)
+    check_project_permission(item.project) # <<< Add permission check
     project_id = item.project_id
     db.session.delete(item)
     db.session.commit()
@@ -78,6 +85,7 @@ def delete_item(item_id):
 @login_required
 def get_item_details(item_id):
     item = Item.query.get_or_404(item_id)
+    check_project_permission(item.project) # <<< Add permission check
     return jsonify({
         "item_number": item.item_number,
         "description": item.description,
@@ -96,4 +104,4 @@ def get_item_details(item_id):
         "paid_amount": item.paid_amount,
         "remaining_amount": item.remaining_amount,
         "notes": item.notes
-    }) # <<< تم التعديل هنا: تم حذف القوس الزائد
+    })

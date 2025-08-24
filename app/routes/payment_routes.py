@@ -3,7 +3,8 @@ from app.models.payment import Payment
 from app.models.project import Project
 from app.models.item import Item
 from app.extensions import db
-from flask_login import login_required
+from flask_login import login_required, current_user
+from app.utils import check_project_permission # <<< Import the function
 
 payment_bp = Blueprint("payment", __name__)
 
@@ -11,6 +12,7 @@ payment_bp = Blueprint("payment", __name__)
 @login_required
 def get_payments(project_id):
     project = Project.query.get_or_404(project_id)
+    check_project_permission(project) # <<< Add permission check
     payments = Payment.query.filter_by(project_id=project_id).order_by(Payment.payment_date.desc()).all()
     return render_template("payments/index.html", project=project, payments=payments)
 
@@ -18,6 +20,7 @@ def get_payments(project_id):
 @login_required
 def new_payment(project_id):
     project = Project.query.get_or_404(project_id)
+    check_project_permission(project) # <<< Add permission check
     items = Item.query.filter_by(project_id=project_id).all()
     if request.method == "POST":
         amount = float(request.form["amount"])
@@ -39,7 +42,8 @@ def new_payment(project_id):
 @login_required
 def edit_payment(payment_id):
     payment = Payment.query.get_or_404(payment_id)
-    project = Project.query.get_or_404(payment.project_id)
+    project = payment.project
+    check_project_permission(project) # <<< Add permission check
     items = Item.query.filter_by(project_id=project.id).all()
 
     if request.method == "POST":
@@ -58,10 +62,9 @@ def edit_payment(payment_id):
 @login_required
 def delete_payment(payment_id):
     payment = Payment.query.get_or_404(payment_id)
+    check_project_permission(payment.project) # <<< Add permission check
     project_id = payment.project_id
     db.session.delete(payment)
     db.session.commit()
     flash("تم حذف الدفعة بنجاح!", "success")
     return redirect(url_for("payment.get_payments", project_id=project_id))
-
-

@@ -3,7 +3,8 @@ from app.services.google_sheets_service import GoogleSheetsService
 from app.models.project import Project
 from app.models.item import Item
 from app.extensions import db
-from flask_login import login_required
+from flask_login import login_required, current_user
+from app.utils import check_project_permission # <<< Import the function
 
 sheets_bp = Blueprint("sheets", __name__)
 
@@ -11,10 +12,11 @@ sheets_bp = Blueprint("sheets", __name__)
 @login_required
 def export_project(project_id):
     project = Project.query.get_or_404(project_id)
+    check_project_permission(project) # <<< Add permission check
     if not project.spreadsheet_id:
         flash("لا يوجد معرّف Google Sheets لهذا المشروع.", "danger")
         return redirect(url_for("project.get_project", project_id=project_id))
-
+    # ... (rest of the function is the same)
     try:
         service = GoogleSheetsService(project.spreadsheet_id)
         items = Item.query.filter_by(project_id=project.id).all()
@@ -54,17 +56,17 @@ def export_project(project_id):
 @login_required
 def import_contractual_items(project_id):
     project = Project.query.get_or_404(project_id)
+    check_project_permission(project) # <<< Add permission check
     if not project.spreadsheet_id:
         flash("لا يوجد معرّف Google Sheets لهذا المشروع.", "danger")
         return redirect(url_for("project.get_project", project_id=project_id))
-
+    # ... (rest of the function is the same)
     if request.method == "POST":
         sheet_name = request.form["sheet_name"]
         try:
             service = GoogleSheetsService(project.spreadsheet_id)
             data = service.read_data(sheet_name)
             
-            # Assuming first row is header: رقم البند, الوصف, الوحدة, الكمية التعاقدية, التكلفة الإفرادية التعاقدية
             if not data or len(data) < 2:
                 flash("لا توجد بيانات كافية في الجدول المحدد.", "warning")
                 return redirect(url_for("sheets.import_contractual_items", project_id=project_id))
@@ -109,17 +111,17 @@ def import_contractual_items(project_id):
 @login_required
 def import_actual_items(project_id):
     project = Project.query.get_or_404(project_id)
+    check_project_permission(project) # <<< Add permission check
     if not project.spreadsheet_id:
         flash("لا يوجد معرّف Google Sheets لهذا المشروع.", "danger")
         return redirect(url_for("project.get_project", project_id=project_id))
-
+    # ... (rest of the function is the same)
     if request.method == "POST":
         sheet_name = request.form["sheet_name"]
         try:
             service = GoogleSheetsService(project.spreadsheet_id)
             data = service.read_data(sheet_name)
             
-            # Assuming first row is header: رقم البند, الكمية الفعلية, التكلفة الإفرادية الفعلية, الحالة, المبلغ المدفوع
             if not data or len(data) < 2:
                 flash("لا توجد بيانات كافية في الجدول المحدد.", "warning")
                 return redirect(url_for("sheets.import_actual_items", project_id=project_id))
@@ -156,31 +158,3 @@ def import_actual_items(project_id):
             flash(f"حدث خطأ أثناء استيراد البيانات: {str(e)}", "danger")
 
     return render_template("sheets/import_actual.html", project=project)
-
-@sheets_bp.route("/projects/<int:project_id>/export_summary", methods=["POST"])
-@login_required
-def export_summary(project_id):
-    project = Project.query.get_or_404(project_id)
-    if not project.spreadsheet_id:
-        flash("لا يوجد معرّف Google Sheets لهذا المشروع.", "danger")
-        return redirect(url_for("project.get_project", project_id=project_id))
-
-    try:
-        service = GoogleSheetsService(project.spreadsheet_id)
-        
-        summary_data = [
-            ["ملخص المشروع", project.name],
-            ["إجمالي التكلفة التعاقدية", project.total_contract_cost],
-            ["إجمالي التكلفة الفعلية", project.total_actual_cost],
-            ["إجمالي الوفر / الزيادة", project.total_savings],
-            ["نسبة إنجاز البنود", f"{project.completion_percentage:.2f}%"],
-            ["نسبة الإنجاز المالي", f"{project.financial_completion_percentage:.2f}%"]
-        ]
-        service.write_data("ملخص المشروع", summary_data)
-        flash("تم تصدير ملخص المشروع إلى Google Sheets بنجاح!", "success")
-    except Exception as e:
-        flash(f"حدث خطأ أثناء تصدير الملخص: {str(e)}", "danger")
-    
-    return redirect(url_for("project.get_project", project_id=project_id))
-
-
