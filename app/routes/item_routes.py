@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, abort
 from app.models.item import Item
 from app.models.project import Project
-from app.models.cost_detail import CostDetail # <<< Add this import
+from app.models.cost_detail import CostDetail
 from app.extensions import db
 from flask_login import login_required, current_user
 from app.utils import check_project_permission, sanitize_input
@@ -73,10 +73,11 @@ def edit_item(item_id):
         flash("تم تحديث البند بنجاح!", "success")
         return redirect(url_for("item.get_items_by_project", project_id=item.project_id))
     
-    # START: Fetch and pass cost details to the template
-    cost_details = CostDetail.query.filter_by(item_id=item.id).order_by(CostDetail.date.desc()).all()
+    # START: Corrected query
+    # Sort by ID to show the newest details first
+    cost_details = CostDetail.query.filter_by(item_id=item.id).order_by(CostDetail.id.desc()).all()
     return render_template("items/edit.html", item=item, project=project, cost_details=cost_details)
-    # END: Fetch and pass cost details
+    # END: Corrected query
 
 @item_bp.route("/items/<int:item_id>/delete", methods=["POST"])
 @login_required
