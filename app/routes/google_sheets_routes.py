@@ -21,9 +21,7 @@ def export_project(project_id):
         service = GoogleSheetsService(project.spreadsheet_id)
         items = Item.query.filter_by(project_id=project.id).order_by(Item.item_number).all()
         
-        # START: Role-based data export
         data = []
-        # Define headers based on user role
         if current_user.role == 'admin':
             headers = [
                 "رقم البند", "الوصف", "الوحدة", "الكمية التعاقدية", 
@@ -31,7 +29,7 @@ def export_project(project_id):
                 "الكمية الفعلية", "التكلفة الإفرادية الفعلية", "التكلفة الإجمالية الفعلية", 
                 "الحالة", "المقاول/المورد", "المبلغ المدفوع", "المبلغ المتبقي", "ملاحظات"
             ]
-        else: # Regular user
+        else:
             headers = [
                 "رقم البند", "الوصف", "الوحدة", "الكمية الفعلية", 
                 "التكلفة الإفرادية الفعلية", "التكلفة الإجمالية الفعلية", 
@@ -39,7 +37,6 @@ def export_project(project_id):
             ]
         data.append(headers)
 
-        # Append data rows based on user role
         for item in items:
             if current_user.role == 'admin':
                 data.append([
@@ -48,22 +45,24 @@ def export_project(project_id):
                     item.actual_quantity, item.actual_unit_cost, item.actual_total_cost,
                     item.status, item.contractor, item.paid_amount, item.remaining_amount, item.notes
                 ])
-            else: # Regular user
+            else:
                 data.append([
                     item.item_number, item.description, item.unit,
                     item.actual_quantity, item.actual_unit_cost, item.actual_total_cost,
                     item.status, item.contractor, item.paid_amount, item.remaining_amount, item.notes
                 ])
-        # END: Role-based data export
         
-        service.write_data("تفاصيل بنود المشروع", data) # Changed sheet name for clarity
-        flash("تم تصدير بنود المشروع إلى Google Sheets بنجاح!", "success")
+        success, error_message = service.write_data("تفاصيل بنود المشروع", data)
+        if success:
+            flash("تم تصدير بنود المشروع إلى Google Sheets بنجاح!", "success")
+        else:
+            flash(f"حدث خطأ أثناء تصدير البيانات: {error_message}", "danger")
+
     except Exception as e:
         flash(f"حدث خطأ أثناء تصدير البيانات: {str(e)}", "danger")
     
     return redirect(url_for("project.get_project", project_id=project_id))
 
-# START: New function to export project summary
 @sheets_bp.route("/projects/<int:project_id>/export_summary", methods=["POST"])
 @login_required
 def export_summary(project_id):
@@ -74,8 +73,6 @@ def export_summary(project_id):
         return redirect(url_for("project.get_project", project_id=project_id))
 
     try:
-        service = GoogleSheetsService(project.spreadsheet_id)
-        
         summary_data = [
             ["ملخص المشروع: " + project.name, ""],
             ["الحقل", "القيمة"],
@@ -95,17 +92,19 @@ def export_summary(project_id):
             ["نسبة الإنجاز المالي", f"{project.financial_completion_percentage:.2f}%"]
         ])
 
-        service.write_data("ملخص المشروع", summary_data)
-        flash("تم تصدير ملخص المشروع إلى Google Sheets بنجاح!", "success")
+        success, error_message = service.write_data("ملخص المشروع", summary_data)
+        if success:
+            flash("تم تصدير ملخص المشروع إلى Google Sheets بنجاح!", "success")
+        else:
+            flash(f"حدث خطأ أثناء تصدير الملخص: {error_message}", "danger")
+
     except Exception as e:
         flash(f"حدث خطأ أثناء تصدير الملخص: {str(e)}", "danger")
 
     return redirect(url_for("project.get_project", project_id=project_id))
-# END: New function
 
 @sheets_bp.route("/projects/<int:project_id>/import_contractual", methods=["GET", "POST"])
 @login_required
-# ... (The import function remains exactly the same) ...
 def import_contractual_items(project_id):
     project = Project.query.get_or_404(project_id)
     check_project_permission(project)
@@ -126,10 +125,8 @@ def import_contractual_items(project_id):
             headers = [h.strip() for h in data[0]]
             
             col_map = {
-                'item_number': ['رقم البند'],
-                'item_name': ['اسم البند'],
-                'description': ['الوصف', 'وصف البند'],
-                'unit': ['الوحدة'],
+                'item_number': ['رقم البند'], 'item_name': ['اسم البند'],
+                'description': ['الوصف', 'وصف البند'], 'unit': ['الوحدة'],
                 'quantity': ['الكمية', 'الكمية التعاقدية'],
                 'unit_cost': ['السعر الافرادى التعاقدي', 'التكلفة الإفرادية التعاقدية']
             }
@@ -143,41 +140,46 @@ def import_contractual_items(project_id):
             
             required_keys = ['item_number', 'description', 'unit', 'quantity', 'unit_cost']
             if not all(key in header_indices for key in required_keys):
-                flash(f"لم يتم العثور على كل الأعمدة المطلوبة. يرجى التأكد من وجود: {', '.join(required_keys)}", "danger")
+                flash(f"لم يتم العثور على كل الأعمدة المطلوبة. تأكد من وجود: {', '.join(col_map['item_number'] + col_map['description'] + col_map['unit'] + col_map['quantity'] + col_map['unit_cost'])}", "danger")
                 return redirect(url_for("sheets.import_contractual_items", project_id=project_id))
 
-            for row in data[1:]:
+            for row_idx, row in enumerate(data[1:], start=2):
                 if not any(row): continue
 
-                item_number = row[header_indices['item_number']].strip()
-                
-                item_desc = row[header_indices['description']].strip()
-                if 'item_name' in header_indices and header_indices['item_name'] < len(row):
-                    item_name = row[header_indices['item_name']].strip()
-                    if item_name:
-                        item_desc = f"{item_name} - {item_desc}"
+                try:
+                    item_number = row[header_indices['item_number']].strip()
+                    
+                    item_desc = row[header_indices['description']].strip()
+                    if 'item_name' in header_indices and header_indices['item_name'] < len(row):
+                        item_name = row[header_indices['item_name']].strip()
+                        if item_name:
+                            item_desc = f"{item_name} - {item_desc}"
 
-                unit = row[header_indices['unit']].strip()
-                quantity = float(row[header_indices['quantity']].strip() or 0)
-                unit_cost = float(row[header_indices['unit_cost']].strip() or 0)
+                    unit = row[header_indices['unit']].strip()
+                    
+                    # START: Remove commas before converting to float
+                    quantity_str = row[header_indices['quantity']].strip().replace(',', '')
+                    unit_cost_str = row[header_indices['unit_cost']].strip().replace(',', '')
+                    # END: Remove commas
+                    
+                    quantity = float(quantity_str or 0)
+                    unit_cost = float(unit_cost_str or 0)
 
-                if item_number:
-                    existing_item = Item.query.filter_by(project_id=project.id, item_number=item_number).first()
-                    if existing_item:
-                        existing_item.description = item_desc
-                        existing_item.unit = unit
-                        existing_item.contract_quantity = quantity
-                        existing_item.contract_unit_cost = unit_cost
-                    else:
-                        new_item = Item(
-                            project_id=project.id, 
-                            item_number=item_number, 
-                            description=item_desc,
-                            unit=unit, 
-                            contract_quantity=quantity, 
-                            contract_unit_cost=unit_cost
-                        )
-                        db.session.add(new_item)
+                    if item_number:
+                        existing_item = Item.query.filter_by(project_id=project.id, item_number=item_number).first()
+                        if existing_item:
+                            existing_item.description = item_desc
+                            existing_item.unit = unit
+                            existing_item.contract_quantity = quantity
+                            existing_item.contract_unit_cost = unit_cost
+                        else:
+                            new_item = Item(
+                                project_id=project.id, item_number=item_number, description=item_desc,
+                                unit=unit, contract_quantity=quantity, contract_unit_cost=unit_cost
+                            )
+                            db.session.add(new_item)
+                except (ValueError, IndexError) as e:
+                    flash(f"خطأ في بيانات الصف رقم {row_idx}: {e}. يرجى مراجعة البيانات.", "warning")
             
             db.session.commit()
             flash("تم استيراد البنود التعاقدية بنجاح!", "success")
@@ -190,8 +192,8 @@ def import_contractual_items(project_id):
 
 @sheets_bp.route("/projects/<int:project_id>/import_actual", methods=["GET", "POST"])
 @login_required
-# ... (This function also remains exactly the same) ...
 def import_actual_items(project_id):
+    # ... (This function remains the same, but let's add comma removal for safety)
     project = Project.query.get_or_404(project_id)
     check_project_permission(project)
     if not project.spreadsheet_id:
@@ -214,23 +216,29 @@ def import_actual_items(project_id):
                 flash("تأكد من أن رؤوس الأعمدة في Google Sheet تتطابق مع: رقم البند, الكمية الفعلية, التكلفة الإفرادية الفعلية, الحالة", "danger")
                 return redirect(url_for("sheets.import_actual_items", project_id=project_id))
 
-            for row in data[1:]:
+            for row_idx, row in enumerate(data[1:], start=2):
                 item_data = dict(zip(headers, row))
                 
-                item_number = item_data.get("رقم البند")
-                actual_quantity = float(item_data.get("الكمية الفعلية", 0))
-                actual_unit_cost = float(item_data.get("التكلفة الإفرادية الفعلية", 0))
-                status = item_data.get("الحالة", "نشط")
+                try:
+                    item_number = item_data.get("رقم البند")
+                    if item_number:
+                        actual_quantity_str = item_data.get("الكمية الفعلية", '0').strip().replace(',', '')
+                        actual_unit_cost_str = item_data.get("التكلفة الإفرادية الفعلية", '0').strip().replace(',', '')
+                        
+                        actual_quantity = float(actual_quantity_str or 0)
+                        actual_unit_cost = float(actual_unit_cost_str or 0)
+                        status = item_data.get("الحالة", "نشط")
 
-                if item_number:
-                    existing_item = Item.query.filter_by(project_id=project.id, item_number=item_number).first()
-                    if existing_item:
-                        existing_item.actual_quantity = actual_quantity
-                        existing_item.actual_unit_cost = actual_unit_cost
-                        existing_item.status = status
-                    else:
-                        flash(f"البند {item_number} غير موجود في المشروع. يرجى إضافته أولاً كبند تعاقدي.", "warning")
-            
+                        existing_item = Item.query.filter_by(project_id=project.id, item_number=item_number.strip()).first()
+                        if existing_item:
+                            existing_item.actual_quantity = actual_quantity
+                            existing_item.actual_unit_cost = actual_unit_cost
+                            existing_item.status = status
+                        else:
+                            flash(f"البند {item_number} غير موجود في المشروع. يرجى إضافته أولاً.", "warning")
+                except (ValueError, IndexError) as e:
+                    flash(f"خطأ في بيانات الصف رقم {row_idx} في البيانات الفعلية: {e}. يرجى مراجعة البيانات.", "warning")
+
             db.session.commit()
             flash("تم استيراد البنود الفعلية بنجاح!", "success")
             return redirect(url_for("project.get_project", project_id=project_id))
