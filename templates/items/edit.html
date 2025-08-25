@@ -10,9 +10,10 @@
     </a>
 </div>
 
-<div class="card">
+{# --- Form for Editing the Main Item --- #}
+<div class="card mb-4">
     <div class="card-header bg-primary text-white">
-        <h3 class="mb-0">بيانات البند</h3>
+        <h3 class="mb-0">بيانات البند الرئيسية</h3>
     </div>
     <div class="card-body">
         <form method="POST" action="{{ url_for("item.edit_item", item_id=item.id) }}">
@@ -30,13 +31,10 @@
                         <label for="unit" class="form-label">الوحدة</label>
                         <input type="text" class="form-control" id="unit" name="unit" value="{{ item.unit if item.unit else "" }}">
                     </div>
-                    
                     <div class="mb-3">
                         <label for="contract_quantity" class="form-label">الكمية التعاقدية</label>
                         <input type="number" step="0.01" class="form-control" id="contract_quantity" name="contract_quantity" value="{{ item.contract_quantity }}" required>
                     </div>
-
-                    {# START: Modified Field Visibility #}
                     {% if current_user.role == 'admin' %}
                     <div class="mb-3">
                         <label for="contract_unit_cost" class="form-label">التكلفة الإفرادية التعاقدية</label>
@@ -49,7 +47,6 @@
                         <div class="form-text">هذا الحقل يمكن تعديله بواسطة المدير فقط.</div>
                     </div>
                     {% endif %}
-                    {# END: Modified Field Visibility #}
                 </div>
                 <div class="col-md-6">
                     <div class="mb-3">
@@ -87,9 +84,88 @@
                 <textarea class="form-control" id="notes" name="notes" rows="3">{{ item.notes if item.notes else "" }}</textarea>
             </div>
             <button type="submit" class="btn btn-primary">
-                <i class="fas fa-save me-1"></i> تحديث البند
+                <i class="fas fa-save me-1"></i> تحديث بيانات البند
             </button>
         </form>
+    </div>
+</div>
+
+{# START: New Section for Cost Details #}
+<div class="card">
+    <div class="card-header bg-success text-white">
+        <h3 class="mb-0">تفاصيل التكاليف الفعلية</h3>
+    </div>
+    <div class="card-body">
+        {# --- Form to Add a New Cost Detail --- #}
+        <h4 class="mb-3">إضافة تفصيل جديد</h4>
+        <form method="POST" action="{{ url_for('cost_detail.add_cost_detail', item_id=item.id) }}" class="mb-4 p-3 border rounded">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label for="cd_description" class="form-label">الوصف</label>
+                    <input type="text" class="form-control" id="cd_description" name="description" required>
+                </div>
+                <div class="col-md-2">
+                    <label for="cd_unit" class="form-label">الوحدة</label>
+                    <input type="text" class="form-control" id="cd_unit" name="unit">
+                </div>
+                <div class="col-md-2">
+                    <label for="cd_quantity" class="form-label">الكمية</label>
+                    <input type="number" step="0.01" class="form-control" id="cd_quantity" name="quantity" required>
+                </div>
+                <div class="col-md-2">
+                    <label for="cd_unit_cost" class="form-label">تكلفة الوحدة</label>
+                    <input type="number" step="0.01" class="form-control" id="cd_unit_cost" name="unit_cost" required>
+                </div>
+                <div class="col-md-2 align-self-end">
+                    <button type="submit" class="btn btn-success w-100">
+                        <i class="fas fa-plus me-1"></i> إضافة
+                    </button>
+                </div>
+            </div>
+        </form>
+        
+        <hr>
+
+        {# --- Table of Existing Cost Details --- #}
+        <h4 class="mb-3 mt-4">التفاصيل المسجلة</h4>
+        {% if cost_details %}
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>الوصف</th>
+                            <th>الوحدة</th>
+                            <th>الكمية</th>
+                            <th>تكلفة الوحدة</th>
+                            <th>التكلفة الإجمالية</th>
+                            <th class="text-center">الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for detail in cost_details %}
+                        <tr>
+                            <td>{{ detail.description }}</td>
+                            <td>{{ detail.unit }}</td>
+                            <td>{{ detail.quantity }}</td>
+                            <td>{{ "{:,.2f}".format(detail.unit_cost) }}</td>
+                            <td>{{ "{:,.2f}".format(detail.total_cost) }}</td>
+                            <td class="text-center">
+                                <form action="{{ url_for('cost_detail.delete_cost_detail', detail_id=detail.id) }}" method="POST" class="d-inline">
+                                    <button type="submit" class="btn btn-danger btn-sm" title="حذف" onclick="return confirm('هل أنت متأكد من حذف هذا التفصيل؟')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                لا توجد تفاصيل تكاليف مسجلة لهذا البند حتى الآن.
+            </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

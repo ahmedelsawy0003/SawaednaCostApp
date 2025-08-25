@@ -1,11 +1,10 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, abort
 from app.models.item import Item
 from app.models.project import Project
+from app.models.cost_detail import CostDetail # <<< Add this import
 from app.extensions import db
 from flask_login import login_required, current_user
-# START: Modified Import
 from app.utils import check_project_permission, sanitize_input
-# END: Modified Import
 
 item_bp = Blueprint("item", __name__)
 
@@ -23,13 +22,11 @@ def new_item(project_id):
     project = Project.query.get_or_404(project_id)
     check_project_permission(project)
     if request.method == "POST":
-        # START: Sanitize text inputs
         description = sanitize_input(request.form["description"])
         unit = sanitize_input(request.form["unit"])
         execution_method = sanitize_input(request.form.get("execution_method"))
         contractor = sanitize_input(request.form.get("contractor"))
         notes = sanitize_input(request.form.get("notes"))
-        # END: Sanitize text inputs
 
         contract_quantity = float(request.form.get("contract_quantity", 0.0))
         contract_unit_cost = float(request.form.get("contract_unit_cost", 0.0))
@@ -56,13 +53,11 @@ def edit_item(item_id):
     check_project_permission(item.project)
     project = item.project
     if request.method == "POST":
-        # START: Sanitize text inputs
         item.description = sanitize_input(request.form["description"])
         item.unit = sanitize_input(request.form["unit"])
         item.execution_method = sanitize_input(request.form.get("execution_method"))
         item.contractor = sanitize_input(request.form.get("contractor"))
         item.notes = sanitize_input(request.form.get("notes"))
-        # END: Sanitize text inputs
 
         if current_user.role == 'admin':
             item.contract_unit_cost = float(request.form.get("contract_unit_cost", 0.0))
@@ -77,7 +72,11 @@ def edit_item(item_id):
         db.session.commit()
         flash("تم تحديث البند بنجاح!", "success")
         return redirect(url_for("item.get_items_by_project", project_id=item.project_id))
-    return render_template("items/edit.html", item=item, project=project)
+    
+    # START: Fetch and pass cost details to the template
+    cost_details = CostDetail.query.filter_by(item_id=item.id).order_by(CostDetail.date.desc()).all()
+    return render_template("items/edit.html", item=item, project=project, cost_details=cost_details)
+    # END: Fetch and pass cost details
 
 @item_bp.route("/items/<int:item_id>/delete", methods=["POST"])
 @login_required
