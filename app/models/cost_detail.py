@@ -10,9 +10,9 @@ class CostDetail(db.Model):
     unit_cost = db.Column(db.Float)
     total_cost = db.Column(db.Float)
     
-    # START: Add new status field
-    status = db.Column(db.String(50), default='غير مدفوع', nullable=False) # e.g., 'غير مدفوع', 'مدفوع'
-    # END: Add new status field
+    # START: Modified status field with server_default
+    status = db.Column(db.String(50), nullable=False, server_default='غير مدفوع')
+    # END: Modified status field
 
     item = db.relationship('Item', backref=db.backref('cost_details', lazy=True, cascade="all, delete-orphan"))
 
