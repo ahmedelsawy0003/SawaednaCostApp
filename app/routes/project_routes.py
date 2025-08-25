@@ -3,7 +3,9 @@ from app.models.project import Project
 from app.models.item import Item
 from app.extensions import db
 from flask_login import login_required, current_user
-from app.utils import check_project_permission
+# START: Modified Import
+from app.utils import check_project_permission, sanitize_input
+# END: Modified Import
 
 project_bp = Blueprint("project", __name__)
 
@@ -23,12 +25,15 @@ def new_project():
         abort(403)
 
     if request.method == "POST":
-        name = request.form["name"]
-        location = request.form["location"]
+        # START: Sanitize text inputs
+        name = sanitize_input(request.form["name"])
+        location = sanitize_input(request.form["location"])
+        notes = sanitize_input(request.form["notes"])
+        # END: Sanitize text inputs
+
         start_date = request.form["start_date"]
         end_date = request.form["end_date"]
         status = request.form["status"]
-        notes = request.form["notes"]
         spreadsheet_id = request.form.get("spreadsheet_id")
 
         new_project = Project(name=name, location=location, start_date=start_date, 
@@ -56,12 +61,15 @@ def edit_project(project_id):
         abort(403)
     
     if request.method == "POST":
-        project.name = request.form["name"]
-        project.location = request.form["location"]
+        # START: Sanitize text inputs
+        project.name = sanitize_input(request.form["name"])
+        project.location = sanitize_input(request.form["location"])
+        project.notes = sanitize_input(request.form["notes"])
+        # END: Sanitize text inputs
+
         project.start_date = request.form["start_date"]
         project.end_date = request.form["end_date"]
         project.status = request.form["status"]
-        project.notes = request.form["notes"]
         project.spreadsheet_id = request.form.get("spreadsheet_id")
         db.session.commit()
         flash("تم تحديث المشروع بنجاح!", "success")

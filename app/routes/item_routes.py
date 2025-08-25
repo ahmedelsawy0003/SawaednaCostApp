@@ -3,7 +3,9 @@ from app.models.item import Item
 from app.models.project import Project
 from app.extensions import db
 from flask_login import login_required, current_user
-from app.utils import check_project_permission
+# START: Modified Import
+from app.utils import check_project_permission, sanitize_input
+# END: Modified Import
 
 item_bp = Blueprint("item", __name__)
 
@@ -21,20 +23,21 @@ def new_item(project_id):
     project = Project.query.get_or_404(project_id)
     check_project_permission(project)
     if request.method == "POST":
-        # Handle optional fields from non-admins gracefully
+        # START: Sanitize text inputs
+        description = sanitize_input(request.form["description"])
+        unit = sanitize_input(request.form["unit"])
+        execution_method = sanitize_input(request.form.get("execution_method"))
+        contractor = sanitize_input(request.form.get("contractor"))
+        notes = sanitize_input(request.form.get("notes"))
+        # END: Sanitize text inputs
+
         contract_quantity = float(request.form.get("contract_quantity", 0.0))
         contract_unit_cost = float(request.form.get("contract_unit_cost", 0.0))
-
         item_number = request.form["item_number"]
-        description = request.form["description"]
-        unit = request.form["unit"]
         actual_quantity = float(request.form.get("actual_quantity") or 0.0)
         actual_unit_cost = float(request.form.get("actual_unit_cost") or 0.0)
         status = request.form["status"]
-        execution_method = request.form.get("execution_method")
-        contractor = request.form.get("contractor")
         paid_amount = float(request.form.get("paid_amount") or 0.0)
-        notes = request.form.get("notes")
 
         new_item = Item(project_id=project_id, item_number=item_number, description=description,
                         unit=unit, contract_quantity=contract_quantity, contract_unit_cost=contract_unit_cost,
@@ -53,26 +56,23 @@ def edit_item(item_id):
     check_project_permission(item.project)
     project = item.project
     if request.method == "POST":
-        # START: Re-Modified permission logic
-        # Only admins can update contractual unit cost
+        # START: Sanitize text inputs
+        item.description = sanitize_input(request.form["description"])
+        item.unit = sanitize_input(request.form["unit"])
+        item.execution_method = sanitize_input(request.form.get("execution_method"))
+        item.contractor = sanitize_input(request.form.get("contractor"))
+        item.notes = sanitize_input(request.form.get("notes"))
+        # END: Sanitize text inputs
+
         if current_user.role == 'admin':
             item.contract_unit_cost = float(request.form.get("contract_unit_cost", 0.0))
         
-        # Users with project access can update these fields
         item.item_number = request.form["item_number"]
-        item.description = request.form["description"]
-        item.unit = request.form["unit"]
         item.contract_quantity = float(request.form.get("contract_quantity", 0.0))
-        
-        # All authenticated users with project access can update actual progress
         item.actual_quantity = float(request.form.get("actual_quantity") or 0.0)
         item.actual_unit_cost = float(request.form.get("actual_unit_cost") or 0.0)
         item.status = request.form["status"]
-        item.execution_method = request.form.get("execution_method")
-        item.contractor = request.form.get("contractor")
         item.paid_amount = float(request.form.get("paid_amount") or 0.0)
-        item.notes = request.form.get("notes")
-        # END: Re-Modified permission logic
 
         db.session.commit()
         flash("تم تحديث البند بنجاح!", "success")
@@ -85,7 +85,6 @@ def delete_item(item_id):
     item = Item.query.get_or_404(item_id)
     check_project_permission(item.project)
     project_id = item.project_id
-    # Add admin check for delete
     if current_user.role != 'admin':
         abort(403)
     db.session.delete(item)

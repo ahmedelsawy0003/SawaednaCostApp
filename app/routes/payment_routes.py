@@ -4,7 +4,9 @@ from app.models.project import Project
 from app.models.item import Item
 from app.extensions import db
 from flask_login import login_required, current_user
-from app.utils import check_project_permission # <<< Import the function
+# START: Modified Import
+from app.utils import check_project_permission, sanitize_input
+# END: Modified Import
 
 payment_bp = Blueprint("payment", __name__)
 
@@ -12,7 +14,7 @@ payment_bp = Blueprint("payment", __name__)
 @login_required
 def get_payments(project_id):
     project = Project.query.get_or_404(project_id)
-    check_project_permission(project) # <<< Add permission check
+    check_project_permission(project)
     payments = Payment.query.filter_by(project_id=project_id).order_by(Payment.payment_date.desc()).all()
     return render_template("payments/index.html", project=project, payments=payments)
 
@@ -20,12 +22,15 @@ def get_payments(project_id):
 @login_required
 def new_payment(project_id):
     project = Project.query.get_or_404(project_id)
-    check_project_permission(project) # <<< Add permission check
+    check_project_permission(project)
     items = Item.query.filter_by(project_id=project_id).all()
     if request.method == "POST":
+        # START: Sanitize text input
+        description = sanitize_input(request.form.get("description"))
+        # END: Sanitize text input
+        
         amount = float(request.form["amount"])
         payment_date = request.form["payment_date"]
-        description = request.form.get("description")
         item_id = request.form.get("item_id")
 
         new_payment = Payment(project_id=project_id, amount=amount, payment_date=payment_date, description=description)
@@ -43,13 +48,16 @@ def new_payment(project_id):
 def edit_payment(payment_id):
     payment = Payment.query.get_or_404(payment_id)
     project = payment.project
-    check_project_permission(project) # <<< Add permission check
+    check_project_permission(project)
     items = Item.query.filter_by(project_id=project.id).all()
 
     if request.method == "POST":
+        # START: Sanitize text input
+        payment.description = sanitize_input(request.form.get("description"))
+        # END: Sanitize text input
+
         payment.amount = float(request.form["amount"])
         payment.payment_date = request.form["payment_date"]
-        payment.description = request.form.get("description")
         item_id = request.form.get("item_id")
         payment.item_id = int(item_id) if item_id and item_id != ":" else None
         
@@ -62,7 +70,7 @@ def edit_payment(payment_id):
 @login_required
 def delete_payment(payment_id):
     payment = Payment.query.get_or_404(payment_id)
-    check_project_permission(payment.project) # <<< Add permission check
+    check_project_permission(payment.project)
     project_id = payment.project_id
     db.session.delete(payment)
     db.session.commit()
