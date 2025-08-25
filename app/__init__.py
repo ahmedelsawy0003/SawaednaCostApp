@@ -1,6 +1,7 @@
 from flask import Flask
 from .extensions import db, migrate, login_manager
 from . import commands
+from flask_migrate import upgrade # <<< Add this import
 
 def create_app():
     app = Flask(__name__, template_folder='../templates', static_folder='../static')
@@ -37,5 +38,9 @@ def create_app():
     app.register_blueprint(payment_bp)
     app.register_blueprint(cost_detail_bp)
     
+    # START: Automatically apply database migrations
+    with app.app_context():
+        upgrade()
+    # END: Automatically apply database migrations
    
     return app
