@@ -1,6 +1,6 @@
 {% extends "layouts/base.html" %}
 
-{% block title %}تعديل البند - {{ item.item_number }}{% endblock %}
+{% block title %}تعديل البend - {{ item.item_number }}{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -161,6 +161,9 @@
                             <td>{{ "{:,.2f}".format(detail.unit_cost) }}</td>
                             <td>{{ "{:,.2f}".format(detail.total_cost) }}</td>
                             <td class="text-center">
+                                <a href="{{ url_for('cost_detail.edit_cost_detail', detail_id=detail.id) }}" class="btn btn-warning btn-sm" title="تعديل">
+                                    <i class="fas fa-edit"></i>
+                                </a>
                                 <form action="{{ url_for('cost_detail.delete_cost_detail', detail_id=detail.id) }}" method="POST" class="d-inline">
                                     <button type="submit" class="btn btn-danger btn-sm" title="حذف" onclick="return confirm('هل أنت متأكد من حذف هذا التفصيل؟')">
                                         <i class="fas fa-trash"></i>
@@ -179,4 +182,52 @@
         {% endif %}
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        function calculateTotal(qtyInput, unitCostInput, totalInput) {
+            if (!qtyInput || !unitCostInput || !totalInput) return;
+
+            const quantity = parseFloat(qtyInput.value) || 0;
+            let unitCostValue = 0;
+
+            if (unitCostInput.disabled) {
+                // For the disabled contract_unit_cost field
+                unitCostValue = parseFloat(unitCostInput.value) || 0;
+            } else {
+                unitCostValue = parseFloat(unitCostInput.value) || 0;
+            }
+            
+            const total = quantity * unitCostValue;
+            totalInput.value = total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        // Contractual Cost Calculation
+        const contractQty = document.getElementById('contract_quantity');
+        const contractUnitCost = document.getElementById('contract_unit_cost');
+        const contractUnitCostDisabled = document.getElementById('contract_unit_cost_disabled');
+        const contractTotal = document.getElementById('contract_total_cost');
+
+        const activeContractUnitCost = contractUnitCost || contractUnitCostDisabled;
+
+        if (contractQty && activeContractUnitCost) {
+            contractQty.addEventListener('input', () => calculateTotal(contractQty, activeContractUnitCost, contractTotal));
+            if(contractUnitCost){
+                 contractUnitCost.addEventListener('input', () => calculateTotal(contractQty, contractUnitCost, contractTotal));
+            }
+        }
+
+        // Actual Cost Calculation
+        const actualQty = document.getElementById('actual_quantity');
+        const actualUnitCost = document.getElementById('actual_unit_cost');
+        const actualTotal = document.getElementById('actual_total_cost');
+
+        if (actualQty && actualUnitCost) {
+            actualQty.addEventListener('input', () => calculateTotal(actualQty, actualUnitCost, actualTotal));
+            actualUnitCost.addEventListener('input', () => calculateTotal(actualQty, actualUnitCost, actualTotal));
+        }
+    });
+</script>
 {% endblock %}
