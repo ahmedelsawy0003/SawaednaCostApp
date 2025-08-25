@@ -16,43 +16,96 @@ def export_project(project_id):
     if not project.spreadsheet_id:
         flash("لا يوجد معرّف Google Sheets لهذا المشروع.", "danger")
         return redirect(url_for("project.get_project", project_id=project_id))
+    
     try:
         service = GoogleSheetsService(project.spreadsheet_id)
-        items = Item.query.filter_by(project_id=project.id).all()
+        items = Item.query.filter_by(project_id=project.id).order_by(Item.item_number).all()
         
-        data = [
-            ["رقم البند", "الوصف", "الوحدة", "الكمية التعاقدية", "التكلفة الإفرادية التعاقدية", "التكلفة الإجمالية التعاقدية",
-             "الكمية الفعلية", "التكلفة الإفرادية الفعلية", "التكلفة الإجمالية الفعلية", "الحالة",
-             "طريقة التنفيذ", "المقاول/المورد", "المبلغ المدفوع", "المبلغ المتبقي", "ملاحظات"]
-        ]
+        # START: Role-based data export
+        data = []
+        # Define headers based on user role
+        if current_user.role == 'admin':
+            headers = [
+                "رقم البند", "الوصف", "الوحدة", "الكمية التعاقدية", 
+                "التكلفة الإفرادية التعاقدية", "التكلفة الإجمالية التعاقدية",
+                "الكمية الفعلية", "التكلفة الإفرادية الفعلية", "التكلفة الإجمالية الفعلية", 
+                "الحالة", "المقاول/المورد", "المبلغ المدفوع", "المبلغ المتبقي", "ملاحظات"
+            ]
+        else: # Regular user
+            headers = [
+                "رقم البند", "الوصف", "الوحدة", "الكمية الفعلية", 
+                "التكلفة الإفرادية الفعلية", "التكلفة الإجمالية الفعلية", 
+                "الحالة", "المقاول/المورد", "المبلغ المدفوع", "المبلغ المتبقي", "ملاحظات"
+            ]
+        data.append(headers)
+
+        # Append data rows based on user role
         for item in items:
-            data.append([
-                item.item_number,
-                item.description,
-                item.unit,
-                item.contract_quantity,
-                item.contract_unit_cost,
-                item.contract_total_cost,
-                item.actual_quantity,
-                item.actual_unit_cost,
-                item.actual_total_cost,
-                item.status,
-                item.execution_method,
-                item.contractor,
-                item.paid_amount,
-                item.remaining_amount,
-                item.notes
-            ])
+            if current_user.role == 'admin':
+                data.append([
+                    item.item_number, item.description, item.unit,
+                    item.contract_quantity, item.contract_unit_cost, item.contract_total_cost,
+                    item.actual_quantity, item.actual_unit_cost, item.actual_total_cost,
+                    item.status, item.contractor, item.paid_amount, item.remaining_amount, item.notes
+                ])
+            else: # Regular user
+                data.append([
+                    item.item_number, item.description, item.unit,
+                    item.actual_quantity, item.actual_unit_cost, item.actual_total_cost,
+                    item.status, item.contractor, item.paid_amount, item.remaining_amount, item.notes
+                ])
+        # END: Role-based data export
         
-        service.write_data("بنود المشروع", data)
+        service.write_data("تفاصيل بنود المشروع", data) # Changed sheet name for clarity
         flash("تم تصدير بنود المشروع إلى Google Sheets بنجاح!", "success")
     except Exception as e:
         flash(f"حدث خطأ أثناء تصدير البيانات: {str(e)}", "danger")
     
     return redirect(url_for("project.get_project", project_id=project_id))
 
+# START: New function to export project summary
+@sheets_bp.route("/projects/<int:project_id>/export_summary", methods=["POST"])
+@login_required
+def export_summary(project_id):
+    project = Project.query.get_or_404(project_id)
+    check_project_permission(project)
+    if not project.spreadsheet_id:
+        flash("لا يوجد معرّف Google Sheets لهذا المشروع.", "danger")
+        return redirect(url_for("project.get_project", project_id=project_id))
+
+    try:
+        service = GoogleSheetsService(project.spreadsheet_id)
+        
+        summary_data = [
+            ["ملخص المشروع: " + project.name, ""],
+            ["الحقل", "القيمة"],
+        ]
+
+        if current_user.role == 'admin':
+            summary_data.extend([
+                ["إجمالي التكلفة التعاقدية", project.total_contract_cost],
+                ["إجمالي الوفر / الزيادة", project.total_savings],
+            ])
+        
+        summary_data.extend([
+            ["إجمالي التكلفة الفعلية", project.total_actual_cost],
+            ["إجمالي المبلغ المدفوع", project.total_paid_amount],
+            ["إجمالي المبلغ المتبقي", project.total_remaining_amount],
+            ["نسبة إنجاز البنود", f"{project.completion_percentage:.2f}%"],
+            ["نسبة الإنجاز المالي", f"{project.financial_completion_percentage:.2f}%"]
+        ])
+
+        service.write_data("ملخص المشروع", summary_data)
+        flash("تم تصدير ملخص المشروع إلى Google Sheets بنجاح!", "success")
+    except Exception as e:
+        flash(f"حدث خطأ أثناء تصدير الملخص: {str(e)}", "danger")
+
+    return redirect(url_for("project.get_project", project_id=project_id))
+# END: New function
+
 @sheets_bp.route("/projects/<int:project_id>/import_contractual", methods=["GET", "POST"])
 @login_required
+# ... (The import function remains exactly the same) ...
 def import_contractual_items(project_id):
     project = Project.query.get_or_404(project_id)
     check_project_permission(project)
@@ -72,8 +125,6 @@ def import_contractual_items(project_id):
 
             headers = [h.strip() for h in data[0]]
             
-            # START: Smart column detection
-            # Define possible names for each column to handle variations
             col_map = {
                 'item_number': ['رقم البند'],
                 'item_name': ['اسم البند'],
@@ -83,7 +134,6 @@ def import_contractual_items(project_id):
                 'unit_cost': ['السعر الافرادى التعاقدي', 'التكلفة الإفرادية التعاقدية']
             }
 
-            # Find the actual index of each column based on possible names
             header_indices = {}
             for key, possible_names in col_map.items():
                 for name in possible_names:
@@ -95,15 +145,12 @@ def import_contractual_items(project_id):
             if not all(key in header_indices for key in required_keys):
                 flash(f"لم يتم العثور على كل الأعمدة المطلوبة. يرجى التأكد من وجود: {', '.join(required_keys)}", "danger")
                 return redirect(url_for("sheets.import_contractual_items", project_id=project_id))
-            # END: Smart column detection
 
             for row in data[1:]:
-                # Ensure row has enough columns
-                if not any(row): continue # Skip empty rows
+                if not any(row): continue
 
                 item_number = row[header_indices['item_number']].strip()
                 
-                # Combine 'item_name' and 'description' if both exist
                 item_desc = row[header_indices['description']].strip()
                 if 'item_name' in header_indices and header_indices['item_name'] < len(row):
                     item_name = row[header_indices['item_name']].strip()
@@ -141,9 +188,9 @@ def import_contractual_items(project_id):
 
     return render_template("sheets/import_contractual.html", project=project)
 
-
 @sheets_bp.route("/projects/<int:project_id>/import_actual", methods=["GET", "POST"])
 @login_required
+# ... (This function also remains exactly the same) ...
 def import_actual_items(project_id):
     project = Project.query.get_or_404(project_id)
     check_project_permission(project)
