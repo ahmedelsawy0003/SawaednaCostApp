@@ -2,14 +2,13 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from app.models.item import Item
 from app.models.project import Project
 from app.models.cost_detail import CostDetail
-from app.models.audit_log import AuditLog # <<< Add this import
+from app.models.audit_log import AuditLog
 from app.extensions import db
 from flask_login import login_required, current_user
 from app.utils import check_project_permission, sanitize_input
 
 item_bp = Blueprint("item", __name__)
 
-# START: Helper function to log changes
 def log_item_change(item, action):
     details = []
     if action == 'create':
@@ -34,7 +33,6 @@ def log_item_change(item, action):
         details="\n".join(details)
     )
     db.session.add(log_entry)
-# END: Helper function
 
 @item_bp.route("/projects/<int:project_id>/items")
 @login_required
@@ -77,7 +75,6 @@ def new_item(project_id):
     project = Project.query.get_or_404(project_id)
     check_project_permission(project)
     if request.method == "POST":
-        # ... (code for getting form data remains the same)
         description = sanitize_input(request.form["description"])
         unit = sanitize_input(request.form["unit"])
         execution_method = sanitize_input(request.form.get("execution_method"))
@@ -95,8 +92,8 @@ def new_item(project_id):
                         actual_quantity=actual_quantity, actual_unit_cost=actual_unit_cost, status=status,
                         execution_method=execution_method, contractor=contractor, notes=notes)
         db.session.add(new_item)
-        db.session.flush() # Use flush to get the new_item.id before commit
-        log_item_change(new_item, 'create') # <<< Log creation
+        db.session.flush()
+        log_item_change(new_item, 'create')
         db.session.commit()
         flash("تم إضافة البند بنجاح!", "success")
         return redirect(url_for("item.get_items_by_project", project_id=project_id))
@@ -109,9 +106,8 @@ def edit_item(item_id):
     check_project_permission(item.project)
     project = item.project
     if request.method == "POST":
-        log_item_change(item, 'update') # <<< Log update BEFORE changes are applied
+        log_item_change(item, 'update')
         
-        # ... (code for updating item remains the same)
         item.description = sanitize_input(request.form["description"])
         item.unit = sanitize_input(request.form["unit"])
         item.execution_method = sanitize_input(request.form.get("execution_method"))
@@ -130,9 +126,15 @@ def edit_item(item_id):
         return redirect(url_for("item.get_items_by_project", project_id=item.project_id))
     
     cost_details = CostDetail.query.filter_by(item_id=item.id).order_by(CostDetail.id.desc()).all()
-    return render_template("items/edit.html", item=item, project=project, cost_details=cost_details)
+    
+    # START: Pass the AuditLog model to the template
+    return render_template("items/edit.html", 
+                           item=item, 
+                           project=project, 
+                           cost_details=cost_details, 
+                           AuditLog=AuditLog)
+    # END: Pass the AuditLog model
 
-# ... (delete_item and get_item_details functions remain the same)
 @item_bp.route("/items/<int:item_id>/delete", methods=["POST"])
 @login_required
 def delete_item(item_id):
