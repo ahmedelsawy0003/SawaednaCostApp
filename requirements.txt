@@ -8,3 +8,6 @@ google-auth-httplib2==0.1.1
 google-auth-oauthlib==1.0.0
 psycopg[binary]
 WeasyPrint==62.3
+libpango-1.0-0
+libcairo2
+libgdk-pixbuf2.0-0
