@@ -32,27 +32,24 @@
                         <input type="text" class="form-control" id="unit" name="unit" value="{{ item.unit if item.unit else "" }}">
                     </div>
                     
+                    {# START: Conditional Contractual Section #}
+                    {% if current_user.role == 'admin' %}
                     <div class="row">
                         <div class="col-6">
                             <label for="contract_quantity" class="form-label">الكمية التعاقدية</label>
                             <input type="number" step="0.01" class="form-control" id="contract_quantity" name="contract_quantity" value="{{ item.contract_quantity }}" required>
                         </div>
-                        {% if current_user.role == 'admin' %}
                         <div class="col-6">
                             <label for="contract_unit_cost" class="form-label">التكلفة الإفرادية التعاقدية</label>
                             <input type="number" step="0.01" class="form-control" id="contract_unit_cost" name="contract_unit_cost" value="{{ item.contract_unit_cost }}" required>
                         </div>
-                        {% else %}
-                        <div class="col-6">
-                             <label for="contract_unit_cost_disabled" class="form-label">التكلفة الإفرادية التعاقدية</label>
-                             <input type="number" step="0.01" class="form-control" id="contract_unit_cost_disabled" name="contract_unit_cost_disabled" value="{{ item.contract_unit_cost }}" disabled>
-                        </div>
-                        {% endif %}
                     </div>
                      <div class="mb-3">
                         <label for="contract_total_cost" class="form-label">الإجمالي التعاقدي</label>
                         <input type="text" class="form-control" id="contract_total_cost" value="{{ "{:,.2f}".format(item.contract_total_cost) }}" disabled>
                     </div>
+                    {% endif %}
+                    {# END: Conditional Contractual Section #}
                 </div>
                 <div class="col-md-6">
                      <div class="row">
@@ -91,7 +88,7 @@
                         <input type="text" class="form-control" id="paid_amount" name="paid_amount" value="{{ "{:,.2f}".format(item.paid_amount) }}" disabled>
                         <div class="form-text">هذا الحقل يمثل مجموع الدفعات المرتبطة بهذا البند.</div>
                     </div>
-                    </div>
+                </div>
             </div>
             <div class="mb-3">
                 <label for="notes" class="form-label">ملاحظات</label>
@@ -221,15 +218,11 @@
 
         const contractQty = document.getElementById('contract_quantity');
         const contractUnitCost = document.getElementById('contract_unit_cost');
-        const contractUnitCostDisabled = document.getElementById('contract_unit_cost_disabled');
         const contractTotal = document.getElementById('contract_total_cost');
-        const activeContractUnitCost = contractUnitCost || contractUnitCostDisabled;
-
-        if (contractQty && activeContractUnitCost) {
-            contractQty.addEventListener('input', () => calculateTotal(contractQty, activeContractUnitCost, contractTotal));
-            if(contractUnitCost){
-                 contractUnitCost.addEventListener('input', () => calculateTotal(contractQty, contractUnitCost, contractTotal));
-            }
+        
+        if(contractQty && contractUnitCost) {
+            contractQty.addEventListener('input', () => calculateTotal(contractQty, contractUnitCost, contractTotal));
+            contractUnitCost.addEventListener('input', () => calculateTotal(contractQty, contractUnitCost, contractTotal));
         }
 
         const actualQty = document.getElementById('actual_quantity');

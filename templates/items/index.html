@@ -30,11 +30,13 @@
                             <th>رقم البند</th>
                             <th>الوصف</th>
                             <th>الوحدة</th>
+                            {# START: Conditional Columns #}
                             {% if current_user.role == 'admin' %}
                             <th>الكمية التعاقدية</th>
                             <th>التكلفة الإفرادية التعاقدية</th>
                             <th>التكلفة الإجمالية التعاقدية</th>
                             {% endif %}
+                            {# END: Conditional Columns #}
                             <th>الكمية الفعلية</th>
                             <th>التكلفة الإفرادية الفعلية</th>
                             <th>التكلفة الإجمالية الفعلية</th>
@@ -48,11 +50,13 @@
                             <td>{{ item.item_number }}</td>
                             <td>{{ item.description }}</td>
                             <td>{{ item.unit }}</td>
+                            {# START: Conditional Columns Data #}
                             {% if current_user.role == 'admin' %}
                             <td>{{ item.contract_quantity }}</td>
                             <td>{{ "{:,.2f}".format(item.contract_unit_cost) }}</td>
                             <td>{{ "{:,.2f}".format(item.contract_total_cost) }}</td>
                             {% endif %}
+                            {# END: Conditional Columns Data #}
                             <td>{{ item.actual_quantity if item.actual_quantity is not none else "-" }}</td>
                             <td>{{ "{:,.2f}".format(item.actual_unit_cost) if item.actual_unit_cost is not none else "-" }}</td>
                             <td>{{ "{:,.2f}".format(item.actual_total_cost) }}</td>
@@ -66,9 +70,11 @@
                                     <a href="{{ url_for("item.edit_item", item_id=item.id) }}" class="btn btn-warning" title="تعديل">
                                         <i class="fas fa-edit"></i>
                                     </a>
+                                    {% if current_user.role == 'admin' %}
                                     <button type="button" class="btn btn-danger delete-item" data-bs-toggle="modal" data-bs-target="#deleteItemModal-{{ item.id }}" title="حذف">
                                         <i class="fas fa-trash"></i>
                                     </button>
+                                    {% endif %}
                                 </div>
                             </td>
                         </tr>
