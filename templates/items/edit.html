@@ -17,6 +17,7 @@
     </div>
     <div class="card-body">
         <form method="POST" action="{{ url_for("item.edit_item", item_id=item.id) }}">
+            {# ... (The entire form for editing the item remains the same) ... #}
             <div class="row">
                 <div class="col-md-6">
                     <div class="mb-3">
@@ -32,7 +33,6 @@
                         <input type="text" class="form-control" id="unit" name="unit" value="{{ item.unit if item.unit else "" }}">
                     </div>
                     
-                    {# START: Conditional Contractual Section #}
                     {% if current_user.role == 'admin' %}
                     <div class="row">
                         <div class="col-6">
@@ -49,7 +49,6 @@
                         <input type="text" class="form-control" id="contract_total_cost" value="{{ "{:,.2f}".format(item.contract_total_cost) }}" disabled>
                     </div>
                     {% endif %}
-                    {# END: Conditional Contractual Section #}
                 </div>
                 <div class="col-md-6">
                      <div class="row">
@@ -102,7 +101,8 @@
 </div>
 
 {# --- Section for Cost Details --- #}
-<div class="card">
+<div class="card mb-4">
+    {# ... (The entire Cost Details section remains the same) ... #}
     <div class="card-header bg-success text-white">
         <h3 class="mb-0">تفاصيل التكاليف الفعلية</h3>
     </div>
@@ -195,11 +195,57 @@
         {% endif %}
     </div>
 </div>
+
+<div class="card">
+    <div class="card-header bg-secondary text-white">
+        <h3 class="mb-0">سجل التغييرات</h3>
+    </div>
+    <div class="card-body">
+        {% set logs = item.history_logs.order_by(AuditLog.timestamp.desc()).all() %}
+        {% if logs %}
+            <div class="table-responsive">
+                <table class="table table-sm table-bordered">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 15%;">الوقت</th>
+                            <th style="width: 15%;">المستخدم</th>
+                            <th style="width: 10%;">الإجراء</th>
+                            <th>التفاصيل</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in logs %}
+                        <tr>
+                            <td>{{ log.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td>{{ log.user.username }}</td>
+                            <td>
+                                {% if log.action == 'create' %}
+                                    <span class="badge bg-success">إنشاء</span>
+                                {% elif log.action == 'update' %}
+                                    <span class="badge bg-warning text-dark">تحديث</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <pre style="white-space: pre-wrap; margin: 0;">{{ log.details }}</pre>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="alert alert-light">
+                لا توجد تغييرات مسجلة لهذا البند.
+            </div>
+        {% endif %}
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
 <script>
     document.addEventListener("DOMContentLoaded", function() {
+        // ... (The JavaScript for auto-calculation remains the same) ...
         function calculateTotal(qtyInput, unitCostInput, totalInput) {
             if (!qtyInput || !unitCostInput || !totalInput) return;
 

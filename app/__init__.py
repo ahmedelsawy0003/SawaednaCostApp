@@ -1,7 +1,7 @@
 from flask import Flask
 from .extensions import db, migrate, login_manager
 from . import commands
-from flask_migrate import upgrade # <<< Add this import
+from flask_migrate import upgrade
 
 def create_app():
     app = Flask(__name__, template_folder='../templates', static_folder='../static')
@@ -14,11 +14,14 @@ def create_app():
     
     commands.init_app(app)
 
+    # START: Import the new AuditLog model
     from .models.user import User
     from .models.project import Project
     from .models.item import Item
     from .models.payment import Payment
     from .models.cost_detail import CostDetail
+    from .models.audit_log import AuditLog
+    # END: Import the new AuditLog model
 
     @login_manager.user_loader
     def load_user(user_id):
@@ -38,9 +41,7 @@ def create_app():
     app.register_blueprint(payment_bp)
     app.register_blueprint(cost_detail_bp)
     
-    # START: Automatically apply database migrations
     with app.app_context():
         upgrade()
-    # END: Automatically apply database migrations
    
     return app
