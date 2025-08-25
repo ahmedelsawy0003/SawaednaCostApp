@@ -4,7 +4,7 @@ from app.models.project import Project
 from app.models.item import Item
 from app.extensions import db
 from flask_login import login_required, current_user
-from app.utils import check_project_permission # <<< Import the function
+from app.utils import check_project_permission
 
 sheets_bp = Blueprint("sheets", __name__)
 
@@ -12,11 +12,10 @@ sheets_bp = Blueprint("sheets", __name__)
 @login_required
 def export_project(project_id):
     project = Project.query.get_or_404(project_id)
-    check_project_permission(project) # <<< Add permission check
+    check_project_permission(project)
     if not project.spreadsheet_id:
         flash("لا يوجد معرّف Google Sheets لهذا المشروع.", "danger")
         return redirect(url_for("project.get_project", project_id=project_id))
-    # ... (rest of the function is the same)
     try:
         service = GoogleSheetsService(project.spreadsheet_id)
         items = Item.query.filter_by(project_id=project.id).all()
@@ -56,11 +55,11 @@ def export_project(project_id):
 @login_required
 def import_contractual_items(project_id):
     project = Project.query.get_or_404(project_id)
-    check_project_permission(project) # <<< Add permission check
+    check_project_permission(project)
     if not project.spreadsheet_id:
         flash("لا يوجد معرّف Google Sheets لهذا المشروع.", "danger")
         return redirect(url_for("project.get_project", project_id=project_id))
-    # ... (rest of the function is the same)
+    
     if request.method == "POST":
         sheet_name = request.form["sheet_name"]
         try:
@@ -72,50 +71,86 @@ def import_contractual_items(project_id):
                 return redirect(url_for("sheets.import_contractual_items", project_id=project_id))
 
             headers = [h.strip() for h in data[0]]
-            expected_headers = ["رقم البند", "الوصف", "الوحدة", "الكمية التعاقدية", "التكلفة الإفرادية التعاقدية"]
-            if not all(h in headers for h in expected_headers):
-                flash("تأكد من أن رؤوس الأعمدة في Google Sheet تتطابق مع: رقم البند, الوصف, الوحدة, الكمية التعاقدية, التكلفة الإفرادية التعاقدية", "danger")
+            
+            # START: Smart column detection
+            # Define possible names for each column to handle variations
+            col_map = {
+                'item_number': ['رقم البند'],
+                'item_name': ['اسم البند'],
+                'description': ['الوصف', 'وصف البند'],
+                'unit': ['الوحدة'],
+                'quantity': ['الكمية', 'الكمية التعاقدية'],
+                'unit_cost': ['السعر الافرادى التعاقدي', 'التكلفة الإفرادية التعاقدية']
+            }
+
+            # Find the actual index of each column based on possible names
+            header_indices = {}
+            for key, possible_names in col_map.items():
+                for name in possible_names:
+                    if name in headers:
+                        header_indices[key] = headers.index(name)
+                        break
+            
+            required_keys = ['item_number', 'description', 'unit', 'quantity', 'unit_cost']
+            if not all(key in header_indices for key in required_keys):
+                flash(f"لم يتم العثور على كل الأعمدة المطلوبة. يرجى التأكد من وجود: {', '.join(required_keys)}", "danger")
                 return redirect(url_for("sheets.import_contractual_items", project_id=project_id))
+            # END: Smart column detection
 
             for row in data[1:]:
-                item_data = dict(zip(headers, row))
-                
-                item_number = item_data.get("رقم البند")
-                description = item_data.get("الوصف")
-                unit = item_data.get("الوحدة")
-                contract_quantity = float(item_data.get("الكمية التعاقدية", 0))
-                contract_unit_cost = float(item_data.get("التكلفة الإفرادية التعاقدية", 0))
+                # Ensure row has enough columns
+                if not any(row): continue # Skip empty rows
 
-                if item_number and description:
+                item_number = row[header_indices['item_number']].strip()
+                
+                # Combine 'item_name' and 'description' if both exist
+                item_desc = row[header_indices['description']].strip()
+                if 'item_name' in header_indices and header_indices['item_name'] < len(row):
+                    item_name = row[header_indices['item_name']].strip()
+                    if item_name:
+                        item_desc = f"{item_name} - {item_desc}"
+
+                unit = row[header_indices['unit']].strip()
+                quantity = float(row[header_indices['quantity']].strip() or 0)
+                unit_cost = float(row[header_indices['unit_cost']].strip() or 0)
+
+                if item_number:
                     existing_item = Item.query.filter_by(project_id=project.id, item_number=item_number).first()
                     if existing_item:
-                        existing_item.description = description
+                        existing_item.description = item_desc
                         existing_item.unit = unit
-                        existing_item.contract_quantity = contract_quantity
-                        existing_item.contract_unit_cost = contract_unit_cost
-                        flash(f"تم تحديث البند {item_number} بنجاح.", "info")
+                        existing_item.contract_quantity = quantity
+                        existing_item.contract_unit_cost = unit_cost
                     else:
-                        new_item = Item(project_id=project.id, item_number=item_number, description=description,
-                                        unit=unit, contract_quantity=contract_quantity, contract_unit_cost=contract_unit_cost)
+                        new_item = Item(
+                            project_id=project.id, 
+                            item_number=item_number, 
+                            description=item_desc,
+                            unit=unit, 
+                            contract_quantity=quantity, 
+                            contract_unit_cost=unit_cost
+                        )
                         db.session.add(new_item)
-                        flash(f"تم إضافة البند {item_number} بنجاح.", "success")
+            
             db.session.commit()
             flash("تم استيراد البنود التعاقدية بنجاح!", "success")
             return redirect(url_for("project.get_project", project_id=project_id))
         except Exception as e:
+            db.session.rollback()
             flash(f"حدث خطأ أثناء استيراد البيانات: {str(e)}", "danger")
 
     return render_template("sheets/import_contractual.html", project=project)
+
 
 @sheets_bp.route("/projects/<int:project_id>/import_actual", methods=["GET", "POST"])
 @login_required
 def import_actual_items(project_id):
     project = Project.query.get_or_404(project_id)
-    check_project_permission(project) # <<< Add permission check
+    check_project_permission(project)
     if not project.spreadsheet_id:
         flash("لا يوجد معرّف Google Sheets لهذا المشروع.", "danger")
         return redirect(url_for("project.get_project", project_id=project_id))
-    # ... (rest of the function is the same)
+    
     if request.method == "POST":
         sheet_name = request.form["sheet_name"]
         try:
@@ -127,9 +162,9 @@ def import_actual_items(project_id):
                 return redirect(url_for("sheets.import_actual_items", project_id=project_id))
 
             headers = [h.strip() for h in data[0]]
-            expected_headers = ["رقم البند", "الكمية الفعلية", "التكلفة الإفرادية الفعلية", "الحالة", "المبلغ المدفوع"]
+            expected_headers = ["رقم البند", "الكمية الفعلية", "التكلفة الإفرادية الفعلية", "الحالة"]
             if not all(h in headers for h in expected_headers):
-                flash("تأكد من أن رؤوس الأعمدة في Google Sheet تتطابق مع: رقم البند, الكمية الفعلية, التكلفة الإفرادية الفعلية, الحالة, المبلغ المدفوع", "danger")
+                flash("تأكد من أن رؤوس الأعمدة في Google Sheet تتطابق مع: رقم البند, الكمية الفعلية, التكلفة الإفرادية الفعلية, الحالة", "danger")
                 return redirect(url_for("sheets.import_actual_items", project_id=project_id))
 
             for row in data[1:]:
@@ -139,7 +174,6 @@ def import_actual_items(project_id):
                 actual_quantity = float(item_data.get("الكمية الفعلية", 0))
                 actual_unit_cost = float(item_data.get("التكلفة الإفرادية الفعلية", 0))
                 status = item_data.get("الحالة", "نشط")
-                paid_amount = float(item_data.get("المبلغ المدفوع", 0))
 
                 if item_number:
                     existing_item = Item.query.filter_by(project_id=project.id, item_number=item_number).first()
@@ -147,14 +181,14 @@ def import_actual_items(project_id):
                         existing_item.actual_quantity = actual_quantity
                         existing_item.actual_unit_cost = actual_unit_cost
                         existing_item.status = status
-                        existing_item.paid_amount = paid_amount
-                        flash(f"تم تحديث البند {item_number} بالبيانات الفعلية بنجاح.", "info")
                     else:
                         flash(f"البند {item_number} غير موجود في المشروع. يرجى إضافته أولاً كبند تعاقدي.", "warning")
+            
             db.session.commit()
             flash("تم استيراد البنود الفعلية بنجاح!", "success")
             return redirect(url_for("project.get_project", project_id=project_id))
         except Exception as e:
+            db.session.rollback()
             flash(f"حدث خطأ أثناء استيراد البيانات: {str(e)}", "danger")
 
     return render_template("sheets/import_actual.html", project=project)

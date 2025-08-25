@@ -15,9 +15,16 @@
         <h3 class="mb-0">استيراد بنود تعاقدية</h3>
     </div>
     <div class="card-body">
-        <p>يرجى التأكد من أن جدول بيانات Google Sheets الخاص بك يحتوي على الأعمدة التالية (بالضبط بنفس الأسماء):
-            <code>رقم البند</code>، <code>الوصف</code>، <code>الوحدة</code>، <code>الكمية التعاقدية</code>، <code>التكلفة الإفرادية التعاقدية</code>.
-        </p>
+        <p>يرجى التأكد من أن جدول بيانات Google Sheets الخاص بك يحتوي على الأعمدة الأساسية التالية:</p>
+        <ul>
+            <li><code>رقم البند</code></li>
+            <li><code>الوصف</code> (أو <code>وصف البند</code>)</li>
+            <li><code>الوحدة</code></li>
+            <li><code>الكمية</code> (أو <code>الكمية التعاقدية</code>)</li>
+            <li><code>السعر الافرادى التعاقدي</code> (أو <code>التكلفة الإفرادية التعاقدية</code>)</li>
+        </ul>
+        <p><b>ملاحظة:</b> إذا كان الملف يحتوي على عمود <code>اسم البند</code> بالإضافة إلى <code>الوصف</code>، سيقوم النظام بدمجهما معًا في حقل الوصف تلقائيًا.</p>
+        <hr>
         <form method="POST" action="{{ url_for("sheets.import_contractual_items", project_id=project.id) }}">
             <div class="mb-3">
                 <label for="sheet_name" class="form-label">اسم الورقة في Google Sheets</label>
@@ -30,4 +37,3 @@
     </div>
 </div>
 {% endblock %}
-
