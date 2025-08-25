@@ -46,10 +46,10 @@ class Project(db.Model):
     # START: Corrected Financial Completion Percentage
     @property
     def financial_completion_percentage(self):
-        # Correct calculation should be based on actual cost vs contract cost
-        if self.total_contract_cost == 0:
+        # The correct calculation is based on paid amount vs actual cost
+        if self.total_actual_cost == 0:
             return 0.0
-        return (self.total_actual_cost / self.total_contract_cost) * 100
+        return (self.total_paid_amount / self.total_actual_cost) * 100
     # END: Corrected Formula
 
     @property
