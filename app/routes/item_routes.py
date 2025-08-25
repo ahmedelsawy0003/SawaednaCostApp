@@ -13,8 +13,38 @@ item_bp = Blueprint("item", __name__)
 def get_items_by_project(project_id):
     project = Project.query.get_or_404(project_id)
     check_project_permission(project)
-    items = Item.query.filter_by(project_id=project_id).all()
-    return render_template("items/index.html", project=project, items=items)
+
+    # START: Advanced Filtering Logic
+    search_term = request.args.get('search', '')
+    status_filter = request.args.get('status', '')
+    contractor_filter = request.args.get('contractor', '')
+
+    query = Item.query.filter_by(project_id=project_id)
+
+    if search_term:
+        search_like = f"%{search_term}%"
+        query = query.filter(db.or_(
+            Item.item_number.ilike(search_like),
+            Item.description.ilike(search_like)
+        ))
+    
+    if status_filter:
+        query = query.filter(Item.status == status_filter)
+
+    if contractor_filter:
+        contractor_like = f"%{contractor_filter}%"
+        query = query.filter(Item.contractor.ilike(contractor_like))
+
+    items = query.all()
+
+    # Pass filter values back to the template
+    filters = {
+        'search': search_term,
+        'status': status_filter,
+        'contractor': contractor_filter
+    }
+    return render_template("items/index.html", project=project, items=items, filters=filters)
+    # END: Advanced Filtering Logic
 
 @item_bp.route("/projects/<int:project_id>/items/new", methods=["GET", "POST"])
 @login_required
@@ -34,8 +64,7 @@ def new_item(project_id):
         actual_quantity = float(request.form.get("actual_quantity") or 0.0)
         actual_unit_cost = float(request.form.get("actual_unit_cost") or 0.0)
         status = request.form["status"]
-        # The 'paid_amount' is now calculated, so we don't get it from the form.
-
+        
         new_item = Item(project_id=project_id, item_number=item_number, description=description,
                         unit=unit, contract_quantity=contract_quantity, contract_unit_cost=contract_unit_cost,
                         actual_quantity=actual_quantity, actual_unit_cost=actual_unit_cost, status=status,
@@ -67,8 +96,6 @@ def edit_item(item_id):
         item.actual_quantity = float(request.form.get("actual_quantity") or 0.0)
         item.actual_unit_cost = float(request.form.get("actual_unit_cost") or 0.0)
         item.status = request.form["status"]
-        
-        # The line for 'item.paid_amount' has been removed.
         
         db.session.commit()
         flash("تم تحديث البند بنجاح!", "success")
