@@ -73,6 +73,10 @@ def export_summary(project_id):
         return redirect(url_for("project.get_project", project_id=project_id))
 
     try:
+        # START: The missing line is added here
+        service = GoogleSheetsService(project.spreadsheet_id)
+        # END: The missing line is added here
+        
         summary_data = [
             ["ملخص المشروع: " + project.name, ""],
             ["الحقل", "القيمة"],
@@ -157,10 +161,8 @@ def import_contractual_items(project_id):
 
                     unit = row[header_indices['unit']].strip()
                     
-                    # START: Remove commas before converting to float
                     quantity_str = row[header_indices['quantity']].strip().replace(',', '')
                     unit_cost_str = row[header_indices['unit_cost']].strip().replace(',', '')
-                    # END: Remove commas
                     
                     quantity = float(quantity_str or 0)
                     unit_cost = float(unit_cost_str or 0)
@@ -193,7 +195,6 @@ def import_contractual_items(project_id):
 @sheets_bp.route("/projects/<int:project_id>/import_actual", methods=["GET", "POST"])
 @login_required
 def import_actual_items(project_id):
-    # ... (This function remains the same, but let's add comma removal for safety)
     project = Project.query.get_or_404(project_id)
     check_project_permission(project)
     if not project.spreadsheet_id:
