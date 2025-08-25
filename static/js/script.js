@@ -4,7 +4,6 @@ document.addEventListener("DOMContentLoaded", function() {
     const alerts = document.querySelectorAll(".alert");
     alerts.forEach(alert => {
         setTimeout(() => {
-            // Check if the alert still exists before trying to close it
             if (alert.parentElement) {
                 new bootstrap.Alert(alert).close();
             }
@@ -31,21 +30,57 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     });
 
-    // START: New Password Toggle Functionality
+    // Password Toggle Functionality
     const togglePassword = document.querySelector("#togglePassword");
     const passwordInput = document.querySelector("#password");
 
     if (togglePassword && passwordInput) {
         togglePassword.addEventListener("click", function () {
-            // Toggle the type attribute
             const type = passwordInput.getAttribute("type") === "password" ? "text" : "password";
             passwordInput.setAttribute("type", type);
             
-            // Toggle the icon
             this.classList.toggle("fa-eye");
             this.classList.toggle("fa-eye-slash");
         });
     }
-    // END: New Password Toggle Functionality
+
+    // START: New Auto-calculation functionality for item costs
+    const contractQty = document.getElementById('contract_quantity');
+    const contractUnitCost = document.getElementById('contract_unit_cost');
+    const contractTotal = document.getElementById('contract_total_cost');
+
+    const actualQty = document.getElementById('actual_quantity');
+    const actualUnitCost = document.getElementById('actual_unit_cost');
+    const actualTotal = document.getElementById('actual_total_cost');
+
+    function calculateTotal(qtyInput, unitCostInput, totalInput) {
+        const quantity = parseFloat(qtyInput.value) || 0;
+        // Check if the unitCostInput is disabled (for non-admin users)
+        const unitCostValue = unitCostInput.disabled 
+            ? parseFloat(unitCostInput.value) || 0 
+            : parseFloat(unitCostInput.value) || 0;
+            
+        if (unitCostInput.value === '') return; // Do not calculate if unit cost is empty
+            
+        const total = quantity * unitCostValue;
+        totalInput.value = total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+    
+    // Add event listeners if the elements exist on the page
+    if (contractQty && contractUnitCost && contractTotal) {
+        // Also listen to the disabled field for non-admins
+        const contractUnitCostDisabled = document.getElementById('contract_unit_cost_disabled');
+
+        contractQty.addEventListener('input', () => calculateTotal(contractQty, contractUnitCost || contractUnitCostDisabled, contractTotal));
+        if (contractUnitCost) {
+           contractUnitCost.addEventListener('input', () => calculateTotal(contractQty, contractUnitCost, contractTotal));
+        }
+    }
+
+    if (actualQty && actualUnitCost && actualTotal) {
+        actualQty.addEventListener('input', () => calculateTotal(actualQty, actualUnitCost, actualTotal));
+        actualUnitCost.addEventListener('input', () => calculateTotal(actualQty, actualUnitCost, actualTotal));
+    }
+    // END: New Auto-calculation functionality
 
 });
