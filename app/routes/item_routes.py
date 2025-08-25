@@ -34,12 +34,12 @@ def new_item(project_id):
         actual_quantity = float(request.form.get("actual_quantity") or 0.0)
         actual_unit_cost = float(request.form.get("actual_unit_cost") or 0.0)
         status = request.form["status"]
-        paid_amount = float(request.form.get("paid_amount") or 0.0)
+        # The 'paid_amount' is now calculated, so we don't get it from the form.
 
         new_item = Item(project_id=project_id, item_number=item_number, description=description,
                         unit=unit, contract_quantity=contract_quantity, contract_unit_cost=contract_unit_cost,
                         actual_quantity=actual_quantity, actual_unit_cost=actual_unit_cost, status=status,
-                        execution_method=execution_method, contractor=contractor, paid_amount=paid_amount, notes=notes)
+                        execution_method=execution_method, contractor=contractor, notes=notes)
         db.session.add(new_item)
         db.session.commit()
         flash("تم إضافة البند بنجاح!", "success")
@@ -68,10 +68,8 @@ def edit_item(item_id):
         item.actual_unit_cost = float(request.form.get("actual_unit_cost") or 0.0)
         item.status = request.form["status"]
         
-        # START: Re-added the missing line
-        item.paid_amount = float(request.form.get("paid_amount") or 0.0)
-        # END: Re-added the missing line
-
+        # The line for 'item.paid_amount' has been removed.
+        
         db.session.commit()
         flash("تم تحديث البند بنجاح!", "success")
         return redirect(url_for("item.get_items_by_project", project_id=item.project_id))

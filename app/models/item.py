@@ -2,7 +2,6 @@ from app.extensions import db
 
 class Item(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    # <<< تم التعديل هنا: تم حذف الشرطة المائلة للخلف \
     project_id = db.Column(db.Integer, db.ForeignKey('project.id'), nullable=False)
     item_number = db.Column(db.String(255), nullable=False)
     description = db.Column(db.Text, nullable=False)
@@ -11,17 +10,27 @@ class Item(db.Model):
     contract_unit_cost = db.Column(db.Float)
     actual_quantity = db.Column(db.Float)
     actual_unit_cost = db.Column(db.Float)
-    status = db.Column(db.String(50), default='نشط') # نشط, مكتمل, معلق
-    execution_method = db.Column(db.String(100)) # مقاولة, توريد, عمالة, ذاتي
+    status = db.Column(db.String(50), default='نشط')
+    execution_method = db.Column(db.String(100))
     contractor = db.Column(db.String(255))
-    paid_amount = db.Column(db.Float, default=0.0)
     notes = db.Column(db.Text)
 
-    project = db.relationship('Project', backref=db.backref('items', lazy=True))
+    project = db.relationship('Project', backref=db.backref('items', lazy=True, cascade="all, delete-orphan"))
 
+    # START: Convert paid_amount to a calculated property
+    @property
+    def paid_amount(self):
+        """Calculates the total paid amount by summing up associated payments."""
+        if not self.payments:
+            return 0.0
+        return sum(payment.amount for payment in self.payments)
+    # END: Conversion
+    
     @property
     def contract_total_cost(self):
-        return self.contract_quantity * self.contract_unit_cost
+        if self.contract_quantity is not None and self.contract_unit_cost is not None:
+            return self.contract_quantity * self.contract_unit_cost
+        return 0.0
 
     @property
     def actual_total_cost(self):
