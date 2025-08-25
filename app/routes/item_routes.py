@@ -67,17 +67,17 @@ def edit_item(item_id):
         item.actual_quantity = float(request.form.get("actual_quantity") or 0.0)
         item.actual_unit_cost = float(request.form.get("actual_unit_cost") or 0.0)
         item.status = request.form["status"]
+        
+        # START: Re-added the missing line
         item.paid_amount = float(request.form.get("paid_amount") or 0.0)
+        # END: Re-added the missing line
 
         db.session.commit()
         flash("تم تحديث البند بنجاح!", "success")
         return redirect(url_for("item.get_items_by_project", project_id=item.project_id))
     
-    # START: Corrected query
-    # Sort by ID to show the newest details first
     cost_details = CostDetail.query.filter_by(item_id=item.id).order_by(CostDetail.id.desc()).all()
     return render_template("items/edit.html", item=item, project=project, cost_details=cost_details)
-    # END: Corrected query
 
 @item_bp.route("/items/<int:item_id>/delete", methods=["POST"])
 @login_required
