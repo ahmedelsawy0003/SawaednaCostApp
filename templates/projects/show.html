@@ -15,12 +15,17 @@
         <a href="{{ url_for("payment.get_payments", project_id=project.id) }}" class="btn btn-success">
             <i class="fas fa-money-bill-wave me-1"></i> الدفعات
         </a>
+        {# START: New Print Button #}
+        <a href="{{ url_for('project.project_summary_pdf', project_id=project.id) }}" class="btn btn-secondary" target="_blank">
+            <i class="fas fa-print me-1"></i> طباعة تقرير
+        </a>
+        {# END: New Print Button #}
         {% if current_user.role == 'admin' %}
         <a href="{{ url_for("project.edit_project", project_id=project.id) }}" class="btn btn-warning">
             <i class="fas fa-edit me-1"></i> تعديل
         </a>
         {% endif %}
-        </div>
+    </div>
 </div>
 
 <div class="row">
@@ -34,7 +39,7 @@
                     <div class="col-md-6">
                         <p><strong>اسم المشروع:</strong> {{ project.name }}</p>
                         <p><strong>الموقع:</strong> {{ project.location if project.location else "غير محدد" }}</p>
-                        <p><strong>الحالة:</strong> 
+                        <p><strong>الحالة:</strong>
                             <span class="badge {{ "bg-warning" if project.status == "قيد التنفيذ" else "bg-success" if project.status == "مكتمل" else "bg-info" if project.status == "معلق" else "bg-danger" }}">
                                 {{ project.status }}
                             </span>
@@ -94,9 +99,7 @@
     </div>
 
     <div class="col-md-4">
-        {# START: Replaced with Partial Template #}
         {% include "partials/_project_summary_cards.html" %}
-        {# END: Replaced with Partial Template #}
 
         <div class="card">
             <div class="card-header bg-secondary text-white">

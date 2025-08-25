@@ -1,9 +1,11 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, abort
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, abort, Response
 from app.models.project import Project
 from app.models.item import Item
 from app.extensions import db
 from flask_login import login_required, current_user
 from app.utils import check_project_permission
+from weasyprint import HTML
+from datetime import date
 
 project_bp = Blueprint("project", __name__)
 
@@ -52,10 +54,8 @@ def get_project(project_id):
 @login_required
 def edit_project(project_id):
     project = Project.query.get_or_404(project_id)
-    # START: Modified security check
     if current_user.role != 'admin':
         abort(403)
-    # END: Modified security check
     
     if request.method == "POST":
         project.name = request.form["name"]
@@ -74,10 +74,8 @@ def edit_project(project_id):
 @login_required
 def delete_project(project_id):
     project = Project.query.get_or_404(project_id)
-    # START: Modified security check (already correct but kept for consistency)
     if current_user.role != 'admin':
         abort(403)
-    # END: Modified security check
         
     db.session.delete(project)
     db.session.commit()
@@ -157,3 +155,32 @@ def all_projects_dashboard():
         status_labels=status_labels,
         status_data=status_data
     )
+
+# START: New PDF Report Route
+@project_bp.route("/projects/<int:project_id>/report/pdf")
+@login_required
+def project_summary_pdf(project_id):
+    project = Project.query.get_or_404(project_id)
+    check_project_permission(project)
+    
+    today_str = date.today().strftime("%Y-%m-%d")
+
+    # Render the HTML template with project data
+    html_out = render_template(
+        "reports/project_summary_report.html", 
+        project=project, 
+        today_date=today_str
+    )
+    
+    # Generate PDF from the rendered HTML
+    pdf = HTML(string=html_out).write_pdf()
+    
+    # Create a response to send the PDF back to the user
+    return Response(
+        pdf,
+        mimetype="application/pdf",
+        headers={
+            "Content-Disposition": f"attachment;filename=report-{project.name}.pdf"
+        }
+    )
+# END: New PDF Report Route
