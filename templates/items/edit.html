@@ -1,6 +1,6 @@
 {% extends "layouts/base.html" %}
 
-{% block title %}تعديل البend - {{ item.item_number }}{% endblock %}
+{% block title %}تعديل البند - {{ item.item_number }}{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -149,6 +149,7 @@
                             <th>الكمية</th>
                             <th>تكلفة الوحدة</th>
                             <th>التكلفة الإجمالية</th>
+                            <th>الحالة</th> {# <-- New Column #}
                             <th class="text-center">الإجراءات</th>
                         </tr>
                     </thead>
@@ -160,15 +161,29 @@
                             <td>{{ detail.quantity }}</td>
                             <td>{{ "{:,.2f}".format(detail.unit_cost) }}</td>
                             <td>{{ "{:,.2f}".format(detail.total_cost) }}</td>
+                            <td> {# <-- New Column Data #}
+                                {% if detail.status == 'مدفوع' %}
+                                    <span class="badge bg-success">مدفوع</span>
+                                {% else %}
+                                    <span class="badge bg-warning text-dark">غير مدفوع</span>
+                                {% endif %}
+                            </td>
                             <td class="text-center">
-                                <a href="{{ url_for('cost_detail.edit_cost_detail', detail_id=detail.id) }}" class="btn btn-warning btn-sm" title="تعديل">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                                <form action="{{ url_for('cost_detail.delete_cost_detail', detail_id=detail.id) }}" method="POST" class="d-inline">
-                                    <button type="submit" class="btn btn-danger btn-sm" title="حذف" onclick="return confirm('هل أنت متأكد من حذف هذا التفصيل؟')">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </form>
+                                <div class="btn-group btn-group-sm">
+                                    <form action="{{ url_for('cost_detail.toggle_status', detail_id=detail.id) }}" method="POST" class="d-inline">
+                                        <button type="submit" class="btn btn-info btn-sm" title="تغيير حالة الدفع">
+                                            <i class="fas fa-exchange-alt"></i>
+                                        </button>
+                                    </form>
+                                    <a href="{{ url_for('cost_detail.edit_cost_detail', detail_id=detail.id) }}" class="btn btn-warning btn-sm" title="تعديل">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <form action="{{ url_for('cost_detail.delete_cost_detail', detail_id=detail.id) }}" method="POST" class="d-inline">
+                                        <button type="submit" class="btn btn-danger btn-sm" title="حذف" onclick="return confirm('هل أنت متأكد من حذف هذا التفصيل؟')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                         {% endfor %}
@@ -194,7 +209,6 @@
             let unitCostValue = 0;
 
             if (unitCostInput.disabled) {
-                // For the disabled contract_unit_cost field
                 unitCostValue = parseFloat(unitCostInput.value) || 0;
             } else {
                 unitCostValue = parseFloat(unitCostInput.value) || 0;
@@ -204,12 +218,10 @@
             totalInput.value = total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
 
-        // Contractual Cost Calculation
         const contractQty = document.getElementById('contract_quantity');
         const contractUnitCost = document.getElementById('contract_unit_cost');
         const contractUnitCostDisabled = document.getElementById('contract_unit_cost_disabled');
         const contractTotal = document.getElementById('contract_total_cost');
-
         const activeContractUnitCost = contractUnitCost || contractUnitCostDisabled;
 
         if (contractQty && activeContractUnitCost) {
@@ -219,7 +231,6 @@
             }
         }
 
-        // Actual Cost Calculation
         const actualQty = document.getElementById('actual_quantity');
         const actualUnitCost = document.getElementById('actual_unit_cost');
         const actualTotal = document.getElementById('actual_total_cost');

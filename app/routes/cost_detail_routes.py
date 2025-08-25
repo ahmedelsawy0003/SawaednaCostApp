@@ -29,6 +29,7 @@ def add_cost_detail(item_id):
             quantity=quantity,
             unit_cost=unit_cost,
             total_cost=total_cost
+            # Status will default to 'غير مدفوع'
         )
         db.session.add(new_detail)
         db.session.commit()
@@ -38,7 +39,6 @@ def add_cost_detail(item_id):
 
     return redirect(url_for('item.edit_item', item_id=item_id))
 
-# START: New Edit Function
 @cost_detail_bp.route('/<int:detail_id>/edit', methods=['GET', 'POST'])
 @login_required
 def edit_cost_detail(detail_id):
@@ -65,7 +65,24 @@ def edit_cost_detail(detail_id):
             return redirect(url_for('cost_detail.edit_cost_detail', detail_id=detail.id))
 
     return render_template('cost_details/edit.html', detail=detail)
-# END: New Edit Function
+
+# START: New Status Toggle Function
+@cost_detail_bp.route('/<int:detail_id>/toggle-status', methods=['POST'])
+@login_required
+def toggle_status(detail_id):
+    """تغيير حالة الدفع لتفصيل التكلفة"""
+    detail = CostDetail.query.get_or_404(detail_id)
+    check_project_permission(detail.item.project)
+
+    if detail.status == 'مدفوع':
+        detail.status = 'غير مدفوع'
+    else:
+        detail.status = 'مدفوع'
+    
+    db.session.commit()
+    flash(f"تم تغيير حالة '{detail.description}' إلى '{detail.status}' بنجاح.", 'info')
+    return redirect(url_for('item.edit_item', item_id=detail.item_id))
+# END: New Status Toggle Function
 
 @cost_detail_bp.route('/<int:detail_id>/delete', methods=['POST'])
 @login_required
