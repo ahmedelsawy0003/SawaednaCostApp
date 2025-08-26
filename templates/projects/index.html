@@ -26,12 +26,14 @@
                     <thead class="table-dark">
                         <tr>
                             <th>اسم المشروع</th>
+                            <th>الموقع</th>
+                            <th>تاريخ البداية</th>
+                            <th>تاريخ النهاية</th>
                             <th>الحالة</th>
                             {% if current_user.role == 'admin' %}
                             <th>التكلفة التعاقدية</th>
                             {% endif %}
                             <th>التكلفة الفعلية</th>
-                            <th>إجمالي المدفوعات</th> {# <-- START: New Column Header #}
                              {% if current_user.role == 'admin' %}
                              <th>الوفر/الزيادة</th>
                              {% endif %}
@@ -42,6 +44,9 @@
                         {% for project in projects %}
                         <tr>
                             <td><a href="{{ url_for("project.get_project", project_id=project.id) }}">{{ project.name }}</a></td>
+                            <td>{{ project.location if project.location else "-" }}</td>
+                            <td>{{ project.start_date if project.start_date else "-" }}</td>
+                            <td>{{ project.end_date if project.end_date else "-" }}</td>
                             <td>
                                 <span class="badge {{ "bg-warning" if project.status == "قيد التنفيذ" else "bg-success" if project.status == "مكتمل" else "bg-info" if project.status == "معلق" else "bg-danger" }}">
                                     {{ project.status }}
@@ -51,9 +56,6 @@
                             <td>{{ "{:,.2f}".format(project.total_contract_cost) }}</td>
                             {% endif %}
                             <td>{{ "{:,.2f}".format(project.total_actual_cost) }}</td>
-                            {# START: New Column Data #}
-                            <td class="text-info">{{ "{:,.2f}".format(project.total_paid_amount) }}</td>
-                            {# END: New Column Data #}
                             {% if current_user.role == 'admin' %}
                             <td>
                                 <span class="{{ "text-success" if project.total_savings >= 0 else "text-danger" }}">
@@ -66,6 +68,7 @@
                                     <a href="{{ url_for("project.get_project", project_id=project.id) }}" class="btn btn-info" title="عرض التفاصيل">
                                         <i class="fas fa-eye"></i>
                                     </a>
+                                    {# START: Modified Buttons Visibility #}
                                     {% if current_user.role == 'admin' %}
                                     <a href="{{ url_for("project.edit_project", project_id=project.id) }}" class="btn btn-warning" title="تعديل">
                                         <i class="fas fa-edit"></i>
@@ -74,6 +77,7 @@
                                         <i class="fas fa-trash"></i>
                                     </button>
                                     {% endif %}
+                                    {# END: Modified Buttons Visibility #}
                                 </div>
                             </td>
                         </tr>
