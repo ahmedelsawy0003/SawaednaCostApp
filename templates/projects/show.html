@@ -54,7 +54,8 @@
             </div>
         </div>
 
-        {% if project.spreadsheet_id %}
+        {# START: Conditional Google Sheets Section #}
+        {% if current_user.role == 'admin' and project.spreadsheet_id %}
         <div class="card mb-4">
             <div class="card-header bg-success text-white">
                 <h3 class="mb-0">خيارات Google Sheets</h3>
@@ -91,6 +92,7 @@
             </div>
         </div>
         {% endif %}
+        {# END: Conditional Google Sheets Section #}
     </div>
 
     <div class="col-md-4">

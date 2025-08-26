@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, abort
 from app.services.google_sheets_service import GoogleSheetsService
 from app.models.project import Project
 from app.models.item import Item
@@ -11,6 +11,10 @@ sheets_bp = Blueprint("sheets", __name__)
 @sheets_bp.route("/projects/<int:project_id>/export_items", methods=["POST"])
 @login_required
 def export_project(project_id):
+    # START: Add Admin Check
+    if current_user.role != 'admin':
+        abort(403)
+    # END: Add Admin Check
     project = Project.query.get_or_404(project_id)
     check_project_permission(project)
     if not project.spreadsheet_id:
@@ -22,35 +26,21 @@ def export_project(project_id):
         items = Item.query.filter_by(project_id=project.id).order_by(Item.item_number).all()
         
         data = []
-        if current_user.role == 'admin':
-            headers = [
-                "رقم البند", "الوصف", "الوحدة", "الكمية التعاقدية", 
-                "التكلفة الإفرادية التعاقدية", "التكلفة الإجمالية التعاقدية",
-                "الكمية الفعلية", "التكلفة الإفرادية الفعلية", "التكلفة الإجمالية الفعلية", 
-                "الحالة", "المقاول/المورد", "المبلغ المدفوع", "المبلغ المتبقي", "ملاحظات"
-            ]
-        else:
-            headers = [
-                "رقم البند", "الوصف", "الوحدة", "الكمية الفعلية", 
-                "التكلفة الإفرادية الفعلية", "التكلفة الإجمالية الفعلية", 
-                "الحالة", "المقاول/المورد", "المبلغ المدفوع", "المبلغ المتبقي", "ملاحظات"
-            ]
+        headers = [
+            "رقم البند", "الوصف", "الوحدة", "الكمية التعاقدية", 
+            "التكلفة الإفرادية التعاقدية", "التكلفة الإجمالية التعاقدية",
+            "الكمية الفعلية", "التكلفة الإفرادية الفعلية", "التكلفة الإجمالية الفعلية", 
+            "الحالة", "المقاول/المورد", "المبلغ المدفوع", "المبلغ المتبقي", "ملاحظات"
+        ]
         data.append(headers)
 
         for item in items:
-            if current_user.role == 'admin':
-                data.append([
-                    item.item_number, item.description, item.unit,
-                    item.contract_quantity, item.contract_unit_cost, item.contract_total_cost,
-                    item.actual_quantity, item.actual_unit_cost, item.actual_total_cost,
-                    item.status, item.contractor, item.paid_amount, item.remaining_amount, item.notes
-                ])
-            else:
-                data.append([
-                    item.item_number, item.description, item.unit,
-                    item.actual_quantity, item.actual_unit_cost, item.actual_total_cost,
-                    item.status, item.contractor, item.paid_amount, item.remaining_amount, item.notes
-                ])
+            data.append([
+                item.item_number, item.description, item.unit,
+                item.contract_quantity, item.contract_unit_cost, item.contract_total_cost,
+                item.actual_quantity, item.actual_unit_cost, item.actual_total_cost,
+                item.status, item.contractor, item.paid_amount, item.remaining_amount, item.notes
+            ])
         
         success, error_message = service.write_data("تفاصيل بنود المشروع", data)
         if success:
@@ -66,6 +56,10 @@ def export_project(project_id):
 @sheets_bp.route("/projects/<int:project_id>/export_summary", methods=["POST"])
 @login_required
 def export_summary(project_id):
+    # START: Add Admin Check
+    if current_user.role != 'admin':
+        abort(403)
+    # END: Add Admin Check
     project = Project.query.get_or_404(project_id)
     check_project_permission(project)
     if not project.spreadsheet_id:
@@ -73,28 +67,19 @@ def export_summary(project_id):
         return redirect(url_for("project.get_project", project_id=project_id))
 
     try:
-        # START: The missing line is added here
         service = GoogleSheetsService(project.spreadsheet_id)
-        # END: The missing line is added here
         
         summary_data = [
             ["ملخص المشروع: " + project.name, ""],
             ["الحقل", "القيمة"],
-        ]
-
-        if current_user.role == 'admin':
-            summary_data.extend([
-                ["إجمالي التكلفة التعاقدية", project.total_contract_cost],
-                ["إجمالي الوفر / الزيادة", project.total_savings],
-            ])
-        
-        summary_data.extend([
+            ["إجمالي التكلفة التعاقدية", project.total_contract_cost],
+            ["إجمالي الوفر / الزيادة", project.total_savings],
             ["إجمالي التكلفة الفعلية", project.total_actual_cost],
             ["إجمالي المبلغ المدفوع", project.total_paid_amount],
             ["إجمالي المبلغ المتبقي", project.total_remaining_amount],
             ["نسبة إنجاز البنود", f"{project.completion_percentage:.2f}%"],
             ["نسبة الإنجاز المالي", f"{project.financial_completion_percentage:.2f}%"]
-        ])
+        ]
 
         success, error_message = service.write_data("ملخص المشروع", summary_data)
         if success:
@@ -110,6 +95,10 @@ def export_summary(project_id):
 @sheets_bp.route("/projects/<int:project_id>/import_contractual", methods=["GET", "POST"])
 @login_required
 def import_contractual_items(project_id):
+    # START: Add Admin Check
+    if current_user.role != 'admin':
+        abort(403)
+    # END: Add Admin Check
     project = Project.query.get_or_404(project_id)
     check_project_permission(project)
     if not project.spreadsheet_id:
@@ -195,6 +184,10 @@ def import_contractual_items(project_id):
 @sheets_bp.route("/projects/<int:project_id>/import_actual", methods=["GET", "POST"])
 @login_required
 def import_actual_items(project_id):
+    # START: Add Admin Check
+    if current_user.role != 'admin':
+        abort(403)
+    # END: Add Admin Check
     project = Project.query.get_or_404(project_id)
     check_project_permission(project)
     if not project.spreadsheet_id:
