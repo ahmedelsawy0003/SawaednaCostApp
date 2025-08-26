@@ -11,11 +11,19 @@ class Project(db.Model):
     notes = db.Column(db.Text)
     spreadsheet_id = db.Column(db.String(255))
     
+    # START: Add manager_id field
+    manager_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    # END: Add manager_id field
+
     users = db.relationship(
         'User', 
         secondary=user_project_association,
         back_populates='projects'
     )
+    
+    # START: Add relationship to the manager
+    manager = db.relationship('User', foreign_keys=[manager_id])
+    # END: Add relationship
 
     @property
     def total_contract_cost(self):
@@ -37,20 +45,16 @@ class Project(db.Model):
     def completion_percentage(self):
         if not self.items:
             return 0.0
-        # Prevents division by zero if there are no items
         if len(self.items) == 0:
             return 0.0
         completed_items = sum(1 for item in self.items if item.status == 'مكتمل')
         return (completed_items / len(self.items)) * 100
 
-    # START: Corrected Financial Completion Percentage
     @property
     def financial_completion_percentage(self):
-        # The correct calculation is based on paid amount vs actual cost
         if self.total_actual_cost == 0:
             return 0.0
         return (self.total_paid_amount / self.total_actual_cost) * 100
-    # END: Corrected Formula
 
     @property
     def total_paid_amount(self):
