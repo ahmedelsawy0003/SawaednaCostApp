@@ -15,7 +15,7 @@
         <h3 class="mb-0">بيانات المشروع</h3>
     </div>
     <div class="card-body">
-        <form method="POST" action="{{ url_for("project.new_project") }}" data-auto-save id="newProjectForm">
+        <form method="POST" action="{{ url_for("project.new_project") }}">
             <div class="row">
                 <div class="col-md-6">
                     <div class="mb-3">
@@ -35,7 +35,16 @@
                             <option value="ملغي">ملغي</option>
                         </select>
                     </div>
-                </div>
+                     <div class="mb-3">
+                        <label for="manager_id" class="form-label">مدير المشروع (اختياري)</label>
+                        <select class="form-select" id="manager_id" name="manager_id">
+                            <option value="">-- اختر مديرًا للمشروع --</option>
+                            {% for user in users %}
+                                <option value="{{ user.id }}">{{ user.username }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    </div>
                 <div class="col-md-6">
                     <div class="mb-3">
                         <label for="start_date" class="form-label">تاريخ البداية</label>
@@ -63,4 +72,3 @@
     </div>
 </div>
 {% endblock %}
-

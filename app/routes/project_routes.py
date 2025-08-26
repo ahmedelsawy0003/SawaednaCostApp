@@ -1,11 +1,10 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, abort
 from app.models.project import Project
 from app.models.item import Item
+from app.models.user import User # <<< Add this import
 from app.extensions import db
 from flask_login import login_required, current_user
-# START: Modified Import
 from app.utils import check_project_permission, sanitize_input
-# END: Modified Import
 
 project_bp = Blueprint("project", __name__)
 
@@ -25,26 +24,32 @@ def new_project():
         abort(403)
 
     if request.method == "POST":
-        # START: Sanitize text inputs
         name = sanitize_input(request.form["name"])
         location = sanitize_input(request.form["location"])
         notes = sanitize_input(request.form["notes"])
-        # END: Sanitize text inputs
-
         start_date = request.form["start_date"]
         end_date = request.form["end_date"]
         status = request.form["status"]
         spreadsheet_id = request.form.get("spreadsheet_id")
+        manager_id = request.form.get("manager_id") # <<< Get manager_id
 
         new_project = Project(name=name, location=location, start_date=start_date, 
                               end_date=end_date, status=status, notes=notes,
                               spreadsheet_id=spreadsheet_id)
         
+        # <<< Assign manager if selected
+        if manager_id:
+            new_project.manager_id = int(manager_id)
+        
         db.session.add(new_project)
         db.session.commit()
         flash("تم إضافة المشروع بنجاح!", "success")
         return redirect(url_for("project.get_projects"))
-    return render_template("projects/new.html")
+    
+    # START: Fetch users for the dropdown
+    users = User.query.all()
+    return render_template("projects/new.html", users=users)
+    # END: Fetch users
 
 @project_bp.route("/projects/<int:project_id>")
 @login_required
@@ -61,20 +66,26 @@ def edit_project(project_id):
         abort(403)
     
     if request.method == "POST":
-        # START: Sanitize text inputs
         project.name = sanitize_input(request.form["name"])
         project.location = sanitize_input(request.form["location"])
         project.notes = sanitize_input(request.form["notes"])
-        # END: Sanitize text inputs
-
         project.start_date = request.form["start_date"]
         project.end_date = request.form["end_date"]
         project.status = request.form["status"]
         project.spreadsheet_id = request.form.get("spreadsheet_id")
+        
+        # <<< Update manager_id
+        manager_id = request.form.get("manager_id")
+        project.manager_id = int(manager_id) if manager_id else None
+
         db.session.commit()
         flash("تم تحديث المشروع بنجاح!", "success")
         return redirect(url_for("project.get_project", project_id=project.id))
-    return render_template("projects/edit.html", project=project)
+
+    # START: Fetch users for the dropdown
+    users = User.query.all()
+    return render_template("projects/edit.html", project=project, users=users)
+    # END: Fetch users
 
 @project_bp.route("/projects/<int:project_id>/delete", methods=["POST"])
 @login_required
@@ -88,6 +99,7 @@ def delete_project(project_id):
     flash("تم حذف المشروع بنجاح!", "success")
     return redirect(url_for("project.get_projects"))
 
+# ... (The rest of the file remains the same) ...
 @project_bp.route("/projects/<int:project_id>/dashboard")
 @login_required
 def project_dashboard(project_id):
