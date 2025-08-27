@@ -60,7 +60,9 @@ def get_items_by_project(project_id):
         contractor_like = f"%{contractor_filter}%"
         query = query.filter(Item.contractor.ilike(contractor_like))
 
-    items = query.all()
+    # START: Added sorting by item_number
+    items = query.order_by(Item.item_number).all()
+    # END: Added sorting
 
     filters = {
         'search': search_term,
@@ -127,13 +129,11 @@ def edit_item(item_id):
     
     cost_details = CostDetail.query.filter_by(item_id=item.id).order_by(CostDetail.id.desc()).all()
     
-    # START: Pass the AuditLog model to the template
     return render_template("items/edit.html", 
                            item=item, 
                            project=project, 
                            cost_details=cost_details, 
                            AuditLog=AuditLog)
-    # END: Pass the AuditLog model
 
 @item_bp.route("/items/<int:item_id>/delete", methods=["POST"])
 @login_required
