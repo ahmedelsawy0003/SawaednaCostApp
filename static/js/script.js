@@ -1,14 +1,16 @@
 document.addEventListener("DOMContentLoaded", function() {
     
-    // Auto-dismiss flash messages after 5 seconds
-    const alerts = document.querySelectorAll(".alert");
-    alerts.forEach(alert => {
-        setTimeout(() => {
-            if (alert.parentElement) {
-                new bootstrap.Alert(alert).close();
-            }
-        }, 5000);
+    // START: New Toast Functionality for Flash Messages
+    const toastElList = document.querySelectorAll('.toast');
+    const toastList = [...toastElList].map(toastEl => {
+        const toast = new bootstrap.Toast(toastEl, {
+            autohide: true,
+            delay: 5000 // The toast will disappear after 5 seconds
+        });
+        toast.show();
+        return toast;
     });
+    // END: New Toast Functionality
 
     // Generic search/filter for tables
     const searchInputs = document.querySelectorAll("input[type=\"search\"]");
@@ -44,7 +46,7 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 
-    // START: New Auto-calculation functionality for item costs
+    // Auto-calculation functionality for item costs
     const contractQty = document.getElementById('contract_quantity');
     const contractUnitCost = document.getElementById('contract_unit_cost');
     const contractTotal = document.getElementById('contract_total_cost');
@@ -55,20 +57,17 @@ document.addEventListener("DOMContentLoaded", function() {
 
     function calculateTotal(qtyInput, unitCostInput, totalInput) {
         const quantity = parseFloat(qtyInput.value) || 0;
-        // Check if the unitCostInput is disabled (for non-admin users)
         const unitCostValue = unitCostInput.disabled 
             ? parseFloat(unitCostInput.value) || 0 
             : parseFloat(unitCostInput.value) || 0;
             
-        if (unitCostInput.value === '') return; // Do not calculate if unit cost is empty
+        if (unitCostInput.value === '') return;
             
         const total = quantity * unitCostValue;
         totalInput.value = total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
     
-    // Add event listeners if the elements exist on the page
     if (contractQty && contractUnitCost && contractTotal) {
-        // Also listen to the disabled field for non-admins
         const contractUnitCostDisabled = document.getElementById('contract_unit_cost_disabled');
 
         contractQty.addEventListener('input', () => calculateTotal(contractQty, contractUnitCost || contractUnitCostDisabled, contractTotal));
@@ -81,6 +80,5 @@ document.addEventListener("DOMContentLoaded", function() {
         actualQty.addEventListener('input', () => calculateTotal(actualQty, actualUnitCost, actualTotal));
         actualUnitCost.addEventListener('input', () => calculateTotal(actualQty, actualUnitCost, actualTotal));
     }
-    // END: New Auto-calculation functionality
 
 });
