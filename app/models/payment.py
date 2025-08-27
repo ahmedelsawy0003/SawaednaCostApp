@@ -9,9 +9,14 @@ class Payment(db.Model):
     description = db.Column(db.Text)
 
     item = db.relationship('Item', backref=db.backref('payments', lazy=True, cascade="all, delete-orphan"))
-    
-    # This relationship defines the 'payments' attribute on the Project model
     project = db.relationship('Project', backref=db.backref('payments', lazy=True, cascade="all, delete-orphan"))
+
+    # START: Add table arguments for indexing
+    __table_args__ = (
+        db.Index('idx_payment_project_id', 'project_id'),
+        db.Index('idx_payment_item_id', 'item_id'),
+    )
+    # END: Add table arguments
 
     def __repr__(self):
         return f'<Payment {self.amount} for Project {self.project_id}>'

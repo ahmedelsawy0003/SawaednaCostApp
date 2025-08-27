@@ -10,11 +10,15 @@ class CostDetail(db.Model):
     unit_cost = db.Column(db.Float)
     total_cost = db.Column(db.Float)
     
-    # START: Modified status field with server_default
     status = db.Column(db.String(50), nullable=False, server_default='غير مدفوع')
-    # END: Modified status field
 
     item = db.relationship('Item', backref=db.backref('cost_details', lazy=True, cascade="all, delete-orphan"))
+
+    # START: Add table arguments for indexing
+    __table_args__ = (
+        db.Index('idx_cost_detail_item_id', 'item_id'),
+    )
+    # END: Add table arguments
 
     def __repr__(self):
         return f'<CostDetail {self.description} - {self.total_cost}>'

@@ -17,14 +17,18 @@ class Item(db.Model):
 
     project = db.relationship('Project', backref=db.backref('items', lazy=True, cascade="all, delete-orphan"))
 
-    # START: Convert paid_amount to a calculated property
+    # START: Add table arguments for indexing
+    __table_args__ = (
+        db.Index('idx_item_project_id', 'project_id'),
+    )
+    # END: Add table arguments
+
     @property
     def paid_amount(self):
         """Calculates the total paid amount by summing up associated payments."""
         if not self.payments:
             return 0.0
         return sum(payment.amount for payment in self.payments)
-    # END: Conversion
     
     @property
     def contract_total_cost(self):
