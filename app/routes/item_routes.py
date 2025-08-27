@@ -10,13 +10,12 @@ from app.utils import check_project_permission, sanitize_input
 
 item_bp = Blueprint("item", __name__)
 
+# ... (log_item_change function remains the same) ...
 def log_item_change(item, action):
-    # ... (This function remains unchanged)
     details = []
     if action == 'create':
         details.append("تم إنشاء البند.")
     elif action == 'update':
-        # This part of logging is for single item edits, we'll handle bulk logging separately
         pass
     
     if not details:
@@ -30,25 +29,28 @@ def log_item_change(item, action):
     )
     db.session.add(log_entry)
 
+
+# START: Modified function to handle separate search fields
 @item_bp.route("/projects/<int:project_id>/items")
 @login_required
 def get_items_by_project(project_id):
-    # ... (This function remains unchanged)
     project = Project.query.get_or_404(project_id)
     check_project_permission(project)
 
-    search_term = request.args.get('search', '')
+    # Get filter values from URL arguments
+    search_number = request.args.get('search_number', '')
+    search_description = request.args.get('search_description', '')
     status_filter = request.args.get('status', '')
     contractor_filter = request.args.get('contractor', '')
 
     query = Item.query.filter_by(project_id=project_id)
 
-    if search_term:
-        search_like = f"%{search_term}%"
-        query = query.filter(db.or_(
-            Item.item_number.ilike(search_like),
-            Item.description.ilike(search_like)
-        ))
+    # Apply filters based on user input
+    if search_number:
+        query = query.filter(Item.item_number.ilike(f"%{search_number}%"))
+    
+    if search_description:
+        query = query.filter(Item.description.ilike(f"%{search_description}%"))
     
     if status_filter:
         query = query.filter(Item.status == status_filter)
@@ -59,14 +61,16 @@ def get_items_by_project(project_id):
 
     items = query.order_by(cast(Item.item_number, Integer)).all()
 
+    # Pass filter values back to the template to keep them in the input boxes
     filters = {
-        'search': search_term,
+        'search_number': search_number,
+        'search_description': search_description,
         'status': status_filter,
         'contractor': contractor_filter
     }
     return render_template("items/index.html", project=project, items=items, filters=filters)
+# END: Modified function
 
-# START: New Route for Bulk Updates
 @item_bp.route("/projects/<int:project_id>/items/bulk_update", methods=["POST"])
 @login_required
 def bulk_update_items(project_id):
@@ -96,9 +100,7 @@ def bulk_update_items(project_id):
         
         if updated:
             update_count += 1
-            # Optional: Add individual audit logs if needed
-            # log_item_change(item, 'update') 
-
+            
     if update_count > 0:
         db.session.commit()
         flash(f"تم تحديث {update_count} بنود بنجاح.", "success")
@@ -106,9 +108,8 @@ def bulk_update_items(project_id):
         flash("لم يتم إجراء أي تغييرات.", "info")
 
     return redirect(url_for('item.get_items_by_project', project_id=project_id))
-# END: New Route
 
-# ... (The rest of the file remains unchanged, including new_item, edit_item, etc.)
+# ... (The rest of the file remains unchanged) ...
 @item_bp.route("/projects/<int:project_id>/items/new", methods=["GET", "POST"])
 @login_required
 def new_item(project_id):
@@ -133,7 +134,6 @@ def new_item(project_id):
                         execution_method=execution_method, contractor=contractor, notes=notes)
         db.session.add(new_item)
         db.session.flush()
-        # log_item_change(new_item, 'create') # Simplified logging for now
         db.session.commit()
         flash("تم إضافة البند بنجاح!", "success")
         return redirect(url_for("item.get_items_by_project", project_id=project_id))
@@ -146,7 +146,6 @@ def edit_item(item_id):
     check_project_permission(item.project)
     project = item.project
     if request.method == "POST":
-        # log_item_change(item, 'update') # Simplified logging for now
         
         item.description = sanitize_input(request.form["description"])
         item.unit = sanitize_input(request.form["unit"])

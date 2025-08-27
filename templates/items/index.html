@@ -23,10 +23,14 @@
         <form method="GET" action="{{ url_for('item.get_items_by_project', project_id=project.id) }}" class="mb-4 p-3 border rounded bg-light">
             <div class="row g-3 align-items-end">
                 <div class="col-md-3">
-                    <label for="search" class="form-label">بحث (رقم البند أو الوصف)</label>
-                    <input type="text" name="search" id="search" class="form-control" value="{{ filters.search or '' }}">
+                    <label for="search_number" class="form-label">بحث برقم البند</label>
+                    <input type="text" name="search_number" id="search_number" class="form-control" value="{{ filters.search_number or '' }}">
                 </div>
                 <div class="col-md-3">
+                    <label for="search_description" class="form-label">بحث بالوصف</label>
+                    <input type="text" name="search_description" id="search_description" class="form-control" value="{{ filters.search_description or '' }}">
+                </div>
+                <div class="col-md-2">
                     <label for="status" class="form-label">فلترة بالحالة</label>
                     <select name="status" id="status" class="form-select">
                         <option value="">الكل</option>
@@ -35,23 +39,22 @@
                         <option value="معلق" {% if filters.status == 'معلق' %}selected{% endif %}>معلق</option>
                     </select>
                 </div>
-                <div class="col-md-3">
-                    <label for="contractor" class="form-label">بحث بالمقاول/المورد</label>
+                <div class="col-md-2">
+                    <label for="contractor" class="form-label">بحث بالمقاول</label>
                     <input type="text" name="contractor" id="contractor" class="form-control" value="{{ filters.contractor or '' }}">
                 </div>
-                <div class="col-md-3">
-                    <div class="d-grid gap-2 d-md-flex">
-                        <button type="submit" class="btn btn-primary w-100">
+                <div class="col-md-2">
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
                             <i class="fas fa-search me-1"></i> بحث
                         </button>
-                        <a href="{{ url_for('item.get_items_by_project', project_id=project.id) }}" class="btn btn-secondary w-100">
+                        <a href="{{ url_for('item.get_items_by_project', project_id=project.id) }}" class="btn btn-secondary">
                             <i class="fas fa-times me-1"></i> مسح
                         </a>
-                        </div>
+                    </div>
                 </div>
             </div>
         </form>
-        
         {% if items %}
             <form id="bulk-edit-form" method="POST" action="{{ url_for('item.bulk_update_items', project_id=project.id) }}">
                 
