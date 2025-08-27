@@ -1,16 +1,15 @@
 document.addEventListener("DOMContentLoaded", function() {
     
-    // START: New Toast Functionality for Flash Messages
+    // Toast Functionality for Flash Messages
     const toastElList = document.querySelectorAll('.toast');
-    const toastList = [...toastElList].map(toastEl => {
+    [...toastElList].map(toastEl => {
         const toast = new bootstrap.Toast(toastEl, {
             autohide: true,
-            delay: 5000 // The toast will disappear after 5 seconds
+            delay: 5000
         });
         toast.show();
         return toast;
     });
-    // END: New Toast Functionality
 
     // Generic search/filter for tables
     const searchInputs = document.querySelectorAll("input[type=\"search\"]");
@@ -56,6 +55,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const actualTotal = document.getElementById('actual_total_cost');
 
     function calculateTotal(qtyInput, unitCostInput, totalInput) {
+        if (!qtyInput || !unitCostInput || !totalInput) return;
         const quantity = parseFloat(qtyInput.value) || 0;
         const unitCostValue = unitCostInput.disabled 
             ? parseFloat(unitCostInput.value) || 0 
@@ -81,32 +81,25 @@ document.addEventListener("DOMContentLoaded", function() {
         actualUnitCost.addEventListener('input', () => calculateTotal(actualQty, actualUnitCost, actualTotal));
     }
 
-});
-
-// START: New Bulk Edit Functionality
+    // START: Bulk Edit Functionality
     const selectAllCheckbox = document.getElementById('select-all');
     const itemCheckboxes = document.querySelectorAll('.item-checkbox');
     const selectedCountSpan = document.getElementById('selected-count');
     const bulkEditForm = document.getElementById('bulk-edit-form');
 
-    if (selectAllCheckbox && itemCheckboxes.length > 0) {
+    if (selectAllCheckbox && itemCheckboxes.length > 0 && bulkEditForm) {
         
-        // Function to update the selected count
         function updateSelectedCount() {
             const count = document.querySelectorAll('.item-checkbox:checked').length;
             if (selectedCountSpan) {
                 selectedCountSpan.textContent = count;
             }
-            // Disable form submission if nothing is selected
-            if (bulkEditForm) {
-                const submitButton = bulkEditForm.querySelector('button[type="submit"]');
-                if (submitButton) {
-                    submitButton.disabled = count === 0;
-                }
+            const submitButton = bulkEditForm.querySelector('button[type="submit"]');
+            if (submitButton) {
+                submitButton.disabled = count === 0;
             }
         }
 
-        // Event listener for "select all" checkbox
         selectAllCheckbox.addEventListener('change', function() {
             itemCheckboxes.forEach(checkbox => {
                 checkbox.checked = this.checked;
@@ -114,22 +107,19 @@ document.addEventListener("DOMContentLoaded", function() {
             updateSelectedCount();
         });
 
-        // Event listener for individual item checkboxes
         itemCheckboxes.forEach(checkbox => {
             checkbox.addEventListener('change', function() {
-                // If any individual box is unchecked, uncheck the "select all"
                 if (!this.checked) {
                     selectAllCheckbox.checked = false;
-                }
-                // Check if all boxes are checked
-                else if (document.querySelectorAll('.item-checkbox:checked').length === itemCheckboxes.length) {
+                } else if (document.querySelectorAll('.item-checkbox:checked').length === itemCheckboxes.length) {
                     selectAllCheckbox.checked = true;
                 }
                 updateSelectedCount();
             });
         });
         
-        // Initial check when the page loads
         updateSelectedCount();
-    });
-    // END: New Bulk Edit Functionality
+    }
+    // END: Bulk Edit Functionality
+
+});
