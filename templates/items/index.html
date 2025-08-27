@@ -55,6 +55,7 @@
                 </div>
             </div>
         </form>
+        
         {% if items %}
             <form id="bulk-edit-form" method="POST" action="{{ url_for('item.bulk_update_items', project_id=project.id) }}">
                 
@@ -106,8 +107,8 @@
                         </thead>
                         <tbody>
                             {% for item in items %}
-                            <tr>
-                                <td><input class="form-check-input item-checkbox" type="checkbox" name="item_ids" value="{{ item.id }}"></td>
+                            <tr class="{% if item.status == 'مكتمل' %}table-success{% elif item.status == 'معلق' %}table-warning{% endif %}">
+                            <td><input class="form-check-input item-checkbox" type="checkbox" name="item_ids" value="{{ item.id }}"></td>
                                 <td>{{ item.item_number }}</td>
                                 <td>{{ item.description }}</td>
                                 <td>{{ item.unit }}</td>
@@ -120,7 +121,7 @@
                                 <td>{{ "{:,.2f}".format(item.actual_unit_cost) if item.actual_unit_cost is not none else "-" }}</td>
                                 <td>{{ "{:,.2f}".format(item.actual_total_cost) }}</td>
                                 <td>
-                                    <span class="badge {{ "bg-warning" if item.status == "نشط" else "bg-success" if item.status == "مكتمل" else "bg-info" }}">
+                                    <span class="badge {{ "bg-warning text-dark" if item.status == "نشط" else "bg-success" if item.status == "مكتمل" else "bg-info" }}">
                                         {{ item.status }}
                                     </span>
                                 </td>
