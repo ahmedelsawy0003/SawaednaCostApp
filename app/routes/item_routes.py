@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, abort
+from sqlalchemy import cast, Integer # <<< Add this import
 from app.models.item import Item
 from app.models.project import Project
 from app.models.cost_detail import CostDetail
@@ -9,6 +10,7 @@ from app.utils import check_project_permission, sanitize_input
 
 item_bp = Blueprint("item", __name__)
 
+# ... (The log_item_change function remains the same) ...
 def log_item_change(item, action):
     details = []
     if action == 'create':
@@ -33,6 +35,7 @@ def log_item_change(item, action):
         details="\n".join(details)
     )
     db.session.add(log_entry)
+
 
 @item_bp.route("/projects/<int:project_id>/items")
 @login_required
@@ -60,9 +63,9 @@ def get_items_by_project(project_id):
         contractor_like = f"%{contractor_filter}%"
         query = query.filter(Item.contractor.ilike(contractor_like))
 
-    # START: Added sorting by item_number
-    items = query.order_by(Item.item_number).all()
-    # END: Added sorting
+    # START: Modified sorting to be numerical
+    items = query.order_by(cast(Item.item_number, Integer)).all()
+    # END: Modified sorting
 
     filters = {
         'search': search_term,
@@ -71,6 +74,7 @@ def get_items_by_project(project_id):
     }
     return render_template("items/index.html", project=project, items=items, filters=filters)
 
+# ... (The rest of the file remains exactly the same) ...
 @item_bp.route("/projects/<int:project_id>/items/new", methods=["GET", "POST"])
 @login_required
 def new_item(project_id):
