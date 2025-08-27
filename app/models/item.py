@@ -17,11 +17,9 @@ class Item(db.Model):
 
     project = db.relationship('Project', backref=db.backref('items', lazy=True, cascade="all, delete-orphan"))
 
-    # START: Add table arguments for indexing
     __table_args__ = (
         db.Index('idx_item_project_id', 'project_id'),
     )
-    # END: Add table arguments
 
     @property
     def paid_amount(self):
@@ -55,6 +53,15 @@ class Item(db.Model):
     @property
     def remaining_amount(self):
         return self.actual_total_cost - self.paid_amount
+        
+    # START: New property for a shorter, display-friendly description
+    @property
+    def short_description(self):
+        """Returns a truncated version of the description for display purposes."""
+        if len(self.description) > 50:
+            return self.description[:50] + '...'
+        return self.description
+    # END: New property
 
     def __repr__(self):
         return f'<Item {self.item_number} - {self.description}>'

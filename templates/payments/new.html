@@ -33,7 +33,9 @@
                 <select class="form-select" id="item_id" name="item_id">
                     <option value=":">-- اختر بندًا --</option>
                     {% for item in items %}
-                        <option value="{{ item.id }}">{{ item.item_number }} - {{ item.description }}</option>
+                        {# START: Use short_description for display #}
+                        <option value="{{ item.id }}">{{ item.item_number }} - {{ item.short_description }}</option>
+                        {# END: Use short_description for display #}
                     {% endfor %}
                 </select>
                 <div class="form-text">يمكن ربط الدفعة ببند معين أو تركها مرتبطة بالمشروع ككل.</div>
@@ -45,4 +47,3 @@
     </div>
 </div>
 {% endblock %}
-
