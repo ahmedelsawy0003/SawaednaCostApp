@@ -82,3 +82,56 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
 });
+
+// START: New Bulk Edit Functionality
+    const selectAllCheckbox = document.getElementById('select-all');
+    const itemCheckboxes = document.querySelectorAll('.item-checkbox');
+    const selectedCountSpan = document.getElementById('selected-count');
+    const bulkEditForm = document.getElementById('bulk-edit-form');
+
+    if (selectAllCheckbox && itemCheckboxes.length > 0) {
+        
+        // Function to update the selected count
+        function updateSelectedCount() {
+            const count = document.querySelectorAll('.item-checkbox:checked').length;
+            if (selectedCountSpan) {
+                selectedCountSpan.textContent = count;
+            }
+            // Disable form submission if nothing is selected
+            if (bulkEditForm) {
+                const submitButton = bulkEditForm.querySelector('button[type="submit"]');
+                if (submitButton) {
+                    submitButton.disabled = count === 0;
+                }
+            }
+        }
+
+        // Event listener for "select all" checkbox
+        selectAllCheckbox.addEventListener('change', function() {
+            itemCheckboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+            updateSelectedCount();
+        });
+
+        // Event listener for individual item checkboxes
+        itemCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                // If any individual box is unchecked, uncheck the "select all"
+                if (!this.checked) {
+                    selectAllCheckbox.checked = false;
+                }
+                // Check if all boxes are checked
+                else if (document.querySelectorAll('.item-checkbox:checked').length === itemCheckboxes.length) {
+                    selectAllCheckbox.checked = true;
+                }
+                updateSelectedCount();
+            });
+        });
+        
+        // Initial check when the page loads
+        updateSelectedCount();
+    }
+    // END: New Bulk Edit Functionality
+
+});
