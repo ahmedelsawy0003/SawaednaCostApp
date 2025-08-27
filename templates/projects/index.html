@@ -4,13 +4,35 @@
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1>المشاريع</h1>
-    {% if current_user.role == 'admin' %}
-    <a href="{{ url_for("project.new_project") }}" class="btn btn-success">
-        <i class="fas fa-plus me-1"></i> إضافة مشروع جديد
-    </a>
-    {% endif %}
+    {# START: Modified Page Title #}
+    <h1>
+        {% if show_archived %}
+            المشاريع المؤرشفة
+        {% else %}
+            المشاريع النشطة
+        {% endif %}
+    </h1>
+    {# END: Modified Page Title #}
+    
+    <div>
+        {# START: Added Buttons for Archive view and New Project #}
+        {% if show_archived %}
+            <a href="{{ url_for('project.get_projects') }}" class="btn btn-secondary">
+                <i class="fas fa-project-diagram me-1"></i> عرض المشاريع النشطة
+            </a>
+        {% else %}
+            <a href="{{ url_for('project.get_projects', show_archived=True) }}" class="btn btn-info">
+                <i class="fas fa-archive me-1"></i> عرض الأرشيف
+            </a>
+            {% if current_user.role == 'admin' %}
+            <a href="{{ url_for("project.new_project") }}" class="btn btn-success">
+                <i class="fas fa-plus me-1"></i> إضافة مشروع جديد
+            </a>
+            {% endif %}
+        {% endif %}
+        {# END: Added Buttons #}
     </div>
+</div>
 
 <div class="card mb-4">
     <div class="card-header bg-primary text-white">
@@ -68,16 +90,29 @@
                                     <a href="{{ url_for("project.get_project", project_id=project.id) }}" class="btn btn-info" title="عرض التفاصيل">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    {# START: Modified Buttons Visibility #}
                                     {% if current_user.role == 'admin' %}
                                     <a href="{{ url_for("project.edit_project", project_id=project.id) }}" class="btn btn-warning" title="تعديل">
                                         <i class="fas fa-edit"></i>
                                     </a>
+                                    
+                                    {# START: New Archive/Unarchive Button #}
+                                    <form action="{{ url_for('project.toggle_archive', project_id=project.id, show_archived=show_archived) }}" method="POST" class="d-inline">
+                                        {% if project.is_archived %}
+                                            <button type="submit" class="btn btn-secondary" title="إلغاء الأرشفة">
+                                                <i class="fas fa-box-open"></i>
+                                            </button>
+                                        {% else %}
+                                            <button type="submit" class="btn btn-dark" title="أرشفة">
+                                                <i class="fas fa-archive"></i>
+                                            </button>
+                                        {% endif %}
+                                    </form>
+                                    {# END: New Archive/Unarchive Button #}
+
                                     <button type="button" class="btn btn-danger delete-project" data-bs-toggle="modal" data-bs-target="#deleteProjectModal-{{ project.id }}" title="حذف">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                     {% endif %}
-                                    {# END: Modified Buttons Visibility #}
                                 </div>
                             </td>
                         </tr>
@@ -88,7 +123,11 @@
         {% else %}
             <div class="alert alert-info">
                 <i class="fas fa-info-circle me-2"></i>
-                لا توجد مشاريع مسجلة حالياً. {% if current_user.role == 'admin' %} ابدأ بإضافة مشروع جديد! {% endif %}
+                {% if show_archived %}
+                    لا توجد مشاريع مؤرشفة حالياً.
+                {% else %}
+                    لا توجد مشاريع نشطة حالياً. {% if current_user.role == 'admin' %} ابدأ بإضافة مشروع جديد! {% endif %}
+                {% endif %}
             </div>
         {% endif %}
     </div>

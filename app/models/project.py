@@ -11,9 +11,11 @@ class Project(db.Model):
     notes = db.Column(db.Text)
     spreadsheet_id = db.Column(db.String(255))
     
-    # START: Add manager_id field
+    # START: Add is_archived field
+    is_archived = db.Column(db.Boolean, default=False, nullable=False)
+    # END: Add is_archived field
+    
     manager_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
-    # END: Add manager_id field
 
     users = db.relationship(
         'User', 
@@ -21,9 +23,7 @@ class Project(db.Model):
         back_populates='projects'
     )
     
-    # START: Add relationship to the manager
     manager = db.relationship('User', foreign_keys=[manager_id])
-    # END: Add relationship
 
     @property
     def total_contract_cost(self):
