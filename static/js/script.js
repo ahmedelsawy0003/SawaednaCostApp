@@ -131,7 +131,5 @@ document.addEventListener("DOMContentLoaded", function() {
         
         // Initial check when the page loads
         updateSelectedCount();
-    }
+    });
     // END: New Bulk Edit Functionality
-
-});
