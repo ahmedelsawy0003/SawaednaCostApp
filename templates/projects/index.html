@@ -4,7 +4,6 @@
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-    {# START: Modified Page Title #}
     <h1>
         {% if show_archived %}
             المشاريع المؤرشفة
@@ -12,10 +11,8 @@
             المشاريع النشطة
         {% endif %}
     </h1>
-    {# END: Modified Page Title #}
     
     <div>
-        {# START: Added Buttons for Archive view and New Project #}
         {% if show_archived %}
             <a href="{{ url_for('project.get_projects') }}" class="btn btn-secondary">
                 <i class="fas fa-project-diagram me-1"></i> عرض المشاريع النشطة
@@ -30,7 +27,6 @@
             </a>
             {% endif %}
         {% endif %}
-        {# END: Added Buttons #}
     </div>
 </div>
 
@@ -48,14 +44,15 @@
                     <thead class="table-dark">
                         <tr>
                             <th>اسم المشروع</th>
-                            <th>الموقع</th>
-                            <th>تاريخ البداية</th>
-                            <th>تاريخ النهاية</th>
                             <th>الحالة</th>
                             {% if current_user.role == 'admin' %}
                             <th>التكلفة التعاقدية</th>
                             {% endif %}
                             <th>التكلفة الفعلية</th>
+                            {# START: Added New Columns #}
+                            <th>إجمالي المدفوع</th>
+                            <th>المبلغ المتبقي</th>
+                            {# END: Added New Columns #}
                              {% if current_user.role == 'admin' %}
                              <th>الوفر/الزيادة</th>
                              {% endif %}
@@ -66,9 +63,6 @@
                         {% for project in projects %}
                         <tr>
                             <td><a href="{{ url_for("project.get_project", project_id=project.id) }}">{{ project.name }}</a></td>
-                            <td>{{ project.location if project.location else "-" }}</td>
-                            <td>{{ project.start_date if project.start_date else "-" }}</td>
-                            <td>{{ project.end_date if project.end_date else "-" }}</td>
                             <td>
                                 <span class="badge {{ "bg-warning" if project.status == "قيد التنفيذ" else "bg-success" if project.status == "مكتمل" else "bg-info" if project.status == "معلق" else "bg-danger" }}">
                                     {{ project.status }}
@@ -78,6 +72,14 @@
                             <td>{{ "{:,.2f}".format(project.total_contract_cost) }}</td>
                             {% endif %}
                             <td>{{ "{:,.2f}".format(project.total_actual_cost) }}</td>
+                            {# START: Added New Columns Data #}
+                            <td>
+                                <span class="text-info">{{ "{:,.2f}".format(project.total_paid_amount) }}</span>
+                            </td>
+                            <td>
+                                <span class="text-danger">{{ "{:,.2f}".format(project.total_remaining_amount) }}</span>
+                            </td>
+                            {# END: Added New Columns Data #}
                             {% if current_user.role == 'admin' %}
                             <td>
                                 <span class="{{ "text-success" if project.total_savings >= 0 else "text-danger" }}">
@@ -95,7 +97,6 @@
                                         <i class="fas fa-edit"></i>
                                     </a>
                                     
-                                    {# START: New Archive/Unarchive Button #}
                                     <form action="{{ url_for('project.toggle_archive', project_id=project.id, show_archived=show_archived) }}" method="POST" class="d-inline">
                                         {% if project.is_archived %}
                                             <button type="submit" class="btn btn-secondary" title="إلغاء الأرشفة">
@@ -107,7 +108,6 @@
                                             </button>
                                         {% endif %}
                                     </form>
-                                    {# END: New Archive/Unarchive Button #}
 
                                     <button type="button" class="btn btn-danger delete-project" data-bs-toggle="modal" data-bs-target="#deleteProjectModal-{{ project.id }}" title="حذف">
                                         <i class="fas fa-trash"></i>
