@@ -1,6 +1,6 @@
 /*
  * SawaednaCostApp - Professional UI Theme
- * Version: 2.5 (Harmonized & Compact Controls)
+ * Version: 2.6 (Harmonized & Corrected)
  * Author: Gemini AI
 */
 
@@ -36,46 +36,20 @@ body {
     line-height: 1.65;
     text-align: right;
     direction: rtl;
-    margin: 0;
 }
 
 h1, h2, h3, h4, h5, h6 {
     font-family: "Poppins", "Inter", sans-serif;
     font-weight: 700;
-    color: var(--text);
 }
 
-a {
-    color: var(--primary);
-    text-decoration: none;
-    transition: color var(--transition);
-}
-a:hover {
-    color: var(--primary-dark);
-}
-
-/* 2. CORE COMPONENTS (Navbar, Cards, Buttons, etc.)
+/* 2. CORE COMPONENTS
 /* ========================================================================== */
+
 .navbar {
     background: var(--header-grad) !important;
     box-shadow: var(--shadow-md);
     padding: 0.75rem 1rem;
-}
-.navbar .navbar-brand {
-    font-size: 1.5rem;
-    color: #fff !important;
-    font-family: "Poppins", sans-serif;
-}
-.navbar .nav-link {
-    color: rgba(255, 255, 255, 0.8);
-    font-weight: 500;
-    transition: all var(--transition);
-    padding: 0.5rem 1rem;
-    border-radius: var(--radius-sm);
-}
-.navbar .nav-link:hover, .navbar .nav-link.active {
-    color: #fff;
-    background-color: rgba(255, 255, 255, 0.1);
 }
 
 .card {
@@ -83,27 +57,19 @@ a:hover {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow-sm);
-  overflow: hidden;
   margin-bottom: 1.5rem;
 }
 .card-header {
   background-color: #f1f5f9 !important;
   border-bottom: 1px solid var(--border);
-  padding: 1.25rem 1.5rem;
-  color: var(--text) !important;
-  font-family: "Poppins", sans-serif;
-  font-weight: 600;
+  padding: 1rem 1.5rem;
 }
-.card-header h3 {
-    margin: 0;
-}
-.card-body {
-    padding: 1.5rem;
-}
+.card-header h3 { margin: 0; }
+.card-body { padding: 1.5rem; }
 
 .btn {
   border-radius: var(--radius-sm);
-  padding: .7rem 1.3rem;
+  padding: .65rem 1.25rem;
   font-weight: 600;
   transition: all 0.2s ease;
   border: 0;
@@ -119,94 +85,66 @@ a:hover {
 }
 .btn-primary { background: var(--primary); color: #fff; }
 .btn-primary:hover { background: var(--primary-dark); }
-.btn-sm {
-    padding: .35rem .8rem;
-    font-size: .875rem;
-}
+.btn-success { background: var(--success); color: #fff; }
+.btn-info { background: var(--info); color: #fff; }
+.btn-warning { background: var(--warning); color: #111827; }
+.btn-danger { background: var(--danger); color: #fff; }
+.btn-dark { background: var(--dark); color: #fff; }
+.btn-secondary { background: #e2e8f0; color: #475569; }
+.btn-secondary:hover { background: #cbd5e1; }
 
-/* 3. ITEM INDEX PAGE: CONTROL PANEL STYLES
+
+/* 3. PARTIALS & SPECIFIC STYLES
 /* ========================================================================== */
-.control-panel {
-    background-color: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow-sm);
-}
-.control-panel .card-body {
-    padding: 1.25rem;
-}
-.control-panel .panel-title {
-    font-family: "Poppins", sans-serif;
-    color: var(--dark);
-    margin-bottom: 1rem;
-    font-size: 1.1rem;
-}
-.control-panel .form-label {
-    font-size: 0.8rem;
-    font-weight: 500;
-    color: var(--muted);
-    margin-bottom: .25rem;
-}
-.control-panel .filter-form {
-    border-bottom: 1px solid var(--border);
-    padding-bottom: 1.25rem;
-    margin-bottom: 1rem;
-}
 
-/* Accordion Styles for Bulk Edit */
-.control-panel .accordion-item {
-    border: none;
-}
-.control-panel .accordion-header {
-    margin-bottom: 0;
-}
-.control-panel .accordion-button {
+/* Project Summary Cards */
+.summary-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     padding: 0.75rem 0;
-    background-color: transparent;
-    box-shadow: none;
-    color: var(--primary);
-    font-weight: 600;
-    font-family: "Inter", sans-serif;
+    border-bottom: 1px solid var(--border);
 }
-.control-panel .accordion-button:not(.collapsed) {
-    color: var(--primary-dark);
+.summary-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
 }
-.control-panel .accordion-button::after {
-    margin-right: auto;
-    margin-left: 0;
+.summary-item h6 {
+    margin: 0;
+    color: var(--muted);
 }
-.control-panel .accordion-button:focus {
-    box-shadow: none;
-    border-color: transparent;
-}
-.control-panel .accordion-body {
-    padding: 1rem 0 0 0;
+.summary-item h4 {
+    margin: 0;
+    font-weight: 700;
 }
 
-/* 4. TABLE STYLES
-/* ========================================================================== */
-.table-responsive {
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    overflow: hidden;
+.progress-title {
+    color: var(--muted);
+    font-weight: 500;
 }
-.table thead th {
-  background-color: #eef2f6;
-  border-bottom: 2px solid var(--border);
-  font-family: "Poppins", sans-serif;
-  color: var(--muted);
-  font-weight: 600;
-  text-align: center;
-  vertical-align: middle;
-  font-size: .8rem;
-  padding: 1rem .75rem;
+
+/* Table Action Buttons Correction */
+.table .btn-group, .table .btn-group-sm {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: nowrap;
+    justify-content: center;
 }
-.table tbody tr:hover {
-  background-color: rgba(59, 130, 246, .06);
-}
-.table .btn-group-sm > .btn {
-    width: 36px;
-    height: 36px;
+
+.table .btn-group .btn,
+.table .btn-group-sm .btn {
+    margin: 0 !important;
     padding: 0;
-    font-size: .9rem;
+    width: 38px;
+    height: 38px;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+/* Override for text buttons in admin dashboard to make them fit */
+.table .btn-group .btn-warning {
+    width: auto;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.85rem;
+    height: 38px;
 }

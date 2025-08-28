@@ -1,58 +1,58 @@
 <div class="card mb-4">
     <div class="card-header bg-dark text-white">
-        <h3 class="mb-0">الملخص المالي</h3>
+        <h3 class="mb-0"><i class="fas fa-tasks me-2"></i>نسب الإنجاز</h3>
+    </div>
+    <div class="card-body">
+        <div class="mb-3">
+            <h6 class="progress-title mb-2">نسبة إنجاز البنود</h6>
+            <div class="progress" style="height: 28px;">
+                <div class="progress-bar progress-bar-striped progress-bar-animated bg-info" role="progressbar" style="width: {{ project.completion_percentage }}%" aria-valuenow="{{ project.completion_percentage }}" aria-valuemin="0" aria-valuemax="100">
+                    <strong>{{ "{:.1f}%".format(project.completion_percentage) }}</strong>
+                </div>
+            </div>
+        </div>
+        <div>
+            <h6 class="progress-title mb-2">نسبة الإنجاز المالي</h6>
+            <div class="progress" style="height: 28px;">
+                <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" style="width: {{ project.financial_completion_percentage }}%" aria-valuenow="{{ project.financial_completion_percentage }}" aria-valuemin="0" aria-valuemax="100">
+                     <strong>{{ "{:.1f}%".format(project.financial_completion_percentage) }}</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header bg-dark text-white">
+        <h3 class="mb-0"><i class="fas fa-dollar-sign me-2"></i>الملخص المالي</h3>
     </div>
     <div class="card-body">
         {% if current_user.role == 'admin' %}
-        <div class="mb-3">
+        <div class="summary-item">
             <h6>التكلفة التعاقدية</h6>
             <h4 class="text-primary">{{ "{:,.2f}".format(project.total_contract_cost) }} ريال</h4>
         </div>
         {% endif %}
-        <div class="mb-3">
+        <div class="summary-item">
             <h6>التكلفة الفعلية</h6>
             <h4 class="text-success">{{ "{:,.2f}".format(project.total_actual_cost) }} ريال</h4>
         </div>
         
         {% if current_user.role == 'admin' %}
-        <div class="mb-3">
+        <div class="summary-item">
             <h6>الوفر / الزيادة</h6>
             <h4 class="{{ "text-success" if project.total_savings >= 0 else "text-danger" }}">
                 {{ "{:,.2f}".format(project.total_savings) }} ريال
             </h4>
         </div>
         {% endif %}
-        <div class="mb-3">
+        <div class="summary-item">
             <h6>إجمالي المدفوع</h6>
             <h4 class="text-info">{{ "{:,.2f}".format(project.total_paid_amount) }} ريال</h4>
         </div>
-        <div class="mb-3">
+        <div class="summary-item">
             <h6>المبلغ المتبقي</h6>
-            <h4 class="text-danger">{{ "{:,.2f}".format(project.total_remaining_amount) }} ريال</h4>
-        </div>
-    </div>
-</div>
-
-<div class="card mb-4">
-    <div class="card-header bg-info text-white">
-        <h3 class="mb-0">نسب الإنجاز</h3>
-    </div>
-    <div class="card-body">
-        <div class="mb-3">
-            <h6>نسبة إنجاز البنود</h6>
-            <div class="progress" style="height: 25px;">
-                <div class="progress-bar bg-info" role="progressbar" style="width: {{ project.completion_percentage }}%">
-                    {{ "{:.1f}%".format(project.completion_percentage) }}
-                </div>
-            </div>
-        </div>
-        <div class="mb-3">
-            <h6>نسبة الإنجاز المالي</h6>
-            <div class="progress" style="height: 25px;">
-                <div class="progress-bar bg-success" role="progressbar" style="width: {{ project.financial_completion_percentage }}%">
-                    {{ "{:.1f}%".format(project.financial_completion_percentage) }}
-                </div>
-            </div>
+            <h4 class="text-danger mb-0">{{ "{:,.2f}".format(project.total_remaining_amount) }} ريال</h4>
         </div>
     </div>
 </div>
