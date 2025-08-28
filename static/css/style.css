@@ -1,6 +1,6 @@
 /*
  * SawaednaCostApp - Professional UI Theme
- * Version: 2.1 (Refined)
+ * Version: 2.2 (Refined Actions)
  * Author: Gemini AI
 */
 
@@ -41,7 +41,7 @@ body {
     direction: rtl;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1, h2, h3, h4, h5, h6, .navbar-brand {
     font-family: "Poppins", "Inter", sans-serif;
     font-weight: 700;
     color: var(--text);
@@ -232,4 +232,27 @@ a:hover {
     transform: translateY(-50%);
     cursor: pointer;
     color: var(--muted);
+}
+
+
+/* 3. COMPONENT TWEAKS
+/* ========================================================================== */
+
+/* --- Action Buttons in Tables --- */
+.table .btn-group-sm {
+    display: flex;
+    gap: 0.5rem; /* Adds space between buttons */
+}
+
+.table .btn-group-sm > .btn,
+.table .btn-group-sm > form > .btn {
+    border-radius: var(--radius-sm) !important; /* Enforce our radius on all buttons */
+    margin-left: 0 !important; /* Override Bootstrap's negative margin */
+    width: 38px;  /* Make buttons square-like */
+    height: 38px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem; /* Slightly larger icon */
 }
