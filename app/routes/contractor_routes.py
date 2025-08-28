@@ -3,10 +3,11 @@ from app.models.contractor import Contractor
 from app.models.cost_detail import CostDetail
 from app.models.project import Project
 from app.models.user import User 
+from app.models.item import Item # <<< أضف هذا السطر
 from app.extensions import db
 from flask_login import login_required, current_user
 from sqlalchemy import or_
-from app.utils import sanitize_input # <<< أضف هذا
+from app.utils import sanitize_input
 
 contractor_bp = Blueprint("contractor", __name__, url_prefix='/contractors')
 
@@ -19,7 +20,6 @@ def get_contractors():
     if current_user.role != 'admin':
         allowed_project_ids = [p.id for p in current_user.projects]
         if not allowed_project_ids:
-            # إذا لم يكن المستخدم مرتبطًا بأي مشاريع، لا تعرض أي مقاولين
             contractors = []
         else:
             query = query.filter(Item.project_id.in_(allowed_project_ids))
@@ -29,7 +29,6 @@ def get_contractors():
     
     return render_template("contractors/index.html", contractors=contractors)
 
-# START: New Route for adding a contractor
 @contractor_bp.route("/new", methods=['GET', 'POST'])
 @login_required
 def new_contractor():
@@ -61,7 +60,6 @@ def new_contractor():
         return redirect(url_for('contractor.get_contractors'))
     
     return render_template("contractors/new.html")
-# END: New Route
 
 @contractor_bp.route("/<int:contractor_id>")
 @login_required
@@ -76,10 +74,10 @@ def show_contractor(contractor_id):
     projects = projects_query.distinct().all()
     project_filter = request.args.get('project_id', type=int)
     search_filter = request.args.get('search', '')
-    cost_details_query = CostDetail.query.filter_by(contractor_id=contractor_id)
+    cost_details_query = CostDetail.query.filter_by(contractor_id=contractor_id).join(CostDetail.item) # join with item to search
 
     if project_filter:
-        cost_details_query = cost_details_query.join(CostDetail.item).filter_by(project_id=project_filter)
+        cost_details_query = cost_details_query.filter(Item.project_id == project_filter)
     
     if search_filter:
         search_term = f"%{search_filter}%"
