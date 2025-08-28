@@ -18,41 +18,59 @@
 </div>
 
 <div class="card mb-4">
-    <div class="accordion" id="controlPanelAccordion">
+    <div class="accordion" id="filterAccordion">
         <div class="accordion-item">
             <h2 class="accordion-header">
-                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseControls" aria-expanded="true" aria-controls="collapseControls">
-                    <i class="fas fa-filter me-2"></i>خيارات البحث والتعديل الجماعي
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFilter" aria-expanded="true" aria-controls="collapseFilter">
+                    <i class="fas fa-filter me-2"></i>خيارات البحث والفلترة
                 </button>
             </h2>
-            <div id="collapseControls" class="accordion-collapse collapse show" data-bs-parent="#controlPanelAccordion">
+            <div id="collapseFilter" class="accordion-collapse collapse show" data-bs-parent="#filterAccordion">
                 <div class="accordion-body">
-                    <form method="GET" action="{{ url_for('item.get_items_by_project', project_id=project.id) }}" class="filter-form border-bottom border-secondary pb-3 mb-3">
+                    <form method="GET" action="{{ url_for('item.get_items_by_project', project_id=project.id) }}">
                         <div class="row g-3 align-items-end">
                             <div class="col-md-3"><label class="form-label">بحث برقم البند</label><input type="text" name="search_number" class="form-control" value="{{ filters.search_number or '' }}"></div>
                             <div class="col-md-3"><label class="form-label">بحث بالوصف</label><input type="text" name="search_description" class="form-control" value="{{ filters.search_description or '' }}"></div>
                             <div class="col-md-2"><label class="form-label">الحالة</label><select name="status" class="form-select"><option value="">الكل</option><option value="نشط" {% if filters.status == 'نشط' %}selected{% endif %}>نشط</option><option value="مكتمل" {% if filters.status == 'مكتمل' %}selected{% endif %}>مكتمل</option><option value="معلق" {% if filters.status == 'معلق' %}selected{% endif %}>معلق</option></select></div>
                             <div class="col-md-2"><label class="form-label">المقاول</label><input type="text" name="contractor" class="form-control" value="{{ filters.contractor or '' }}"></div>
-                            <div class="col-md-2"><div class="d-flex gap-2"><button type="submit" class="btn btn-info w-100"><i class="fas fa-search"></i></button><a href="{{ url_for('item.get_items_by_project', project_id=project.id) }}" class="btn btn-secondary w-100"><i class="fas fa-times"></i></a></div></div>
+                            <div class="col-md-2"><div class="d-flex gap-2"><button type="submit" class="btn btn-info w-100"><i class="fas fa-search"></i> بحث</button><a href="{{ url_for('item.get_items_by_project', project_id=project.id) }}" class="btn btn-secondary w-100"><i class="fas fa-times"></i> مسح</a></div></div>
                         </div>
                     </form>
-                    <div class="row align-items-end g-3">
-                        <div class="col-md-4"><label for="bulk-status" class="form-label">تغيير حالة المحدد</label><select name="bulk_status" id="bulk-status" class="form-select"><option value="">-- اختر --</option><option value="نشط">نشط</option><option value="مكتمل">مكتمل</option><option value="معلق">معلق</option></select></div>
-                        <div class="col-md-5"><label for="bulk-contractor" class="form-label">تغيير مقاول المحدد</label><input type="text" name="bulk_contractor" id="bulk-contractor" class="form-control" placeholder="اتركه فارغاً لعدم التغيير"></div>
-                        <div class="col-md-3"><button type="submit" form="bulk-edit-form" class="btn btn-warning w-100"><i class="fas fa-save me-1"></i> تطبيق على (<span id="selected-count-display">0</span>)</button></div>
-                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-<div class="card">
-    <div class="card-header">
-        <h5 class="mb-0">قائمة البنود</h5>
+
+<form id="bulk-edit-form" method="POST" action="{{ url_for('item.bulk_update_items', project_id=project.id) }}">
+    
+    <div class="card mb-4">
+        <div class="accordion" id="bulkEditAccordion">
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseBulkEdit" aria-expanded="false" aria-controls="collapseBulkEdit">
+                        <i class="fas fa-edit me-2"></i>التعديل الجماعي للبنود المحددة (<span id="selected-count-display">0</span>)
+                    </button>
+                </h2>
+                <div id="collapseBulkEdit" class="accordion-collapse collapse" data-bs-parent="#bulkEditAccordion">
+                    <div class="accordion-body">
+                        <div class="row align-items-end g-3">
+                            <div class="col-md-4"><label for="bulk-status" class="form-label">تغيير حالة المحدد</label><select name="bulk_status" id="bulk-status" class="form-select"><option value="">-- اختر --</option><option value="نشط">نشط</option><option value="مكتمل">مكتمل</option><option value="معلق">معلق</option></select></div>
+                            <div class="col-md-5"><label for="bulk-contractor" class="form-label">تغيير مقاول المحدد</label><input type="text" name="bulk_contractor" id="bulk-contractor" class="form-control" placeholder="اتركه فارغاً لعدم التغيير"></div>
+                            <div class="col-md-3"><button type="submit" class="btn btn-warning w-100"><i class="fas fa-save me-1"></i> تطبيق التعديلات</button></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="card-body p-0">
-        {% if items %}
-            <form id="bulk-edit-form" method="POST" action="{{ url_for('item.bulk_update_items', project_id=project.id) }}">
+
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">قائمة البنود</h5>
+        </div>
+        <div class="card-body p-0">
+            {% if items %}
                 <div class="table-responsive">
                     <table class="table table-dark table-hover table-striped mb-0">
                         <thead>
@@ -85,13 +103,9 @@
                                 </td>
                                 <td class="text-center">
                                     <div class="btn-group btn-group-sm">
-                                        <a href="{{ url_for("item.edit_item", item_id=item.id) }}" class="btn btn-warning" title="تعديل">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
+                                        <a href="{{ url_for("item.edit_item", item_id=item.id) }}" class="btn btn-warning" title="تعديل"><i class="fas fa-edit"></i></a>
                                         {% if current_user.role == 'admin' %}
-                                        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteItemModal-{{ item.id }}" title="حذف">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
+                                        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteItemModal-{{ item.id }}" title="حذف"><i class="fas fa-trash"></i></button>
                                         {% endif %}
                                     </div>
                                 </td>
@@ -100,16 +114,12 @@
                         </tbody>
                     </table>
                 </div>
-            </form>
-        {% else %}
-            <div class="alert alert-secondary m-3 text-center">
-                <i class="fas fa-info-circle me-2"></i>
-                لا توجد بنود تطابق معايير البحث الحالية.
-            </div>
-        {% endif %}
+            {% else %}
+                <div class="alert alert-secondary m-3 text-center"><i class="fas fa-info-circle me-2"></i>لا توجد بنود تطابق معايير البحث الحالية.</div>
+            {% endif %}
+        </div>
     </div>
-</div>
-
+</form>
 {% for item in items %}
 <div class="modal fade" id="deleteItemModal-{{ item.id }}" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
@@ -129,4 +139,5 @@
     </div>
 </div>
 {% endfor %}
+
 {% endblock %}
