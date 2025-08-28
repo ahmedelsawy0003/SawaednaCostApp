@@ -4,12 +4,14 @@
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1>تفاصيل المشروع: {{ project.name }}</h1>
-    <div class="btn-group">
+    <h2 class="mb-0">
+        <span class="text-muted fw-normal">تفاصيل المشروع:</span> {{ project.name }}
+    </h2>
+    <div class="d-flex gap-2">
         <a href="{{ url_for("item.get_items_by_project", project_id=project.id) }}" class="btn btn-primary">
             <i class="fas fa-list me-1"></i> عرض البنود
         </a>
-        <a href="{{ url_for("project.project_dashboard", project_id=project.id) }}" class="btn btn-info">
+        <a href="{{ url_for("project.project_dashboard", project_id=project.id) }}" class="btn btn-info text-white">
             <i class="fas fa-chart-bar me-1"></i> لوحة التحكم
         </a>
         <a href="{{ url_for("payment.get_payments", project_id=project.id) }}" class="btn btn-success">
@@ -22,17 +24,18 @@
         {% endif %}
     </div>
 </div>
+
 <div class="row">
     <div class="col-lg-8">
         <div class="card mb-4">
-            <div class="card-header bg-primary text-white">
-                <h3 class="mb-0"><i class="fas fa-info-circle me-2"></i>معلومات المشروع</h3>
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-info-circle fa-fw me-2"></i>معلومات المشروع</h5>
             </div>
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-6">
                         <p><strong>اسم المشروع:</strong> {{ project.name }}</p>
-                        <p><strong>الموقع:</strong> {{ project.location if project.location else "غير محدد" }}</p>
+                        <p><strong>الموقع:</strong> {{ project.location or "غير محدد" }}</p>
                         <p><strong>الحالة:</strong>
                             <span class="badge {{ "bg-warning" if project.status == "قيد التنفيذ" else "bg-success" if project.status == "مكتمل" else "bg-info" if project.status == "معلق" else "bg-danger" }}">
                                 {{ project.status }}
@@ -41,50 +44,42 @@
                         <p><strong>مدير المشروع:</strong> {{ project.manager.username if project.manager else "غير محدد" }}</p>
                     </div>
                     <div class="col-md-6">
-                        <p><strong>تاريخ البداية:</strong> {{ project.start_date if project.start_date else "غير محدد" }}</p>
-                        <p><strong>تاريخ النهاية:</strong> {{ project.end_date if project.end_date else "غير محدد" }}</p>
+                        <p><strong>تاريخ البداية:</strong> {{ project.start_date or "غير محدد" }}</p>
+                        <p><strong>تاريخ النهاية:</strong> {{ project.end_date or "غير محدد" }}</p>
                         {% if current_user.role == 'admin' %}
-                        <p><strong>Google Sheets ID:</strong> {{ project.spreadsheet_id if project.spreadsheet_id else "غير مربوط" }}</p>
+                        <p><strong>Google Sheets ID:</strong> <span class="text-muted">{{ project.spreadsheet_id or "غير مربوط" }}</span></p>
                         {% endif %}
                     </div>
                 </div>
                 {% if project.notes %}
-                <hr>
+                <hr class="border-secondary my-3">
                 <p><strong>ملاحظات:</strong></p>
-                <p class="text-muted">{{ project.notes }}</p>
+                <p class="text-muted mb-0">{{ project.notes }}</p>
                 {% endif %}
             </div>
         </div>
 
         {% if current_user.role == 'admin' and project.spreadsheet_id %}
         <div class="card mb-4">
-            <div class="card-header bg-success text-white">
-                <h3 class="mb-0"><i class="fab fa-google-drive me-2"></i>خيارات Google Sheets</h3>
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fab fa-google-drive fa-fw me-2"></i>خيارات Google Sheets</h5>
             </div>
             <div class="card-body">
-                <div class="row">
-                    <div class="col-md-4 mb-3">
+                <div class="row g-3">
+                    <div class="col-md-4">
                         <form action="{{ url_for("sheets.export_project", project_id=project.id) }}" method="POST">
-                            <button type="submit" class="btn btn-primary w-100">
-                                <i class="fas fa-file-export me-1"></i> تصدير البنود
-                            </button>
+                            <button type="submit" class="btn btn-secondary w-100">تصدير البنود</button>
                         </form>
                     </div>
-                    <div class="col-md-4 mb-3">
-                        <a href="{{ url_for("sheets.import_contractual_items", project_id=project.id) }}" class="btn btn-info w-100">
-                            <i class="fas fa-file-import me-1"></i> استيراد بنود تعاقدية
-                        </a>
+                    <div class="col-md-4">
+                        <a href="{{ url_for("sheets.import_contractual_items", project_id=project.id) }}" class="btn btn-secondary w-100">استيراد بنود تعاقدية</a>
                     </div>
-                    <div class="col-md-4 mb-3">
-                        <a href="{{ url_for("sheets.import_actual_items", project_id=project.id) }}" class="btn btn-warning w-100">
-                            <i class="fas fa-file-import me-1"></i> استيراد بنود فعلية
-                        </a>
+                    <div class="col-md-4">
+                        <a href="{{ url_for("sheets.import_actual_items", project_id=project.id) }}" class="btn btn-secondary w-100">استيراد بنود فعلية</a>
                     </div>
-                    <div class="col-md-6 mb-3">
+                    <div class="col-md-6">
                         <form action="{{ url_for("sheets.export_summary", project_id=project.id) }}" method="POST">
-                            <button type="submit" class="btn btn-secondary w-100">
-                                <i class="fas fa-chart-pie me-1"></i> تصدير ملخص المشروع
-                            </button>
+                            <button type="submit" class="btn btn-secondary w-100">تصدير ملخص المشروع</button>
                         </form>
                     </div>
                 </div>
@@ -95,12 +90,24 @@
 
     <div class="col-lg-4">
         {% include "partials/_project_summary_cards.html" %}
+
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-pie fa-fw me-2"></i>إحصائيات البنود</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-2"><span>إجمالي البنود:</span> <span class="fw-bold">{{ project.items|length }}</span></div>
+                <div class="d-flex justify-content-between align-items-center mb-2"><span>البنود المكتملة:</span> <span class="fw-bold text-success">{{ project.items|selectattr("status", "equalto", "مكتمل")|list|length }}</span></div>
+                <div class="d-flex justify-content-between align-items-center mb-2"><span>البنود النشطة:</span> <span class="fw-bold text-warning">{{ project.items|selectattr("status", "equalto", "نشط")|list|length }}</span></div>
+                <div class="d-flex justify-content-between align-items-center"><span>البنود المعلقة:</span> <span class="fw-bold text-info">{{ project.items|selectattr("status", "equalto", "معلق")|list|length }}</span></div>
+            </div>
+        </div>
     </div>
 </div>
 
-<div class="d-flex justify-content-between mt-4">
+<div class="mt-4">
     <a href="{{ url_for("project.get_projects") }}" class="btn btn-secondary">
-        <i class="fas fa-arrow-right me-1"></i> العودة للمشاريع
+        <i class="fas fa-arrow-left me-1"></i> العودة لقائمة المشاريع
     </a>
 </div>
 {% endblock %}

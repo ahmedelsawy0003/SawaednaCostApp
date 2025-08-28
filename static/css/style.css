@@ -1,150 +1,204 @@
 /*
- * SawaednaCostApp - Professional UI Theme
- * Version: 2.6 (Harmonized & Corrected)
+ * SawaednaCostApp - "Passion" Inspired Dark Theme
+ * Version: 3.0
  * Author: Gemini AI
 */
 
 /* 1. FOUNDATION: Variables & Base Styles
 /* ========================================================================== */
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@700;800&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap');
 
 :root {
-    --primary: #3b82f6;
-    --primary-dark: #2563eb;
-    --success: #16a34a;
-    --warning: #f59e0b;
+    /* Color Palette */
+    --primary: #10b981; /* Vibrant Green Accent */
+    --primary-hover: #059669;
     --danger: #ef4444;
-    --info: #0ea5e9;
-    --dark: #1e293b;
-    --bg: #f8fafc;
-    --surface: #ffffff;
-    --text: #0f172a;
-    --muted: #64748b;
-    --border: #e2e8f0;
-    --header-grad: linear-gradient(90deg, #1e3a8a 0%, #2563eb 100%);
-    --shadow-sm: 0 4px 12px rgba(15, 23, 42, .05);
-    --shadow-md: 0 8px 24px rgba(15, 23, 42, .1);
-    --radius: 12px;
-    --radius-sm: 8px;
-    --transition: .2s ease-in-out;
+    --warning: #f59e0b;
+    --info: #3b82f6;
+
+    --bg-dark: #111827; /* Main Background */
+    --bg-surface: #1f2937; /* Card & Modal Background */
+    --border-color: #374151; /* Borders and Dividers */
+    
+    /* Text Colors */
+    --text-light: #f9fafb; /* For headings */
+    --text-normal: #d1d5db; /* For body text */
+    --text-muted: #9ca3af; /* For subtitles and placeholders */
+
+    /* UI Elements */
+    --radius: 0.75rem; /* 12px */
+    --radius-sm: 0.5rem; /* 8px */
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --transition: 0.2s ease-in-out;
 }
 
 body {
-    font-family: "Inter", system-ui, sans-serif;
-    background-color: var(--bg);
-    color: var(--text);
-    line-height: 1.65;
+    font-family: 'Tajawal', sans-serif;
+    background-color: var(--bg-dark);
+    color: var(--text-normal);
     text-align: right;
     direction: rtl;
+    font-size: 16px;
+    line-height: 1.7;
 }
 
 h1, h2, h3, h4, h5, h6 {
-    font-family: "Poppins", "Inter", sans-serif;
+    font-family: 'Tajawal', sans-serif;
     font-weight: 700;
+    color: var(--text-light);
+    margin: 0;
+}
+
+a {
+    color: var(--primary);
+    text-decoration: none;
+    transition: color var(--transition);
+}
+a:hover {
+    color: var(--primary-hover);
 }
 
 /* 2. CORE COMPONENTS
 /* ========================================================================== */
 
+/* --- Navbar --- */
 .navbar {
-    background: var(--header-grad) !important;
+    background-color: var(--bg-surface) !important;
+    border-bottom: 1px solid var(--border-color);
     box-shadow: var(--shadow-md);
-    padding: 0.75rem 1rem;
+    padding: 1rem 1.5rem;
 }
-
-.card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-sm);
-  margin-bottom: 1.5rem;
+.navbar-brand {
+    font-weight: 800;
+    color: var(--text-light) !important;
 }
-.card-header {
-  background-color: #f1f5f9 !important;
-  border-bottom: 1px solid var(--border);
-  padding: 1rem 1.5rem;
-}
-.card-header h3 { margin: 0; }
-.card-body { padding: 1.5rem; }
-
-.btn {
-  border-radius: var(--radius-sm);
-  padding: .65rem 1.25rem;
-  font-weight: 600;
-  transition: all 0.2s ease;
-  border: 0;
-  box-shadow: var(--shadow-sm);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: .5rem;
-}
-.btn:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-}
-.btn-primary { background: var(--primary); color: #fff; }
-.btn-primary:hover { background: var(--primary-dark); }
-.btn-success { background: var(--success); color: #fff; }
-.btn-info { background: var(--info); color: #fff; }
-.btn-warning { background: var(--warning); color: #111827; }
-.btn-danger { background: var(--danger); color: #fff; }
-.btn-dark { background: var(--dark); color: #fff; }
-.btn-secondary { background: #e2e8f0; color: #475569; }
-.btn-secondary:hover { background: #cbd5e1; }
-
-
-/* 3. PARTIALS & SPECIFIC STYLES
-/* ========================================================================== */
-
-/* Project Summary Cards */
-.summary-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.75rem 0;
-    border-bottom: 1px solid var(--border);
-}
-.summary-item:last-child {
-    border-bottom: none;
-    padding-bottom: 0;
-}
-.summary-item h6 {
-    margin: 0;
-    color: var(--muted);
-}
-.summary-item h4 {
-    margin: 0;
-    font-weight: 700;
-}
-
-.progress-title {
-    color: var(--muted);
+.navbar .nav-link {
+    color: var(--text-normal);
     font-weight: 500;
 }
-
-/* Table Action Buttons Correction */
-.table .btn-group, .table .btn-group-sm {
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: nowrap;
-    justify-content: center;
+.navbar .nav-link.active, .navbar .nav-link:hover {
+    color: var(--primary);
+}
+.navbar-toggler {
+    border-color: var(--border-color);
+}
+.navbar-dark .navbar-toggler-icon {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(209, 213, 219, 0.8)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
 }
 
-.table .btn-group .btn,
-.table .btn-group-sm .btn {
-    margin: 0 !important;
-    padding: 0;
-    width: 38px;
-    height: 38px;
-    font-size: 1rem;
-    flex-shrink: 0;
+/* --- Cards --- */
+.card {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    box-shadow: none;
+}
+.card-header {
+    background-color: rgba(16, 185, 129, 0.05) !important;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-light) !important;
+    font-weight: 700;
+    padding: 1rem 1.5rem;
+}
+.card-body {
+    padding: 1.5rem;
 }
 
-/* Override for text buttons in admin dashboard to make them fit */
-.table .btn-group .btn-warning {
-    width: auto;
-    padding: 0.25rem 0.75rem;
-    font-size: 0.85rem;
-    height: 38px;
+/* --- Buttons --- */
+.btn {
+    border-radius: var(--radius-sm);
+    padding: 0.75rem 1.5rem; /* 12px 24px */
+    font-weight: 700;
+    font-family: 'Tajawal', sans-serif;
+    transition: all var(--transition);
+    border: none;
+    letter-spacing: 0.5px;
+}
+.btn:hover {
+    transform: translateY(-2px);
+}
+.btn-primary { background-color: var(--primary); color: #fff; }
+.btn-primary:hover { background-color: var(--primary-hover); }
+.btn-secondary { background-color: #374151; color: var(--text-light); }
+.btn-secondary:hover { background-color: #4b5563; }
+.btn-success { background-color: #22c55e; color: #fff; }
+.btn-danger { background-color: var(--danger); color: #fff; }
+.btn-warning { background-color: var(--warning); color: var(--bg-dark); }
+.btn-sm { padding: 0.5rem 1rem; }
+
+/* --- Forms & Inputs --- */
+.form-label {
+    color: var(--text-normal);
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+.form-control, .form-select {
+    background-color: var(--bg-dark);
+    border: 1px solid var(--border-color);
+    color: var(--text-light);
+    border-radius: var(--radius-sm);
+    padding: 0.75rem 1rem;
+}
+.form-control::placeholder {
+    color: var(--text-muted);
+}
+.form-control:focus, .form-select:focus {
+    background-color: var(--bg-dark);
+    color: var(--text-light);
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+    outline: none;
+}
+.form-select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%239ca3af' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+}
+
+/* --- Tables --- */
+.table {
+    border-color: var(--border-color);
+}
+.table-dark {
+    --bs-table-bg: var(--bg-surface);
+    --bs-table-border-color: var(--border-color);
+    --bs-table-striped-bg: #293548;
+    --bs-table-hover-bg: #313e52;
+    color: var(--text-normal);
+}
+.table > thead {
+    vertical-align: middle;
+}
+.table thead th {
+    background-color: var(--bg-dark) !important;
+    color: var(--text-muted);
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    border-bottom: 2px solid var(--border-color);
+}
+.table-striped > tbody > tr:nth-of-type(odd) > * {
+    --bs-table-accent-bg: var(--bs-table-striped-bg);
+}
+.table-hover > tbody > tr:hover > * {
+     --bs-table-accent-bg: var(--bs-table-hover-bg);
+}
+
+/* --- Badges --- */
+.badge {
+    border-radius: var(--radius-sm);
+    padding: 0.4em 0.8em;
+    font-weight: 700;
+    font-size: 0.8rem;
+}
+.bg-success { background-color: rgba(34, 197, 94, 0.15) !important; color: #22c55e !important; }
+.bg-warning { background-color: rgba(245, 158, 11, 0.15) !important; color: var(--warning) !important; }
+.bg-info { background-color: rgba(59, 130, 246, 0.15) !important; color: var(--info) !important; }
+
+/* 3. UTILITIES & FIXES
+/* ========================================================================== */
+.container, .container-fluid {
+    width: min(1500px, 95%);
+    margin-inline: auto;
+}
+.main-content {
+    padding: 2.5rem 0;
 }
