@@ -1,6 +1,6 @@
 /*
  * SawaednaCostApp - Professional UI Theme
- * Version: 2.0
+ * Version: 2.1 (Refined)
  * Author: Gemini AI
 */
 
@@ -23,6 +23,8 @@
     --muted: #64748b;
     --border: #e2e8f0;
 
+    --header-grad: linear-gradient(90deg, #1e3a8a 0%, #2563eb 100%);
+
     --shadow-sm: 0 4px 12px rgba(15, 23, 42, .05);
     --shadow-md: 0 8px 24px rgba(15, 23, 42, .1);
     --radius: 12px;
@@ -39,7 +41,7 @@ body {
     direction: rtl;
 }
 
-h1, h2, h3, h4, h5, h6, .navbar-brand {
+h1, h2, h3, h4, h5, h6 {
     font-family: "Poppins", "Inter", sans-serif;
     font-weight: 700;
     color: var(--text);
@@ -59,26 +61,29 @@ a:hover {
 
 /* --- Navbar --- */
 .navbar {
-    background: var(--surface);
-    box-shadow: var(--shadow-sm);
-    border-bottom: 1px solid var(--border);
+    background: var(--header-grad);
+    box-shadow: var(--shadow-md);
     padding: 0.75rem 0;
 }
 .navbar .navbar-brand {
     font-size: 1.5rem;
-    color: var(--primary) !important;
+    color: #fff !important;
 }
 .navbar .nav-link {
-    color: var(--muted);
+    color: rgba(255, 255, 255, 0.75);
     font-weight: 500;
     transition: color var(--transition);
 }
 .navbar .nav-link:hover, .navbar .nav-link.active {
-    color: var(--primary);
+    color: #fff;
 }
 .navbar-dark .navbar-toggler-icon {
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%2815, 23, 42, 0.75%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.85%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
 }
+.navbar-toggler {
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
 
 /* --- Cards --- */
 .card {
@@ -89,9 +94,13 @@ a:hover {
   overflow: hidden;
 }
 .card-header {
-  background-color: var(--surface);
+  background-color: var(--surface) !important; /* Override all bg colors */
   border-bottom: 1px solid var(--border);
   padding: 1.25rem 1.5rem;
+  color: var(--text) !important;
+}
+.card-header h1, .card-header h2, .card-header h3 {
+    color: var(--text);
 }
 
 /* --- Buttons --- */
@@ -138,6 +147,7 @@ a:hover {
     border-radius: var(--radius) !important;
     border: 1px solid var(--border) !important;
     padding: 1.5rem !important;
+    box-shadow: none;
 }
 
 /* --- Tables --- */
@@ -155,10 +165,16 @@ a:hover {
   background-color: #f1f5f9;
   border-bottom: 2px solid var(--border);
   font-family: "Poppins", sans-serif;
-  color: var(--text);
+  color: var(--muted);
   font-weight: 600;
   text-align: center;
   vertical-align: middle;
+  text-transform: uppercase;
+  font-size: .8rem;
+}
+.table-dark thead th {
+    background: var(--dark);
+    color: #fff;
 }
 .table tbody tr:hover {
   background-color: rgba(59, 130, 246, .06);
@@ -182,12 +198,14 @@ a:hover {
 .toast.text-bg-danger { background-color: var(--danger) !important; }
 .toast.text-bg-warning { background-color: var(--warning) !important; color: #111827 !important; }
 .toast.text-bg-info { background-color: var(--info) !important; }
+.toast .btn-close { filter: invert(1) grayscale(100) brightness(200%); }
 
 .badge {
   padding: .4em .75em;
   border-radius: var(--radius-sm);
   font-weight: 600;
   font-size: .75rem;
+  letter-spacing: .5px;
 }
 .badge.bg-success { background: rgba(22, 163, 74, .1) !important; color: #15803d !important; }
 .badge.bg-secondary { background: rgba(100, 116, 139, .1) !important; color: #475569 !important; }
