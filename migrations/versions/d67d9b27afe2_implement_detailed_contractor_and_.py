@@ -31,7 +31,7 @@ def upgrade():
     with op.batch_alter_table('cost_detail', schema=None) as batch_op:
         batch_op.add_column(sa.Column('purchase_order', sa.String(length=255), nullable=True))
         batch_op.add_column(sa.Column('payment_order', sa.String(length=255), nullable=True))
-        batch_op.add_column(sa.Column('payment_method', sa.String(length=50), nullable=False))
+        batch_op.add_column(sa.Column('payment_method', sa.String(length=50), nullable=False, server_default='دفعة واحدة'))
         batch_op.add_column(sa.Column('contractor_id', sa.Integer(), nullable=True))
         batch_op.alter_column('status',
                existing_type=sa.VARCHAR(length=50),
