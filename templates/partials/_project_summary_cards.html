@@ -11,8 +11,8 @@
         {% endif %}
         <div class="summary-item">
             <h6 class="text-muted">التكلفة الفعلية</h6>
-            <h5 class="text-success mb-0">{{ "{:,.2f}".format(project.total_actual_cost) }} ريال</h5>
-        </div>
+            <h5 class="text-light mb-0">{{ "{:,.2f}".format(project.total_actual_cost) }} ريال</h5>
+            </div>
         {% if current_user.role == 'admin' %}
         <div class="summary-item">
             <h6 class="text-muted">الوفر / الزيادة</h6>

@@ -1,6 +1,6 @@
 /*
  * SawaednaCostApp - "Passion" Inspired Dark Theme
- * Version: 3.0
+ * Version: 3.1 (Refined Spacing)
  * Author: Gemini AI
 */
 
@@ -124,6 +124,7 @@ a:hover {
 .btn-success { background-color: #22c55e; color: #fff; }
 .btn-danger { background-color: var(--danger); color: #fff; }
 .btn-warning { background-color: var(--warning); color: var(--bg-dark); }
+.btn-info { background-color: var(--info); }
 .btn-sm { padding: 0.5rem 1rem; }
 
 /* --- Forms & Inputs --- */
@@ -193,7 +194,30 @@ a:hover {
 .bg-warning { background-color: rgba(245, 158, 11, 0.15) !important; color: var(--warning) !important; }
 .bg-info { background-color: rgba(59, 130, 246, 0.15) !important; color: var(--info) !important; }
 
-/* 3. UTILITIES & FIXES
+/* 3. PARTIALS & SPECIFIC STYLES
+/* ========================================================================== */
+
+.summary-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.85rem 0;
+    border-bottom: 1px solid var(--border-color);
+}
+.summary-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+.summary-item h6 {
+    margin: 0;
+    color: var(--text-muted);
+}
+.summary-item h5 {
+    margin: 0;
+    font-weight: 700;
+}
+
+/* 4. UTILITIES & FIXES
 /* ========================================================================== */
 .container, .container-fluid {
     width: min(1500px, 95%);
