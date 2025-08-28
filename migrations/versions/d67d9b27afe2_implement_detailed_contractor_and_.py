@@ -41,7 +41,7 @@ def upgrade():
         batch_op.create_foreign_key(None, 'contractor', ['contractor_id'], ['id'])
 
     with op.batch_alter_table('payment', schema=None) as batch_op:
-        batch_op.add_column(sa.Column('cost_detail_id', sa.Integer(), nullable=False))
+        batch_op.add_column(sa.Column('cost_detail_id', sa.Integer(), nullable=True))
         batch_op.alter_column('project_id',
                existing_type=sa.INTEGER(),
                nullable=True)
