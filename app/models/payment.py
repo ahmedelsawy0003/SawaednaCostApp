@@ -8,7 +8,7 @@ class Payment(db.Model):
 
     # START: Modified Foreign Keys
     # Each payment now belongs to a specific cost_detail
-    cost_detail_id = db.Column(db.Integer, db.ForeignKey('cost_detail.id'), nullable=False)
+    cost_detail_id = db.Column(db.Integer, db.ForeignKey('cost_detail.id'), nullable=True)
     # END: Modified Foreign Keys
 
     # These fields are now deprecated as we can get them through the cost_detail -> item -> project relationship
