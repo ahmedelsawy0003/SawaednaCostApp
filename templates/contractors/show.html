@@ -1,0 +1,126 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}تفاصيل المقاول - {{ contractor.name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">
+        <span class="text-muted fw-normal">ملف المقاول:</span> {{ contractor.name }}
+    </h2>
+    <a href="{{ url_for('contractor.get_contractors') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-right me-1"></i> العودة لقائمة المقاولين
+    </a>
+</div>
+
+{# --- Financial Summary Cards --- #}
+<div class="card mb-4">
+    <div class="card-header bg-dark text-white">
+        <h3 class="mb-0">الملخص المالي للمقاول</h3>
+    </div>
+    <div class="card-body">
+        <div class="row text-center">
+            <div class="col">
+                <h5>إجمالي المستحق</h5>
+                <p class="fs-4 text-primary">{{ "{:,.2f}".format(total_due) }} ريال</p>
+            </div>
+            <div class="col">
+                <h5>إجمالي المدفوع</h5>
+                <p class="fs-4 text-success">{{ "{:,.2f}".format(total_paid) }} ريال</p>
+            </div>
+            <div class="col">
+                <h5>إجمالي المتبقي</h5>
+                <p class="fs-4 text-danger">{{ "{:,.2f}".format(remaining) }} ريال</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# --- Filters --- #}
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('contractor.show_contractor', contractor_id=contractor.id) }}">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-5">
+                    <label class="form-label">تصفية حسب المشروع</label>
+                    <select name="project_id" class="form-select">
+                        <option value="">كل المشاريع</option>
+                        {% for project in projects %}
+                        <option value="{{ project.id }}" {% if filters.project_id == project.id %}selected{% endif %}>{{ project.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label">بحث بالوصف أو رقم البند</label>
+                    <input type="text" name="search" class="form-control" value="{{ filters.search or '' }}">
+                </div>
+                <div class="col-md-2">
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-info w-100"><i class="fas fa-search"></i> بحث</button>
+                        <a href="{{ url_for('contractor.show_contractor', contractor_id=contractor.id) }}" class="btn btn-secondary w-100"><i class="fas fa-times"></i></a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+{# --- Cost Details List --- #}
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">قائمة الأعمال المسندة</h5>
+    </div>
+    <div class="card-body p-0">
+        {% if cost_details %}
+            <div class="table-responsive">
+                <table class="table table-hover table-striped mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>المشروع / البند</th>
+                            <th>الوصف</th>
+                            <th>التكلفة الإجمالية</th>
+                            <th>المدفوع</th>
+                            <th>المتبقي</th>
+                            <th>الحالة</th>
+                            <th class="text-center">الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for detail in cost_details %}
+                        <tr>
+                            <td>
+                                <a href="{{ url_for('project.get_project', project_id=detail.item.project.id) }}">{{ detail.item.project.name }}</a>
+                                <br>
+                                <small class="text-muted">{{ detail.item.item_number }}</small>
+                            </td>
+                            <td>{{ detail.description }}</td>
+                            <td>{{ "{:,.2f}".format(detail.total_cost) }}</td>
+                            <td class="text-success">{{ "{:,.2f}".format(detail.total_paid) }}</td>
+                            <td class="text-danger">{{ "{:,.2f}".format(detail.remaining_amount) }}</td>
+                            <td>
+                                {% if detail.payment_status == 'مدفوع بالكامل' %}
+                                <span class="badge bg-success">مدفوع بالكامل</span>
+                                {% elif detail.payment_status == 'مدفوع جزئياً' %}
+                                <span class="badge bg-warning text-dark">مدفوع جزئياً</span>
+                                {% else %}
+                                <span class="badge bg-danger">غير مدفوع</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                <a href="{{ url_for('item.edit_item', item_id=detail.item_id) }}" class="btn btn-info btn-sm" title="الانتقال إلى البند">
+                                    <i class="fas fa-share-square"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="alert alert-secondary m-3 text-center">
+                لا توجد أعمال مسندة تطابق معايير البحث الحالية.
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

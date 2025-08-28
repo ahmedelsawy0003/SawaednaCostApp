@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1>تعديل البند: {{ item.item_number }} - {{ item.description }}</h1>
+    <h1>تعديل البند: {{ item.item_number }} - {{ item.short_description }}</h1>
     <a href="{{ url_for("item.get_items_by_project", project_id=project.id) }}" class="btn btn-secondary">
         <i class="fas fa-arrow-right me-1"></i> العودة للبنود
     </a>
@@ -74,19 +74,6 @@
                             <option value="معلق" {% if item.status == "معلق" %}selected{% endif %}>معلق</option>
                         </select>
                     </div>
-                    <div class="mb-3">
-                        <label for="execution_method" class="form-label">طريقة التنفيذ</label>
-                        <input type="text" class="form-control" id="execution_method" name="execution_method" value="{{ item.execution_method if item.execution_method else "" }}">
-                    </div>
-                    <div class="mb-3">
-                        <label for="contractor" class="form-label">المقاول/المورد</label>
-                        <input type="text" class="form-control" id="contractor" name="contractor" value="{{ item.contractor if item.contractor else "" }}">
-                    </div>
-                    <div class="mb-3">
-                        <label for="paid_amount" class="form-label">المبلغ المدفوع (محسوب تلقائياً)</label>
-                        <input type="text" class="form-control" id="paid_amount" name="paid_amount" value="{{ "{:,.2f}".format(item.paid_amount) }}" disabled>
-                        <div class="form-text">هذا الحقل يمثل مجموع الدفعات المرتبطة بهذا البند.</div>
-                    </div>
                 </div>
             </div>
             <div class="mb-3">
@@ -100,101 +87,147 @@
     </div>
 </div>
 
-{# --- Section for Cost Details --- #}
+{# --- START: Updated Section for Cost Details --- #}
 <div class="card mb-4">
-    {# ... (The entire Cost Details section remains the same) ... #}
     <div class="card-header bg-success text-white">
         <h3 class="mb-0">تفاصيل التكاليف الفعلية</h3>
     </div>
     <div class="card-body">
-        <h4 class="mb-3">إضافة تفصيل جديد</h4>
-        <form method="POST" action="{{ url_for('cost_detail.add_cost_detail', item_id=item.id) }}" class="mb-4 p-3 border rounded">
-            <div class="row g-3">
-                <div class="col-md-4">
-                    <label for="cd_description" class="form-label">الوصف</label>
-                    <input type="text" class="form-control" id="cd_description" name="description" required>
-                </div>
-                <div class="col-md-2">
-                    <label for="cd_unit" class="form-label">الوحدة</label>
-                    <input type="text" class="form-control" id="cd_unit" name="unit">
-                </div>
-                <div class="col-md-2">
-                    <label for="cd_quantity" class="form-label">الكمية</label>
-                    <input type="number" step="0.01" class="form-control" id="cd_quantity" name="quantity" required>
-                </div>
-                <div class="col-md-2">
-                    <label for="cd_unit_cost" class="form-label">تكلفة الوحدة</label>
-                    <input type="number" step="0.01" class="form-control" id="cd_unit_cost" name="unit_cost" required>
-                </div>
-                <div class="col-md-2 align-self-end">
-                    <button type="submit" class="btn btn-success w-100">
-                        <i class="fas fa-plus me-1"></i> إضافة
+        <div class="accordion" id="addCostDetailAccordion">
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAddCostDetail" aria-expanded="false" aria-controls="collapseAddCostDetail">
+                        <i class="fas fa-plus me-2"></i> إضافة تفصيل تكلفة جديد
                     </button>
+                </h2>
+                <div id="collapseAddCostDetail" class="accordion-collapse collapse" data-bs-parent="#addCostDetailAccordion">
+                    <div class="accordion-body">
+                        <form method="POST" action="{{ url_for('cost_detail.add_cost_detail', item_id=item.id) }}" class="p-3 border rounded">
+                            <div class="row g-3">
+                                <div class="col-md-12"><label class="form-label">الوصف</label><input type="text" name="description" class="form-control" required></div>
+                                <div class="col-md-3"><label class="form-label">الوحدة</label><input type="text" name="unit" class="form-control"></div>
+                                <div class="col-md-3"><label class="form-label">الكمية</label><input type="number" step="0.01" name="quantity" class="form-control" required></div>
+                                <div class="col-md-3"><label class="form-label">تكلفة الوحدة</label><input type="number" step="0.01" name="unit_cost" class="form-control" required></div>
+                                <div class="col-md-3"><label class="form-label">أمر الشراء</label><input type="text" name="purchase_order" class="form-control"></div>
+                                <div class="col-md-3"><label class="form-label">أمر الصرف</label><input type="text" name="payment_order" class="form-control"></div>
+                                
+                                <div class="col-md-6">
+                                    <label for="cd_contractor_id" class="form-label">المقاول</label>
+                                    <div class="input-group">
+                                        <select name="contractor_id" id="cd_contractor_id" class="form-select">
+                                            <option value="">-- بدون مقاول (تنفيذ ذاتي) --</option>
+                                            {% for contractor in contractors %}
+                                            <option value="{{ contractor.id }}">{{ contractor.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <button class="btn btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#addContractorModal">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <label for="payment_method" class="form-label">طريقة الدفع</label>
+                                    <select name="payment_method" id="payment_method" class="form-select">
+                                        <option value="دفعة واحدة">دفعة واحدة (سيتم إنشاء دفعة تلقائية بالمبلغ كاملاً)</option>
+                                        <option value="دفعات متعددة">دفعات متعددة (يمكنك إضافة الدفعات يدويًا)</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-6" id="payment_date_wrapper">
+                                    <label for="payment_date" class="form-label">تاريخ الدفعة</label>
+                                    <input type="date" name="payment_date" id="payment_date" class="form-control">
+                                </div>
+
+                                <div class="col-md-12 text-end">
+                                    <button type="submit" class="btn btn-success"><i class="fas fa-plus me-1"></i> إضافة التفصيل</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
-        </form>
+        </div>
         
         <hr>
 
         <h4 class="mb-3 mt-4">التفاصيل المسجلة</h4>
         {% if cost_details %}
-            <div class="table-responsive">
-                <table class="table table-striped table-hover">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>الوصف</th>
-                            <th>الوحدة</th>
-                            <th>الكمية</th>
-                            <th>تكلفة الوحدة</th>
-                            <th>التكلفة الإجمالية</th>
-                            <th>الحالة</th>
-                            <th class="text-center">الإجراءات</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for detail in cost_details %}
-                        <tr>
-                            <td>{{ detail.description }}</td>
-                            <td>{{ detail.unit }}</td>
-                            <td>{{ detail.quantity }}</td>
-                            <td>{{ "{:,.2f}".format(detail.unit_cost) }}</td>
-                            <td>{{ "{:,.2f}".format(detail.total_cost) }}</td>
-                            <td>
-                                {% if detail.status == 'مدفوع' %}
-                                    <span class="badge bg-success">مدفوع</span>
+            {% for detail in cost_details %}
+            <div class="card mb-3">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">{{ detail.description }}</h5>
+                    <div>
+                        <a href="{{ url_for('cost_detail.edit_cost_detail', detail_id=detail.id) }}" class="btn btn-warning btn-sm" title="تعديل التفصيل"><i class="fas fa-edit"></i></a>
+                        <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteDetailModal-{{ detail.id }}" title="حذف التفصيل"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <p><strong>المقاول:</strong> {{ detail.contractor.name if detail.contractor else "تنفيذ ذاتي" }}</p>
+                            <p>
+                                <strong>التكلفة الإجمالية:</strong> <span class="fw-bold">{{ "{:,.2f}".format(detail.total_cost) }} ريال</span>
+                                (<small>{{ detail.quantity }} {{ detail.unit }} × {{ "{:,.2f}".format(detail.unit_cost) }} ريال</small>)
+                            </p>
+                            <p><strong>أمر الشراء:</strong> {{ detail.purchase_order or 'لا يوجد' }} | <strong>أمر الصرف:</strong> {{ detail.payment_order or 'لا يوجد' }}</p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <p class="mb-1"><strong>الحالة:</strong>
+                                {% if detail.payment_status == 'مدفوع بالكامل' %}
+                                <span class="badge bg-success">مدفوع بالكامل</span>
+                                {% elif detail.payment_status == 'مدفوع جزئياً' %}
+                                <span class="badge bg-warning text-dark">مدفوع جزئياً</span>
                                 {% else %}
-                                    <span class="badge bg-warning text-dark">غير مدفوع</span>
+                                <span class="badge bg-danger">غير مدفوع</span>
                                 {% endif %}
-                            </td>
-                            <td class="text-center">
-                                <div class="btn-group btn-group-sm">
-                                    <form action="{{ url_for('cost_detail.toggle_status', detail_id=detail.id) }}" method="POST" class="d-inline">
-                                        <button type="submit" class="btn btn-info btn-sm" title="تغيير حالة الدفع">
-                                            <i class="fas fa-exchange-alt"></i>
-                                        </button>
-                                    </form>
-                                    <a href="{{ url_for('cost_detail.edit_cost_detail', detail_id=detail.id) }}" class="btn btn-warning btn-sm" title="تعديل">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    <form action="{{ url_for('cost_detail.delete_cost_detail', detail_id=detail.id) }}" method="POST" class="d-inline">
-                                        <button type="submit" class="btn btn-danger btn-sm" title="حذف" onclick="return confirm('هل أنت متأكد من حذف هذا التفصيل؟')">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                            </p>
+                            <p class="mb-1"><strong>إجمالي المدفوع:</strong> {{ "{:,.2f}".format(detail.total_paid) }} ريال</p>
+                            <p class="mb-1"><strong>المبلغ المتبقي:</strong> {{ "{:,.2f}".format(detail.remaining_amount) }} ريال</p>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    <h6>
+                        سجل الدفعات
+                        {% if detail.payment_method == 'دفعات متعددة' %}
+                        <button class="btn btn-success btn-sm ms-2" data-bs-toggle="modal" data-bs-target="#addPaymentModal-{{ detail.id }}">
+                            <i class="fas fa-plus"></i> إضافة دفعة
+                        </button>
+                        {% endif %}
+                    </h6>
+                    
+                    {% if detail.payments.all() %}
+                        <table class="table table-sm table-bordered">
+                            <thead><tr><th>المبلغ</th><th>التاريخ</th><th>الوصف</th></tr></thead>
+                            <tbody>
+                            {% for payment in detail.payments.all() %}
+                                <tr>
+                                    <td>{{ "{:,.2f}".format(payment.amount) }}</td>
+                                    <td>{{ payment.payment_date }}</td>
+                                    <td>{{ payment.description }}</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    {% else %}
+                        <p class="text-muted">لا توجد دفعات مسجلة لهذا التفصيل.</p>
+                    {% endif %}
+                </div>
             </div>
+            
+            <div class="modal fade" id="deleteDetailModal-{{ detail.id }}" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">تأكيد الحذف</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><p>هل أنت متأكد أنك تريد حذف التفصيل <strong>{{ detail.description }}</strong>؟ سيتم حذف جميع الدفعات المرتبطة به.</p></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button><form action="{{ url_for('cost_detail.delete_cost_detail', detail_id=detail.id) }}" method="POST"><button type="submit" class="btn btn-danger">تأكيد الحذف</button></form></div></div></div></div>
+            
+            <div class="modal fade" id="addPaymentModal-{{ detail.id }}" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">إضافة دفعة جديدة لـ "{{ detail.description }}"</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><form id="addPaymentForm-{{ detail.id }}" method="POST" action="{{ url_for('cost_detail.add_payment', detail_id=detail.id) }}"><div class="mb-3"><label class="form-label">المبلغ</label><input type="number" step="0.01" name="amount" class="form-control" required></div><div class="mb-3"><label class="form-label">تاريخ الدفعة</label><input type="date" name="payment_date" class="form-control" required></div><div class="mb-3"><label class="form-label">الوصف</label><textarea name="description" class="form-control" rows="2"></textarea></div></form></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button><button type="submit" form="addPaymentForm-{{ detail.id }}" class="btn btn-primary">إضافة الدفعة</button></div></div></div></div>
+
+            {% endfor %}
         {% else %}
-            <div class="alert alert-info">
-                لا توجد تفاصيل تكاليف مسجلة لهذا البند حتى الآن.
-            </div>
+            <div class="alert alert-info">لا توجد تفاصيل تكاليف مسجلة لهذا البند حتى الآن.</div>
         {% endif %}
     </div>
 </div>
+{# --- END: Updated Section --- #}
+
 
 <div class="card">
     <div class="card-header bg-secondary text-white">
@@ -240,45 +273,92 @@
         {% endif %}
     </div>
 </div>
+
+<div class="modal fade" id="addContractorModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">إضافة مقاول جديد</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><form id="addContractorForm"><div id="contractor-alert" class="alert alert-danger d-none" role="alert"></div><div class="mb-3"><label for="new_contractor_name" class="form-label">اسم المقاول</label><input type="text" class="form-control" id="new_contractor_name" required></div></form></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button><button type="button" id="saveContractorBtn" class="btn btn-primary">حفظ المقاول</button></div></div></div></div>
+
 {% endblock %}
 
 {% block scripts %}
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        // ... (The JavaScript for auto-calculation remains the same) ...
-        function calculateTotal(qtyInput, unitCostInput, totalInput) {
-            if (!qtyInput || !unitCostInput || !totalInput) return;
+document.addEventListener("DOMContentLoaded", function() {
+    // --- Auto-calculation for main item (remains the same) ---
+    function calculateTotal(qtyInput, unitCostInput, totalInput) {
+        if (!qtyInput || !unitCostInput || !totalInput) return;
+        const quantity = parseFloat(qtyInput.value) || 0;
+        const unitCostValue = parseFloat(unitCostInput.value) || 0;
+        const total = quantity * unitCostValue;
+        totalInput.value = total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+    const contractQty = document.getElementById('contract_quantity');
+    const contractUnitCost = document.getElementById('contract_unit_cost');
+    const contractTotal = document.getElementById('contract_total_cost');
+    if(contractQty && contractUnitCost) {
+        contractQty.addEventListener('input', () => calculateTotal(contractQty, contractUnitCost, contractTotal));
+        contractUnitCost.addEventListener('input', () => calculateTotal(contractQty, contractUnitCost, contractTotal));
+    }
+    const actualQty = document.getElementById('actual_quantity');
+    const actualUnitCost = document.getElementById('actual_unit_cost');
+    const actualTotal = document.getElementById('actual_total_cost');
+    if (actualQty && actualUnitCost) {
+        actualQty.addEventListener('input', () => calculateTotal(actualQty, actualUnitCost, actualTotal));
+        actualUnitCost.addEventListener('input', () => calculateTotal(actualQty, actualUnitCost, actualTotal));
+    }
 
-            const quantity = parseFloat(qtyInput.value) || 0;
-            let unitCostValue = 0;
+    // --- START: New JS for Cost Detail Form ---
+    const paymentMethodSelect = document.getElementById('payment_method');
+    const paymentDateWrapper = document.getElementById('payment_date_wrapper');
+    const paymentDateInput = document.getElementById('payment_date');
 
-            if (unitCostInput.disabled) {
-                unitCostValue = parseFloat(unitCostInput.value) || 0;
+    function togglePaymentDate() {
+        if (paymentMethodSelect.value === 'دفعة واحدة') {
+            paymentDateWrapper.style.display = 'block';
+            paymentDateInput.required = true;
+        } else {
+            paymentDateWrapper.style.display = 'none';
+            paymentDateInput.required = false;
+        }
+    }
+    paymentMethodSelect.addEventListener('change', togglePaymentDate);
+    togglePaymentDate(); // Run on page load
+
+    // --- Add Contractor via API ---
+    const saveContractorBtn = document.getElementById('saveContractorBtn');
+    const contractorSelect = document.getElementById('cd_contractor_id');
+    const addContractorModal = new bootstrap.Modal(document.getElementById('addContractorModal'));
+    const contractorAlert = document.getElementById('contractor-alert');
+
+    saveContractorBtn.addEventListener('click', function() {
+        const contractorName = document.getElementById('new_contractor_name').value;
+        if (!contractorName) {
+            contractorAlert.textContent = 'الرجاء إدخال اسم المقاول.';
+            contractorAlert.classList.remove('d-none');
+            return;
+        }
+
+        fetch("{{ url_for('cost_detail.api_add_contractor') }}", {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ name: contractorName })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const newOption = new Option(data.contractor.name, data.contractor.id, true, true);
+                contractorSelect.appendChild(newOption);
+                document.getElementById('addContractorForm').reset();
+                contractorAlert.classList.add('d-none');
+                addContractorModal.hide();
             } else {
-                unitCostValue = parseFloat(unitCostInput.value) || 0;
+                contractorAlert.textContent = data.message;
+                contractorAlert.classList.remove('d-none');
             }
-            
-            const total = quantity * unitCostValue;
-            totalInput.value = total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        }
-
-        const contractQty = document.getElementById('contract_quantity');
-        const contractUnitCost = document.getElementById('contract_unit_cost');
-        const contractTotal = document.getElementById('contract_total_cost');
-        
-        if(contractQty && contractUnitCost) {
-            contractQty.addEventListener('input', () => calculateTotal(contractQty, contractUnitCost, contractTotal));
-            contractUnitCost.addEventListener('input', () => calculateTotal(contractQty, contractUnitCost, contractTotal));
-        }
-
-        const actualQty = document.getElementById('actual_quantity');
-        const actualUnitCost = document.getElementById('actual_unit_cost');
-        const actualTotal = document.getElementById('actual_total_cost');
-
-        if (actualQty && actualUnitCost) {
-            actualQty.addEventListener('input', () => calculateTotal(actualQty, actualUnitCost, actualTotal));
-            actualUnitCost.addEventListener('input', () => calculateTotal(actualQty, actualUnitCost, actualTotal));
-        }
+        })
+        .catch(error => {
+            contractorAlert.textContent = 'حدث خطأ في الشبكة.';
+            contractorAlert.classList.remove('d-none');
+        });
     });
+    // --- END: New JS ---
+});
 </script>
 {% endblock %}

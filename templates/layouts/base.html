@@ -33,6 +33,15 @@
                                 <i class="fas fa-project-diagram fa-fw me-1"></i>المشاريع
                             </a>
                         </li>
+                        
+                        {# START: Add Contractor Link #}
+                        <li class="nav-item">
+                            <a class="nav-link {% if 'contractor' in request.endpoint %}active{% endif %}" href="{{ url_for('contractor.get_contractors') }}">
+                                <i class="fas fa-hard-hat fa-fw me-1"></i>المقاولون
+                            </a>
+                        </li>
+                        {# END: Add Contractor Link #}
+                        
                         {% if current_user.role == 'admin' %}
                         <li class="nav-item">
                             <a class="nav-link {% if 'admin_dashboard' in request.endpoint %}active{% endif %}" href="{{ url_for('auth.admin_dashboard') }}">
