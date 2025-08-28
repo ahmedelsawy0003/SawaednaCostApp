@@ -1,191 +1,213 @@
-/* General Body Styles */
+/* START: New Design System */
+
+/* 1. Variables and Basic Setup */
+:root {
+    --primary: #3b82f6;
+    --primary-dark: #2563eb;
+    --success: #16a34a;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --info: #3b82f6; /* Using primary color for info */
+    --bg: #f8fafc;
+    --card-bg: #ffffff;
+    --text-color: #0f172a;
+    --muted-color: #64748b;
+    --border-color: #e2e8f0;
+    --shadow-sm: 0 4px 12px rgba(15, 23, 42, .05);
+    --shadow-md: 0 8px 24px rgba(15, 23, 42, .1);
+    --radius: 14px;
+    --radius-sm: 10px;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
 body {
-    font-family: 'Arial', sans-serif; /* Or any preferred Arabic-friendly font */
-    background-color: #f8f9fa;
-    color: #333;
-    direction: rtl; /* Right-to-left for Arabic */
+    font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    background-color: var(--bg);
+    color: var(--text-color);
+    line-height: 1.65;
+    margin: 0;
+    direction: rtl;
     text-align: right;
 }
 
-/* Navbar Styles */
-.navbar {
-    margin-bottom: 20px;
+/* 2. Typography */
+h1, h2, h3, h4, h5, h6 {
+    font-family: "Poppins", "Inter", sans-serif;
+    font-weight: 700;
+    margin-top: 0;
+    margin-bottom: 0.75rem;
+    line-height: 1.2;
 }
 
-.navbar-brand {
-    font-weight: bold;
-    font-size: 1.5rem;
+a {
+    color: var(--primary);
+    text-decoration: none;
+    transition: color 0.2s ease-in-out;
 }
 
-.navbar-nav .nav-link {
-    color: rgba(255, 255, 255, 0.75);
+a:hover {
+    color: var(--primary-dark);
 }
 
-.navbar-nav .nav-link:hover {
-    color: rgba(255, 255, 255, 1);
-}
-
-/* Container and Card Styles */
-.container {
-    padding-top: 20px;
-    padding-bottom: 20px;
+/* 3. Layout and Cards */
+.container, .container-fluid {
+    width: min(1200px, 94%);
+    margin-inline: auto;
 }
 
 .card {
-    border-radius: 0.5rem;
-    border: none;
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.05);
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 1.5rem;
 }
 
 .card-header {
-    border-top-left-radius: 0.5rem;
-    border-top-right-radius: 0.5rem;
     padding: 1rem 1.5rem;
-    font-size: 1.25rem;
-    font-weight: bold;
+    border-bottom: 1px solid var(--border-color);
+    border-top-left-radius: var(--radius);
+    border-top-right-radius: var(--radius);
+    background-color: #f7f9fc; /* A very light header color */
 }
 
-/* Buttons */
+.card-header h1, .card-header h2, .card-header h3 {
+    margin: 0;
+    font-size: 1.25rem;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+/* 4. Navbar */
+.navbar {
+    background: #111827; /* Darker navbar */
+    box-shadow: var(--shadow-md);
+    padding: 0.5rem 0;
+}
+
+.navbar .navbar-brand {
+    font-family: "Poppins", sans-serif;
+    font-weight: 700;
+    font-size: 1.5rem;
+}
+
+/* 5. Buttons */
 .btn {
-    border-radius: 0.3rem;
-    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    border-radius: var(--radius-sm);
+    padding: .7rem 1.2rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: 0;
+    text-transform: none;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
 }
 
 .btn-primary {
-    background-color: #007bff;
-    border-color: #007bff;
+    background-color: var(--primary);
+    color: #fff;
+    box-shadow: 0 8px 20px rgba(59,130,246,.25);
 }
-
 .btn-primary:hover {
-    background-color: #0056b3;
-    border-color: #0056b3;
+    background-color: var(--primary-dark);
+    box-shadow: 0 10px 24px rgba(37,99,235,.3);
+    color: #fff;
 }
-
-.btn-success {
-    background-color: #28a745;
-    border-color: #28a745;
-}
-
-.btn-success:hover {
-    background-color: #218838;
-    border-color: #218838;
-}
-
-.btn-warning {
-    background-color: #ffc107;
-    border-color: #ffc107;
-    color: #212529; /* Dark text for warning */
-}
-
-.btn-warning:hover {
-    background-color: #e0a800;
-    border-color: #e0a800;
-}
-
-.btn-danger {
-    background-color: #dc3545;
-    border-color: #dc3545;
-}
-
-.btn-danger:hover {
-    background-color: #c82333;
-    border-color: #c82333;
-}
-
-.btn-info {
-    background-color: #17a2b8;
-    border-color: #17a2b8;
-}
-
-.btn-info:hover {
-    background-color: #138496;
-    border-color: #138496;
-}
-
 .btn-secondary {
-    background-color: #6c757d;
-    border-color: #6c757d;
+    background-color: #e2e8f0;
+    color: #475569;
 }
-
 .btn-secondary:hover {
-    background-color: #545b62;
-    border-color: #545b62;
+    background-color: #cbd5e1;
+    color: #334155;
+}
+.btn-success {
+    background-color: var(--success);
+    color: #fff;
+}
+.btn-danger {
+    background-color: var(--danger);
+    color: #fff;
+}
+.btn-warning {
+    background-color: var(--warning);
+    color: #111827;
+}
+.btn-info {
+    background-color: var(--info);
+    color: #fff;
+}
+.btn-dark {
+    background-color: #334155;
+    color: #fff;
+}
+.btn-dark:hover {
+    background-color: #1e293b;
 }
 
-/* Table Styles */
+
+/* 6. Forms */
+.form-control, .form-select {
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+    padding: .7rem 1rem;
+    background-color: var(--bg);
+}
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(59,130,246,.15);
+    background-color: #fff;
+}
+.form-label {
+    font-weight: 600;
+    margin-bottom: .4rem;
+}
+
+/* 7. Tables */
 .table {
-    margin-bottom: 0;
+    border-collapse: separate;
+    border-spacing: 0;
 }
-
+.table-responsive {
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    overflow: hidden;
+}
 .table thead th {
-    border-bottom: 2px solid #dee2e6;
+    background-color: #f7f9fc;
+    border-bottom: 2px solid var(--border-color);
+    font-family: "Poppins", sans-serif;
+    font-weight: 600;
+}
+.table tbody tr:hover {
+    background-color: rgba(59,130,246,.06);
 }
 
-.table-striped tbody tr:nth-of-type(odd) {
-    background-color: rgba(0, 0, 0, 0.02);
+.table-success, .table-success > th, .table-success > td {
+    background-color: #f0fdf4 !important;
+    color: #14532d;
+}
+.table-warning, .table-warning > th, .table-warning > td {
+    background-color: #fffbeb !important;
+    color: #78350f;
 }
 
-/* Forms */
-.form-control,
-.form-select {
-    border-radius: 0.3rem;
+/* 8. Toasts (Flash Messages) */
+.toast {
+    border-radius: var(--radius-sm) !important;
+    box-shadow: var(--shadow-md) !important;
 }
 
-/* Alerts */
-.alert {
-    border-radius: 0.3rem;
-}
-
-/* Badges */
-.badge {
-    padding: 0.5em 0.7em;
-    font-size: 0.85em;
-    font-weight: bold;
-    border-radius: 0.25rem;
-}
-
-/* Auth Pages Specific Styles */
-.auth-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: calc(100vh - 100px); /* Adjust based on navbar/footer height */
-}
-
-.auth-card {
-    max-width: 450px;
-    width: 100%;
-    padding: 2rem;
-}
-
-/* Responsive Adjustments */
-@media (max-width: 768px) {
-    .card-header {
-        font-size: 1rem;
-    }
-
-    .btn {
-        font-size: 0.9rem;
-        padding: 0.4rem 0.8rem;
-    }
-
-    .table th,
-    .table td {
-        font-size: 0.9rem;
-    }
-}
-
-/* Password toggle icon styles */
-.password-container {
-    position: relative;
-}
-
-.password-toggle-icon {
-    position: absolute;
-    top: 50%;
-    /* For RTL layout, position on the left */
-    left: 15px; 
-    transform: translateY(-50%);
-    cursor: pointer;
-    color: #6c757d; /* Bootstrap secondary color */
-}
+/* END: New Design System */
