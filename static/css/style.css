@@ -1,6 +1,6 @@
 /*
  * SawaednaCostApp - "Passion" Inspired Dark Theme
- * Version: 3.1 (Refined Spacing)
+ * Version: 3.2 (Mobile Responsive)
  * Author: Gemini AI
 */
 
@@ -61,7 +61,6 @@ a:hover {
 /* 2. CORE COMPONENTS
 /* ========================================================================== */
 
-/* --- Navbar --- */
 .navbar {
     background-color: var(--bg-surface) !important;
     border-bottom: 1px solid var(--border-color);
@@ -86,7 +85,6 @@ a:hover {
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(209, 213, 219, 0.8)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
 }
 
-/* --- Cards --- */
 .card {
     background-color: var(--bg-surface);
     border: 1px solid var(--border-color);
@@ -104,7 +102,6 @@ a:hover {
     padding: 1.5rem;
 }
 
-/* --- Buttons --- */
 .btn {
     border-radius: var(--radius-sm);
     padding: 0.75rem 1.5rem; /* 12px 24px */
@@ -127,7 +124,6 @@ a:hover {
 .btn-info { background-color: var(--info); }
 .btn-sm { padding: 0.5rem 1rem; }
 
-/* --- Forms & Inputs --- */
 .form-label {
     color: var(--text-normal);
     font-weight: 500;
@@ -140,9 +136,7 @@ a:hover {
     border-radius: var(--radius-sm);
     padding: 0.75rem 1rem;
 }
-.form-control::placeholder {
-    color: var(--text-muted);
-}
+.form-control::placeholder { color: var(--text-muted); }
 .form-control:focus, .form-select:focus {
     background-color: var(--bg-dark);
     color: var(--text-light);
@@ -150,14 +144,8 @@ a:hover {
     box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
     outline: none;
 }
-.form-select {
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%239ca3af' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
-}
 
-/* --- Tables --- */
-.table {
-    border-color: var(--border-color);
-}
+.table { border-color: var(--border-color); }
 .table-dark {
     --bs-table-bg: var(--bg-surface);
     --bs-table-border-color: var(--border-color);
@@ -165,25 +153,14 @@ a:hover {
     --bs-table-hover-bg: #313e52;
     color: var(--text-normal);
 }
-.table > thead {
-    vertical-align: middle;
-}
 .table thead th {
     background-color: var(--bg-dark) !important;
     color: var(--text-muted);
     font-weight: 700;
-    text-transform: uppercase;
     font-size: 0.8rem;
     border-bottom: 2px solid var(--border-color);
 }
-.table-striped > tbody > tr:nth-of-type(odd) > * {
-    --bs-table-accent-bg: var(--bs-table-striped-bg);
-}
-.table-hover > tbody > tr:hover > * {
-     --bs-table-accent-bg: var(--bs-table-hover-bg);
-}
 
-/* --- Badges --- */
 .badge {
     border-radius: var(--radius-sm);
     padding: 0.4em 0.8em;
@@ -219,10 +196,76 @@ a:hover {
 
 /* 4. UTILITIES & FIXES
 /* ========================================================================== */
-.container, .container-fluid {
+.container-fluid {
     width: min(1500px, 95%);
     margin-inline: auto;
 }
 .main-content {
     padding: 2.5rem 0;
+}
+
+/* 5. MOBILE & RESPONSIVE STYLES
+/* ========================================================================== */
+@media (max-width: 992px) {
+    .navbar-brand {
+        font-size: 1.1rem; /* Make brand slightly smaller on tablets */
+    }
+    
+    /* Stack header elements on tablets and smaller */
+    .d-flex.justify-content-between.align-items-center {
+        flex-direction: column;
+        align-items: stretch !important;
+        gap: 1.5rem;
+    }
+    
+    .d-flex.gap-2 {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .d-flex.gap-2 .btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    body {
+        font-size: 15px; /* Adjust base font size */
+    }
+
+    .main-content {
+        padding: 1.5rem 0; /* Less padding on mobile */
+    }
+    
+    h1, .h1 { font-size: 1.75rem; }
+    h2, .h2 { font-size: 1.5rem; }
+    h3, .h3 { font-size: 1.25rem; }
+
+    .card-body {
+        padding: 1rem; /* Smaller padding inside cards */
+    }
+    .card-header {
+        padding: 0.75rem 1rem;
+    }
+
+    /* Improve form controls on mobile */
+    .form-control, .form-select, .btn {
+        padding: 0.7rem 1rem;
+        font-size: 0.95rem;
+    }
+    
+    /* Ensure tables with many columns are scrollable */
+    .table-responsive {
+        border-radius: var(--radius);
+        border: 1px solid var(--border-color);
+        background: var(--bg-surface);
+    }
+    
+    /* Make accordion filter items stack */
+    .filter-form .row > div {
+        flex-basis: 100%;
+    }
+    .filter-form .row .d-flex {
+        flex-direction: row !important;
+    }
 }
