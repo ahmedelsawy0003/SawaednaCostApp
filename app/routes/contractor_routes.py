@@ -16,21 +16,16 @@ contractor_bp = Blueprint("contractor", __name__, url_prefix='/contractors')
 def get_contractors():
     """عرض قائمة بجميع المقاولين"""
     if current_user.role != 'admin':
-        # للمستخدم العادي: اعرض فقط المقاولين الذين لديهم أعمال في المشاريع المسموح بها
         allowed_project_ids = [p.id for p in current_user.projects]
         if not allowed_project_ids:
             contractors = []
         else:
-            # ابحث عن المقاولين المرتبطين بالبنود أو تفاصيل التكاليف ضمن المشاريع المسموح بها
             contractors_from_items = db.session.query(Contractor).join(Item).filter(Item.project_id.in_(allowed_project_ids)).distinct()
             contractors_from_details = db.session.query(Contractor).join(CostDetail).join(Item).filter(Item.project_id.in_(allowed_project_ids)).distinct()
             
-            # ادمج النتائج وأزل التكرار
             all_contractors = list(set(contractors_from_items.all() + contractors_from_details.all()))
-            # افرز القائمة النهائية بالاسم
             contractors = sorted(all_contractors, key=lambda c: c.name)
     else:
-        # للمسؤول: اعرض جميع المقاولين
         contractors = Contractor.query.order_by(Contractor.name).all()
     
     return render_template("contractors/index.html", contractors=contractors)
@@ -75,15 +70,13 @@ def show_contractor(contractor_id):
     """عرض صفحة تفصيلية للمقاول مع جميع تفاصيل التكاليف والدفعات المرتبطة به"""
     contractor = Contractor.query.get_or_404(contractor_id)
 
-    # START: Modified Query Logic
-    # بناء الاستعلام الأساسي لجلب كل تفاصيل التكاليف التي تخص المقاول
-    # سواء كانت مسندة للبند بالكامل أو للتفصيل مباشرة
+    # START: Modified Query Logic (Removed .distinct())
     cost_details_query = CostDetail.query.join(Item).filter(
         or_(
             Item.contractor_id == contractor_id,
             CostDetail.contractor_id == contractor_id
         )
-    ).distinct()
+    )
     # END: Modified Query Logic
 
     # فلترة المشاريع للdropdown
