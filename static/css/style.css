@@ -1,7 +1,8 @@
 /*
  * SawaednaCostApp - Professional UI Theme
- * Version: 2.3 (Compact UI)
+ * Version: 2.5 (Harmonized)
  * Author: Gemini AI
+ * Location: Makkah, Makkah Province, Saudi Arabia
 */
 
 /* 1. FOUNDATION: Variables & Base Styles
@@ -17,13 +18,13 @@
     --info: #0ea5e9;
     --dark: #1e293b;
 
-    --bg: #f8fafc;
-    --surface: #ffffff;
-    --text: #0f172a;
-    --muted: #64748b;
-    --border: #e2e8f0;
+    --bg: #f8fafc; /* Light off-white background */
+    --surface: #ffffff; /* White for cards and modals */
+    --text: #0f172a; /* Dark text for readability */
+    --muted: #64748b; /* Lighter text for secondary info */
+    --border: #e2e8f0; /* Soft border color */
 
-    --header-grad: linear-gradient(90deg, #1e3a8a 0%, #2563eb 100%);
+    --header-grad: linear-gradient(90deg, #1e3a8a 0%, #2563eb 100%); /* Deep Blue Gradient */
 
     --shadow-sm: 0 4px 12px rgba(15, 23, 42, .05);
     --shadow-md: 0 8px 24px rgba(15, 23, 42, .1);
@@ -39,12 +40,15 @@ body {
     line-height: 1.65;
     text-align: right;
     direction: rtl;
+    margin: 0;
 }
 
 h1, h2, h3, h4, h5, h6 {
     font-family: "Poppins", "Inter", sans-serif;
     font-weight: 700;
     color: var(--text);
+    margin-top: 0;
+    margin-bottom: 0.75rem;
 }
 
 a {
@@ -56,34 +60,42 @@ a:hover {
     color: var(--primary-dark);
 }
 
+.container, .container-fluid {
+    width: min(1400px, 96%);
+    margin-inline: auto;
+}
+
 /* 2. CORE COMPONENTS
 /* ========================================================================== */
 
 /* --- Navbar --- */
 .navbar {
-    background: var(--header-grad);
+    background: var(--header-grad) !important;
     box-shadow: var(--shadow-md);
     padding: 0.75rem 0;
 }
 .navbar .navbar-brand {
     font-size: 1.5rem;
     color: #fff !important;
+    font-family: "Poppins", sans-serif;
 }
 .navbar .nav-link {
-    color: rgba(255, 255, 255, 0.75);
+    color: rgba(255, 255, 255, 0.8);
     font-weight: 500;
-    transition: color var(--transition);
+    transition: all var(--transition);
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-sm);
 }
 .navbar .nav-link:hover, .navbar .nav-link.active {
     color: #fff;
-}
-.navbar-dark .navbar-toggler-icon {
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.85%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+    background-color: rgba(255, 255, 255, 0.1);
 }
 .navbar-toggler {
     border-color: rgba(255, 255, 255, 0.2);
 }
-
+.navbar-dark .navbar-toggler-icon {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.9%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+}
 
 /* --- Cards --- */
 .card {
@@ -92,16 +104,32 @@ a:hover {
   border-radius: var(--radius);
   box-shadow: var(--shadow-sm);
   overflow: hidden;
+  margin-bottom: 1.5rem;
 }
 .card-header {
-  background-color: var(--surface) !important;
+  background-color: #f1f5f9 !important;
   border-bottom: 1px solid var(--border);
   padding: 1.25rem 1.5rem;
   color: var(--text) !important;
+  font-family: "Poppins", sans-serif;
+  font-weight: 600;
+  font-size: 1.1rem;
 }
-.card-header h1, .card-header h2, .card-header h3 {
-    color: var(--text);
+.card-header h3 {
+    color: var(--dark);
+    margin: 0;
 }
+.card-body {
+    padding: 1.5rem;
+}
+.card-body p {
+    margin-bottom: 1rem;
+}
+.card-body p strong {
+    color: var(--dark);
+    margin-left: 8px;
+}
+
 
 /* --- Buttons --- */
 .btn {
@@ -109,9 +137,13 @@ a:hover {
   padding: .7rem 1.3rem;
   font-weight: 600;
   font-family: "Inter", sans-serif;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  transition: all 0.2s ease;
   border: 0;
   box-shadow: var(--shadow-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
 }
 .btn:hover {
   transform: translateY(-2px);
@@ -143,140 +175,37 @@ a:hover {
   background-color: var(--surface);
 }
 
-/* --- Tables --- */
-.table-responsive {
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    overflow: hidden;
-    box-shadow: var(--shadow-sm);
-}
-.table {
-    border-collapse: separate;
-    border-spacing: 0;
-}
-.table thead th {
-  background-color: #f1f5f9;
-  border-bottom: 2px solid var(--border);
-  font-family: "Poppins", sans-serif;
-  color: var(--muted);
-  font-weight: 600;
-  text-align: center;
-  vertical-align: middle;
-  text-transform: uppercase;
-  font-size: .8rem;
-}
-.table-dark thead th {
-    background: var(--dark);
-    color: #fff;
-}
-.table tbody tr:hover {
-  background-color: rgba(59, 130, 246, .06);
-}
-.table-success, .table-success > th, .table-success > td {
-    background-color: #f0fdf4 !important; color: #14532d;
-}
-.table-warning, .table-warning > th, .table-warning > td {
-    background-color: #fffbeb !important; color: #78350f;
-}
-
-/* --- Toasts & Badges --- */
-.toast {
-    border-radius: var(--radius) !important;
-    box-shadow: var(--shadow-md) !important;
-    background-color: var(--dark) !important;
-    color: #fff !important;
-    border: 0 !important;
-}
-.toast.text-bg-success { background-color: var(--success) !important; }
-.toast.text-bg-danger { background-color: var(--danger) !important; }
-.toast.text-bg-warning { background-color: var(--warning) !important; color: #111827 !important; }
-.toast.text-bg-info { background-color: var(--info) !important; }
-.toast .btn-close { filter: invert(1) grayscale(100) brightness(200%); }
-
+/* --- Badges --- */
 .badge {
   padding: .4em .75em;
   border-radius: var(--radius-sm);
   font-weight: 600;
-  font-size: .75rem;
-  letter-spacing: .5px;
+  font-size: .8rem;
 }
 .badge.bg-success { background: rgba(22, 163, 74, .1) !important; color: #15803d !important; }
-.badge.bg-secondary { background: rgba(100, 116, 139, .1) !important; color: #475569 !important; }
 .badge.bg-warning { background: rgba(245, 158, 11, .1) !important; color: #b45309 !important; }
 .badge.bg-info { background: rgba(14, 165, 233, .1) !important; color: #0284c7 !important; }
 .badge.bg-danger { background: rgba(239, 68, 68, .1) !important; color: #b91c1c !important; }
 
-/* --- Auth Pages --- */
-.auth-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: calc(100vh - 200px);
-}
-.auth-card {
-    max-width: 450px;
-    width: 100%;
-}
-.password-container { position: relative; }
-.password-toggle-icon {
-    position: absolute;
-    top: 50%;
-    left: 15px;
-    transform: translateY(-50%);
-    cursor: pointer;
-    color: var(--muted);
-}
-
-
-/* 3. COMPONENT TWEAKS
+/* 3. LAYOUT & UTILITIES
 /* ========================================================================== */
-
-/* --- Action Buttons in Tables --- */
-.table .btn-group-sm {
+.main-content .container {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+}
+.page-header {
     display: flex;
-    gap: 0.5rem;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
 }
-
-.table .btn-group-sm > .btn,
-.table .btn-group-sm > form > .btn {
-    border-radius: var(--radius-sm) !important;
-    margin-left: 0 !important;
-    width: 38px;
-    height: 38px;
-    padding: 0;
-    font-size: 1rem;
+.page-header h1 {
+    margin-bottom: 0;
 }
-
-/* --- Compact Filter/Action Panels --- */
-.mb-4.p-3.border.rounded.bg-light,
-.card.bg-light.mb-3 {
-    background-color: var(--surface) !important;
-    border-radius: var(--radius) !important;
-    border: 1px solid var(--border) !important;
-    padding: 1rem !important; /* Make panel padding smaller */
-    box-shadow: none;
-}
-.card.bg-light.mb-3 {
-    margin-top: 1.5rem;
-}
-
-.mb-4.p-3.border.rounded.bg-light .form-label,
-.card.bg-light.mb-3 .form-label {
-    font-size: 0.8rem;
-    margin-bottom: .25rem;
-    color: var(--muted);
-}
-
-.mb-4.p-3.border.rounded.bg-light .form-control,
-.mb-4.p-3.border.rounded.bg-light .form-select,
-.card.bg-light.mb-3 .form-control,
-.card.bg-light.mb-3 .form-select {
-    padding: .45rem .8rem; /* Smaller inputs */
-    font-size: .9rem;
-}
-
-.mb-4.p-3.border.rounded.bg-light .btn,
-.card.bg-light.mb-3 .btn {
-    padding: .45rem 1rem; /* Smaller buttons */
-    font-size: .9rem;
+.page-header .btn-group {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
 }
