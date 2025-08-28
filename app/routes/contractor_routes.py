@@ -67,53 +67,68 @@ def new_contractor():
 @contractor_bp.route("/<int:contractor_id>")
 @login_required
 def show_contractor(contractor_id):
-    """عرض صفحة تفصيلية للمقاول مع جميع تفاصيل التكاليف والدفعات المرتبطة به"""
+    """عرض صفحة تفصيلية للمقاول مع جميع البنود والأعمال المرتبطة به"""
     contractor = Contractor.query.get_or_404(contractor_id)
 
-    # START: Modified Query Logic (Removed .distinct())
-    cost_details_query = CostDetail.query.join(Item).filter(
+    # -- START: Corrected logic to fetch ITEMS associated with the contractor --
+    # 1. Subquery to find item IDs where a cost_detail is assigned to this contractor
+    subquery = db.session.query(Item.id).join(CostDetail).filter(CostDetail.contractor_id == contractor_id).distinct()
+
+    # 2. Main query for Items
+    items_query = Item.query.filter(
         or_(
             Item.contractor_id == contractor_id,
-            CostDetail.contractor_id == contractor_id
+            Item.id.in_(subquery)
         )
     )
-    # END: Modified Query Logic
+    # -- END: Corrected logic --
 
-    # فلترة المشاريع للdropdown
-    projects_query = Project.query.join(Project.items).join(Item.cost_details).filter(CostDetail.id.in_([cd.id for cd in cost_details_query.all()]))
+    # --- Filtering Logic ---
+    projects_query = Project.query.join(Project.items).filter(Item.id.in_([i.id for i in items_query.all()]))
     if current_user.role != 'admin':
         projects_query = projects_query.join(Project.users).filter(User.id == current_user.id)
-    
     projects = projects_query.distinct().all()
 
-    # جلب فلاتر البحث من الـ URL
     project_filter = request.args.get('project_id', type=int)
     search_filter = request.args.get('search', '')
 
-    # تطبيق الفلاتر
     if project_filter:
-        cost_details_query = cost_details_query.filter(Item.project_id == project_filter)
+        items_query = items_query.filter(Item.project_id == project_filter)
     
     if search_filter:
         search_term = f"%{search_filter}%"
-        cost_details_query = cost_details_query.filter(
+        items_query = items_query.filter(
             or_(
-                CostDetail.description.ilike(search_term),
+                Item.description.ilike(search_term),
                 Item.item_number.ilike(search_term)
             )
         )
     
-    cost_details = cost_details_query.order_by(Item.project_id, Item.id, CostDetail.id).all()
+    items = items_query.order_by(Item.project_id, Item.item_number).all()
     
-    # حساب الإحصائيات
-    total_due = sum(cd.total_cost for cd in cost_details if cd.total_cost)
-    total_paid = sum(cd.total_paid for cd in cost_details)
+    # --- Recalculate financial summary ---
+    total_due = 0
+    total_paid = 0
+    
+    for item in items:
+        # If the whole item is assigned to the contractor, sum all its costs
+        if item.contractor_id == contractor_id:
+            total_due += item.actual_total_cost
+            for detail in item.cost_details:
+                 total_paid += detail.total_paid
+        # Otherwise, only sum costs from details assigned to the contractor
+        else:
+            for detail in item.cost_details:
+                if detail.contractor_id == contractor_id:
+                    total_due += detail.total_cost if detail.total_cost else 0
+                    total_paid += detail.total_paid
+
     remaining = total_due - total_paid
 
     return render_template(
         "contractors/show.html", 
         contractor=contractor, 
-        cost_details=cost_details,
+        items=items,
         projects=projects,
         total_due=total_due,
         total_paid=total_paid,

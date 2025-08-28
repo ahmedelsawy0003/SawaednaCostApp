@@ -64,50 +64,40 @@
     </div>
 </div>
 
-{# --- Cost Details List --- #}
+{# --- START: Updated Table to display Items --- #}
 <div class="card">
     <div class="card-header">
         <h5 class="mb-0">قائمة الأعمال المسندة</h5>
     </div>
     <div class="card-body p-0">
-        {% if cost_details %}
+        {% if items %}
             <div class="table-responsive">
                 <table class="table table-hover table-striped mb-0">
                     <thead class="table-dark">
                         <tr>
-                            <th>المشروع / البند</th>
+                            <th>المشروع / رقم البند</th>
                             <th>الوصف</th>
-                            <th>التكلفة الإجمالية</th>
-                            <th>المدفوع</th>
-                            <th>المتبقي</th>
-                            <th>الحالة</th>
+                            <th>التكلفة الفعلية للبند</th>
+                            <th>إجمالي المدفوعات</th>
+                            <th>المتبقي من البند</th>
                             <th class="text-center">الإجراءات</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% for detail in cost_details %}
+                        {% for item in items %}
                         <tr>
                             <td>
-                                <a href="{{ url_for('project.get_project', project_id=detail.item.project.id) }}">{{ detail.item.project.name }}</a>
+                                <a href="{{ url_for('project.get_project', project_id=item.project.id) }}">{{ item.project.name }}</a>
                                 <br>
-                                <small class="text-muted">{{ detail.item.item_number }}</small>
+                                <small class="text-muted">{{ item.item_number }}</small>
                             </td>
-                            <td>{{ detail.description }}</td>
-                            <td>{{ "{:,.2f}".format(detail.total_cost) }}</td>
-                            <td class="text-success">{{ "{:,.2f}".format(detail.total_paid) }}</td>
-                            <td class="text-danger">{{ "{:,.2f}".format(detail.remaining_amount) }}</td>
-                            <td>
-                                {% if detail.payment_status == 'مدفوع بالكامل' %}
-                                <span class="badge bg-success">مدفوع بالكامل</span>
-                                {% elif detail.payment_status == 'مدفوع جزئياً' %}
-                                <span class="badge bg-warning text-dark">مدفوع جزئياً</span>
-                                {% else %}
-                                <span class="badge bg-danger">غير مدفوع</span>
-                                {% endif %}
-                            </td>
+                            <td>{{ item.description }}</td>
+                            <td>{{ "{:,.2f}".format(item.actual_total_cost) }}</td>
+                            <td class="text-success">{{ "{:,.2f}".format(item.paid_amount) }}</td>
+                            <td class="text-danger">{{ "{:,.2f}".format(item.remaining_amount) }}</td>
                             <td class="text-center">
-                                <a href="{{ url_for('item.edit_item', item_id=detail.item_id) }}" class="btn btn-info btn-sm" title="الانتقال إلى البند">
-                                    <i class="fas fa-share-square"></i>
+                                <a href="{{ url_for('item.edit_item', item_id=item.id) }}" class="btn btn-info btn-sm" title="الانتقال إلى البند">
+                                    <i class="fas fa-share-square"></i> عرض التفاصيل
                                 </a>
                             </td>
                         </tr>
@@ -117,10 +107,11 @@
             </div>
         {% else %}
             <div class="alert alert-secondary m-3 text-center">
-                لا توجد أعمال مسندة تطابق معايير البحث الحالية.
+                لا توجد أعمال مسندة تطابق معايير البحث الحالية لهذا المقاول.
             </div>
         {% endif %}
     </div>
 </div>
+{# --- END: Updated Table --- #}
 
 {% endblock %}
