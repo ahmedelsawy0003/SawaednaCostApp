@@ -1,6 +1,6 @@
 /*
  * SawaednaCostApp - Professional UI Theme
- * Version: 2.2 (Refined Actions)
+ * Version: 2.3 (Compact UI)
  * Author: Gemini AI
 */
 
@@ -41,7 +41,7 @@ body {
     direction: rtl;
 }
 
-h1, h2, h3, h4, h5, h6, .navbar-brand {
+h1, h2, h3, h4, h5, h6 {
     font-family: "Poppins", "Inter", sans-serif;
     font-weight: 700;
     color: var(--text);
@@ -94,7 +94,7 @@ a:hover {
   overflow: hidden;
 }
 .card-header {
-  background-color: var(--surface) !important; /* Override all bg colors */
+  background-color: var(--surface) !important;
   border-bottom: 1px solid var(--border);
   padding: 1.25rem 1.5rem;
   color: var(--text) !important;
@@ -127,7 +127,8 @@ a:hover {
 .btn-info { background: var(--info); color: #fff; }
 .btn-dark { background: var(--dark); color: #fff; }
 
-/* --- Forms & Filters --- */
+
+/* --- Forms --- */
 .form-control, .form-select {
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
@@ -140,14 +141,6 @@ a:hover {
   border-color: var(--primary);
   box-shadow: 0 0 0 4px rgba(59, 130, 246, .15);
   background-color: var(--surface);
-}
-.mb-4.p-3.border.rounded.bg-light,
-.card.bg-light.mb-3 {
-    background-color: var(--surface) !important;
-    border-radius: var(--radius) !important;
-    border: 1px solid var(--border) !important;
-    padding: 1.5rem !important;
-    box-shadow: none;
 }
 
 /* --- Tables --- */
@@ -241,18 +234,49 @@ a:hover {
 /* --- Action Buttons in Tables --- */
 .table .btn-group-sm {
     display: flex;
-    gap: 0.5rem; /* Adds space between buttons */
+    gap: 0.5rem;
 }
 
 .table .btn-group-sm > .btn,
 .table .btn-group-sm > form > .btn {
-    border-radius: var(--radius-sm) !important; /* Enforce our radius on all buttons */
-    margin-left: 0 !important; /* Override Bootstrap's negative margin */
-    width: 38px;  /* Make buttons square-like */
+    border-radius: var(--radius-sm) !important;
+    margin-left: 0 !important;
+    width: 38px;
     height: 38px;
     padding: 0;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1rem; /* Slightly larger icon */
+    font-size: 1rem;
+}
+
+/* --- Compact Filter/Action Panels --- */
+.mb-4.p-3.border.rounded.bg-light,
+.card.bg-light.mb-3 {
+    background-color: var(--surface) !important;
+    border-radius: var(--radius) !important;
+    border: 1px solid var(--border) !important;
+    padding: 1rem !important; /* Make panel padding smaller */
+    box-shadow: none;
+}
+.card.bg-light.mb-3 {
+    margin-top: 1.5rem;
+}
+
+.mb-4.p-3.border.rounded.bg-light .form-label,
+.card.bg-light.mb-3 .form-label {
+    font-size: 0.8rem;
+    margin-bottom: .25rem;
+    color: var(--muted);
+}
+
+.mb-4.p-3.border.rounded.bg-light .form-control,
+.mb-4.p-3.border.rounded.bg-light .form-select,
+.card.bg-light.mb-3 .form-control,
+.card.bg-light.mb-3 .form-select {
+    padding: .45rem .8rem; /* Smaller inputs */
+    font-size: .9rem;
+}
+
+.mb-4.p-3.border.rounded.bg-light .btn,
+.card.bg-light.mb-3 .btn {
+    padding: .45rem 1rem; /* Smaller buttons */
+    font-size: .9rem;
 }
