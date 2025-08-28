@@ -17,7 +17,6 @@
     </div>
     <div class="card-body">
         <form method="POST" action="{{ url_for("item.edit_item", item_id=item.id) }}">
-            {# ... (The entire form for editing the item remains the same) ... #}
             <div class="row">
                 <div class="col-md-6">
                     <div class="mb-3">
@@ -74,6 +73,20 @@
                             <option value="معلق" {% if item.status == "معلق" %}selected{% endif %}>معلق</option>
                         </select>
                     </div>
+
+                    {# START: Add Main Contractor Dropdown #}
+                    <div class="mb-3">
+                        <label for="contractor_id" class="form-label">المقاول الرئيسي للبند</label>
+                        <select class="form-select" id="contractor_id" name="contractor_id">
+                            <option value="">-- تنفيذ ذاتي / بدون مقاول رئيسي --</option>
+                            {% for contractor in contractors %}
+                                <option value="{{ contractor.id }}" {% if item.contractor_id == contractor.id %}selected{% endif %}>
+                                    {{ contractor.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {# END: Add Main Contractor Dropdown #}
                 </div>
             </div>
             <div class="mb-3">
@@ -87,7 +100,8 @@
     </div>
 </div>
 
-{# --- START: Updated Section for Cost Details --- #}
+{# --- The rest of the file (Cost Details and Audit Log sections) remains unchanged --- #}
+{# ... (The entire Cost Details section remains the same) ... #}
 <div class="card mb-4">
     <div class="card-header bg-success text-white">
         <h3 class="mb-0">تفاصيل التكاليف الفعلية</h3>
@@ -226,9 +240,6 @@
         {% endif %}
     </div>
 </div>
-{# --- END: Updated Section --- #}
-
-
 <div class="card">
     <div class="card-header bg-secondary text-white">
         <h3 class="mb-0">سجل التغييرات</h3>
@@ -273,15 +284,13 @@
         {% endif %}
     </div>
 </div>
-
 <div class="modal fade" id="addContractorModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">إضافة مقاول جديد</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><form id="addContractorForm"><div id="contractor-alert" class="alert alert-danger d-none" role="alert"></div><div class="mb-3"><label for="new_contractor_name" class="form-label">اسم المقاول</label><input type="text" class="form-control" id="new_contractor_name" required></div></form></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button><button type="button" id="saveContractorBtn" class="btn btn-primary">حفظ المقاول</button></div></div></div></div>
-
 {% endblock %}
 
 {% block scripts %}
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-    // --- Auto-calculation for main item (remains the same) ---
+    // ... (All existing JavaScript remains the same) ...
     function calculateTotal(qtyInput, unitCostInput, totalInput) {
         if (!qtyInput || !unitCostInput || !totalInput) return;
         const quantity = parseFloat(qtyInput.value) || 0;
@@ -303,12 +312,9 @@ document.addEventListener("DOMContentLoaded", function() {
         actualQty.addEventListener('input', () => calculateTotal(actualQty, actualUnitCost, actualTotal));
         actualUnitCost.addEventListener('input', () => calculateTotal(actualQty, actualUnitCost, actualTotal));
     }
-
-    // --- START: New JS for Cost Detail Form ---
     const paymentMethodSelect = document.getElementById('payment_method');
     const paymentDateWrapper = document.getElementById('payment_date_wrapper');
     const paymentDateInput = document.getElementById('payment_date');
-
     function togglePaymentDate() {
         if (paymentMethodSelect.value === 'دفعة واحدة') {
             paymentDateWrapper.style.display = 'block';
@@ -319,14 +325,11 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
     paymentMethodSelect.addEventListener('change', togglePaymentDate);
-    togglePaymentDate(); // Run on page load
-
-    // --- Add Contractor via API ---
+    togglePaymentDate();
     const saveContractorBtn = document.getElementById('saveContractorBtn');
     const contractorSelect = document.getElementById('cd_contractor_id');
     const addContractorModal = new bootstrap.Modal(document.getElementById('addContractorModal'));
     const contractorAlert = document.getElementById('contractor-alert');
-
     saveContractorBtn.addEventListener('click', function() {
         const contractorName = document.getElementById('new_contractor_name').value;
         if (!contractorName) {
@@ -334,7 +337,6 @@ document.addEventListener("DOMContentLoaded", function() {
             contractorAlert.classList.remove('d-none');
             return;
         }
-
         fetch("{{ url_for('cost_detail.api_add_contractor') }}", {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
@@ -343,8 +345,12 @@ document.addEventListener("DOMContentLoaded", function() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                const newOption = new Option(data.contractor.name, data.contractor.id, true, true);
-                contractorSelect.appendChild(newOption);
+                // Add to both dropdowns
+                const newOption1 = new Option(data.contractor.name, data.contractor.id, true, true);
+                const newOption2 = new Option(data.contractor.name, data.contractor.id, false, false);
+                document.getElementById('contractor_id').appendChild(newOption2); // Main contractor dropdown
+                contractorSelect.appendChild(newOption1); // Cost detail contractor dropdown
+                
                 document.getElementById('addContractorForm').reset();
                 contractorAlert.classList.add('d-none');
                 addContractorModal.hide();
@@ -358,7 +364,6 @@ document.addEventListener("DOMContentLoaded", function() {
             contractorAlert.classList.remove('d-none');
         });
     });
-    // --- END: New JS ---
 });
 </script>
 {% endblock %}

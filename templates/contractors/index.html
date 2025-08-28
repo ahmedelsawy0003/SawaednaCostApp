@@ -7,7 +7,11 @@
     <h2 class="mb-0">
         <i class="fas fa-hard-hat fa-fw me-2 text-muted"></i>قائمة المقاولين
     </h2>
-    {# لاحقًا يمكن إضافة زر لإضافة مقاول جديد من هنا مباشرة #}
+    {# START: Add New Contractor Button #}
+    <a href="{{ url_for('contractor.new_contractor') }}" class="btn btn-primary">
+        <i class="fas fa-plus me-1"></i> إضافة مقاول جديد
+    </a>
+    {# END: Add New Contractor Button #}
 </div>
 
 <div class="card">
@@ -21,6 +25,8 @@
                     <thead>
                         <tr>
                             <th>اسم المقاول</th>
+                            <th>شخص الاتصال</th>
+                            <th>الهاتف</th>
                             <th class="text-center">الإجراءات</th>
                         </tr>
                     </thead>
@@ -30,6 +36,8 @@
                             <td>
                                 <a href="{{ url_for('contractor.show_contractor', contractor_id=contractor.id) }}" class="fw-bold">{{ contractor.name }}</a>
                             </td>
+                            <td>{{ contractor.contact_person or '-' }}</td>
+                            <td>{{ contractor.phone or '-' }}</td>
                             <td class="text-center">
                                 <div class="btn-group btn-group-sm">
                                     <a href="{{ url_for('contractor.show_contractor', contractor_id=contractor.id) }}" class="btn btn-info" title="عرض التفاصيل والمدفوعات">
@@ -46,7 +54,7 @@
         {% else %}
             <div class="alert alert-secondary m-3 text-center">
                 <i class="fas fa-info-circle me-2"></i>
-                لا يوجد مقاولون مسجلون حالياً. يمكنك إضافتهم عند إضافة تفاصيل التكاليف في صفحة تعديل البنود.
+                لا يوجد مقاولون مسجلون حالياً. يمكنك البدء بإضافة مقاول جديد.
             </div>
         {% endif %}
     </div>

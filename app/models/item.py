@@ -12,13 +12,24 @@ class Item(db.Model):
     actual_unit_cost = db.Column(db.Float)
     status = db.Column(db.String(50), default='نشط')
     execution_method = db.Column(db.String(100))
-    contractor = db.Column(db.String(255))
     notes = db.Column(db.Text)
+    
+    # START: New field to link item to a contractor
+    # This is nullable=True because an item might not have a main contractor (self-executed)
+    contractor_id = db.Column(db.Integer, db.ForeignKey('contractor.id'), nullable=True)
+    # END: New field
 
     project = db.relationship('Project', backref=db.backref('items', lazy=True, cascade="all, delete-orphan"))
+    
+    # START: New relationship to Contractor
+    contractor = db.relationship('Contractor', back_populates='items')
+    # END: New relationship
 
     __table_args__ = (
         db.Index('idx_item_project_id', 'project_id'),
+        # START: New Index
+        db.Index('idx_item_contractor_id', 'contractor_id'),
+        # END: New Index
     )
 
     @property
@@ -54,14 +65,12 @@ class Item(db.Model):
     def remaining_amount(self):
         return self.actual_total_cost - self.paid_amount
         
-    # START: New property for a shorter, display-friendly description
     @property
     def short_description(self):
         """Returns a truncated version of the description for display purposes."""
         if len(self.description) > 50:
             return self.description[:50] + '...'
         return self.description
-    # END: New property
 
     def __repr__(self):
         return f'<Item {self.item_number} - {self.description}>'
