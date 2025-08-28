@@ -11,26 +11,6 @@ document.addEventListener("DOMContentLoaded", function() {
         return toast;
     });
 
-    // Generic search/filter for tables
-    const searchInputs = document.querySelectorAll("input[type=\"search\"]");
-    searchInputs.forEach(input => {
-        input.addEventListener("keyup", function() {
-            const searchTerm = this.value.toLowerCase();
-            const table = this.closest(".card-body").querySelector("table");
-            if (table) {
-                const rows = table.querySelectorAll("tbody tr");
-                rows.forEach(row => {
-                    const textContent = row.textContent.toLowerCase();
-                    if (textContent.includes(searchTerm)) {
-                        row.style.display = "";
-                    } else {
-                        row.style.display = "none";
-                    }
-                });
-            }
-        });
-    });
-
     // Password Toggle Functionality
     const togglePassword = document.querySelector("#togglePassword");
     const passwordInput = document.querySelector("#password");
@@ -45,7 +25,7 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 
-    // Auto-calculation functionality for item costs
+    // Auto-calculation functionality for item costs (remains the same)
     const contractQty = document.getElementById('contract_quantity');
     const contractUnitCost = document.getElementById('contract_unit_cost');
     const contractTotal = document.getElementById('contract_total_cost');
@@ -68,12 +48,8 @@ document.addEventListener("DOMContentLoaded", function() {
     }
     
     if (contractQty && contractUnitCost && contractTotal) {
-        const contractUnitCostDisabled = document.getElementById('contract_unit_cost_disabled');
-
-        contractQty.addEventListener('input', () => calculateTotal(contractQty, contractUnitCost || contractUnitCostDisabled, contractTotal));
-        if (contractUnitCost) {
-           contractUnitCost.addEventListener('input', () => calculateTotal(contractQty, contractUnitCost, contractTotal));
-        }
+        contractQty.addEventListener('input', () => calculateTotal(contractQty, contractUnitCost, contractTotal));
+        contractUnitCost.addEventListener('input', () => calculateTotal(contractQty, contractUnitCost, contractTotal));
     }
 
     if (actualQty && actualUnitCost && actualTotal) {
@@ -81,20 +57,22 @@ document.addEventListener("DOMContentLoaded", function() {
         actualUnitCost.addEventListener('input', () => calculateTotal(actualQty, actualUnitCost, actualTotal));
     }
 
-    // START: Bulk Edit Functionality
+    // START: Updated Bulk Edit Functionality
     const selectAllCheckbox = document.getElementById('select-all');
     const itemCheckboxes = document.querySelectorAll('.item-checkbox');
-    const selectedCountSpan = document.getElementById('selected-count');
     const bulkEditForm = document.getElementById('bulk-edit-form');
+    // New selector for the count display in the accordion button
+    const selectedCountDisplay = document.getElementById('selected-count-display'); 
 
     if (selectAllCheckbox && itemCheckboxes.length > 0 && bulkEditForm) {
         
         function updateSelectedCount() {
             const count = document.querySelectorAll('.item-checkbox:checked').length;
-            if (selectedCountSpan) {
-                selectedCountSpan.textContent = count;
+            // Update the new span inside the accordion button
+            if (selectedCountDisplay) {
+                selectedCountDisplay.textContent = count;
             }
-            const submitButton = bulkEditForm.querySelector('button[type="submit"]');
+            const submitButton = document.querySelector('button[form="bulk-edit-form"]');
             if (submitButton) {
                 submitButton.disabled = count === 0;
             }
@@ -118,8 +96,8 @@ document.addEventListener("DOMContentLoaded", function() {
             });
         });
         
+        // Initial count update on page load
         updateSelectedCount();
     }
-    // END: Bulk Edit Functionality
-
+    // END: Updated Bulk Edit Functionality
 });
