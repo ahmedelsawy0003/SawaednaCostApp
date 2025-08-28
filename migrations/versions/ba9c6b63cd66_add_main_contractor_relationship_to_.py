@@ -27,7 +27,7 @@ def upgrade():
     with op.batch_alter_table('payment', schema=None) as batch_op:
         batch_op.alter_column('cost_detail_id',
                existing_type=sa.INTEGER(),
-               nullable=False)
+               nullable=True)
 
     # ### end Alembic commands ###
 
