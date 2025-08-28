@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, abort
 from app.models.project import Project
 from app.models.item import Item
-from app.models.user import User
+from app.models.user import User 
 from app.extensions import db
 from flask_login import login_required, current_user
 from app.utils import check_project_permission, sanitize_input
@@ -11,23 +11,18 @@ project_bp = Blueprint("project", __name__)
 @project_bp.route("/projects")
 @login_required
 def get_projects():
-    # START: Modified query to handle archived projects
     show_archived = request.args.get('show_archived', 'false').lower() == 'true'
     
     query = Project.query
     if current_user.role != 'admin':
-        # Filter projects associated with the user
         query = query.join(User.projects).filter(User.id == current_user.id)
 
     if show_archived:
-        # Show only archived projects
         projects = query.filter(Project.is_archived == True).all()
     else:
-        # Show only active (not archived) projects
         projects = query.filter(Project.is_archived == False).all()
         
     return render_template("projects/index.html", projects=projects, show_archived=show_archived)
-    # END: Modified query
 
 @project_bp.route("/projects/new", methods=["GET", "POST"])
 @login_required
@@ -43,7 +38,7 @@ def new_project():
         end_date = request.form["end_date"]
         status = request.form["status"]
         spreadsheet_id = request.form.get("spreadsheet_id")
-        manager_id = request.form.get("manager_id")
+        manager_id = request.form.get("manager_id") 
 
         new_project = Project(name=name, location=location, start_date=start_date, 
                               end_date=end_date, status=status, notes=notes,
@@ -105,7 +100,6 @@ def delete_project(project_id):
     flash("تم حذف المشروع بنجاح!", "success")
     return redirect(url_for("project.get_projects"))
 
-# START: New route to toggle archive status
 @project_bp.route("/projects/<int:project_id>/toggle-archive", methods=["POST"])
 @login_required
 def toggle_archive(project_id):
@@ -121,39 +115,18 @@ def toggle_archive(project_id):
     else:
         flash(f"تم إلغاء أرشفة المشروع '{project.name}' بنجاح.", "info")
         
-    # Redirect back to the same view (archived or active) the user was on
     show_archived = request.args.get('show_archived', 'false')
     return redirect(url_for("project.get_projects", show_archived=show_archived))
-# END: New route
 
+# START: Simplified dashboard route without chart data
 @project_bp.route("/projects/<int:project_id>/dashboard")
 @login_required
 def project_dashboard(project_id):
     project = Project.query.get_or_404(project_id)
     check_project_permission(project)
-    items = Item.query.filter_by(project_id=project.id).all()
-
-    contract_costs = [item.contract_total_cost for item in items]
-    actual_costs = [item.actual_total_cost for item in items if item.actual_total_cost is not None]
-    item_descriptions = [item.description for item in items]
-
-    chart_data = {
-        "labels": item_descriptions,
-        "datasets": [
-            {
-                "label": "التكلفة التعاقدية",
-                "data": contract_costs,
-                "backgroundColor": "rgba(54, 162, 235, 0.6)"
-            },
-            {
-                "label": "التكلفة الفعلية",
-                "data": actual_costs,
-                "backgroundColor": "rgba(255, 99, 132, 0.6)"
-            }
-        ]
-    }
-
-    return render_template("projects/dashboard.html", project=project, chart_data=chart_data)
+    # The data for the chart is no longer needed
+    return render_template("projects/dashboard.html", project=project)
+# END: Simplified route
 
 @project_bp.route("/projects/<int:project_id>/summary")
 @login_required
