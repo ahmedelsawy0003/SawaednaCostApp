@@ -30,7 +30,6 @@ def log_item_change(item, action):
     db.session.add(log_entry)
 
 
-# START: Modified function to handle separate search fields
 @item_bp.route("/projects/<int:project_id>/items")
 @login_required
 def get_items_by_project(project_id):
@@ -69,7 +68,6 @@ def get_items_by_project(project_id):
         'contractor': contractor_filter
     }
     return render_template("items/index.html", project=project, items=items, filters=filters)
-# END: Modified function
 
 @item_bp.route("/projects/<int:project_id>/items/bulk_update", methods=["POST"])
 @login_required
@@ -78,13 +76,17 @@ def bulk_update_items(project_id):
     check_project_permission(project)
 
     form_data = request.form
-    item_ids = form_data.getlist('item_ids')
+    item_ids_str = form_data.getlist('item_ids')
     bulk_status = form_data.get('bulk_status')
     bulk_contractor = sanitize_input(form_data.get('bulk_contractor'))
 
-    if not item_ids:
+    if not item_ids_str:
         flash("الرجاء تحديد بند واحد على الأقل لتطبيق التعديلات.", "warning")
         return redirect(url_for('item.get_items_by_project', project_id=project_id))
+
+    # START: Convert string IDs to integers to fix the SQL error
+    item_ids = [int(id_str) for id_str in item_ids_str]
+    # END: Fix
 
     items_to_update = Item.query.filter(Item.id.in_(item_ids)).all()
     
@@ -108,6 +110,7 @@ def bulk_update_items(project_id):
         flash("لم يتم إجراء أي تغييرات.", "info")
 
     return redirect(url_for('item.get_items_by_project', project_id=project_id))
+
 
 # ... (The rest of the file remains unchanged) ...
 @item_bp.route("/projects/<int:project_id>/items/new", methods=["GET", "POST"])
