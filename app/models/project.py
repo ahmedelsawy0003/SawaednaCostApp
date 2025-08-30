@@ -1,6 +1,7 @@
 from app.extensions import db
 from .user import user_project_association
-from .invoice import Invoice # Import Invoice model
+from .invoice import Invoice
+from .payment import Payment # <<< أضف هذا السطر
 
 class Project(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -62,12 +63,10 @@ class Project(db.Model):
     @property
     def total_paid_amount(self):
         # START: *** THE FIX ***
-        # Calculate total paid amount by summing up the paid amounts of all associated invoices.
-        # This is the new, correct way.
-        if not self.invoices:
-            return 0.0
+        # This is the correct way to calculate the sum across relationships.
+        # It joins Invoice and Payment tables and sums the Payment.amount.
+        total_paid = db.session.query(db.func.sum(Payment.amount)).join(Invoice).filter(Invoice.project_id == self.id).scalar()
         
-        total_paid = db.session.query(db.func.sum(Invoice.paid_amount)).filter(Invoice.project_id == self.id).scalar()
         return total_paid or 0.0
         # END: *** THE FIX ***
 
