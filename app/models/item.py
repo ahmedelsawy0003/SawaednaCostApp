@@ -14,30 +14,25 @@ class Item(db.Model):
     execution_method = db.Column(db.String(100))
     notes = db.Column(db.Text)
     
-    # START: New field to link item to a contractor
-    # This is nullable=True because an item might not have a main contractor (self-executed)
     contractor_id = db.Column(db.Integer, db.ForeignKey('contractor.id'), nullable=True)
-    # END: New field
 
     project = db.relationship('Project', backref=db.backref('items', lazy=True, cascade="all, delete-orphan"))
-    
-    # START: New relationship to Contractor
     contractor = db.relationship('Contractor', back_populates='items')
-    # END: New relationship
 
     __table_args__ = (
         db.Index('idx_item_project_id', 'project_id'),
-        # START: New Index
         db.Index('idx_item_contractor_id', 'contractor_id'),
-        # END: New Index
     )
 
     @property
     def paid_amount(self):
-        """Calculates the total paid amount by summing up associated payments."""
-        if not self.payments:
+        """Calculates the total paid amount by summing up associated legacy payments."""
+        # START: More robust calculation
+        if not self.legacy_payments:
             return 0.0
-        return sum(payment.amount for payment in self.payments)
+        total = sum(payment.amount for payment in self.legacy_payments if payment.amount is not None)
+        return total or 0.0
+        # END: More robust calculation
     
     @property
     def contract_total_cost(self):
@@ -63,7 +58,9 @@ class Item(db.Model):
 
     @property
     def remaining_amount(self):
-        return self.actual_total_cost - self.paid_amount
+        # START: More robust calculation
+        return (self.actual_total_cost or 0.0) - (self.paid_amount or 0.0)
+        # END: More robust calculation
         
     @property
     def short_description(self):
