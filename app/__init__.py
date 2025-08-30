@@ -14,7 +14,6 @@ def create_app():
     
     commands.init_app(app)
 
-    # START: Import the new models
     from .models.user import User
     from .models.project import Project
     from .models.item import Item
@@ -22,7 +21,6 @@ def create_app():
     from .models.cost_detail import CostDetail
     from .models.audit_log import AuditLog
     from .models.contractor import Contractor
-    # END: Import the new models
 
     @login_manager.user_loader
     def load_user(user_id):
@@ -35,7 +33,6 @@ def create_app():
     from .routes.payment_routes import payment_bp
     from .routes.cost_detail_routes import cost_detail_bp
     from .routes.contractor_routes import contractor_bp
-    from .routes.api_routes import api_bp # <<< أضف هذا السطر
 
     app.register_blueprint(project_bp)
     app.register_blueprint(item_bp)
@@ -44,7 +41,6 @@ def create_app():
     app.register_blueprint(payment_bp)
     app.register_blueprint(cost_detail_bp)
     app.register_blueprint(contractor_bp)
-    app.register_blueprint(api_bp) # <<< أضف هذا السطر
     
     with app.app_context():
         upgrade()
