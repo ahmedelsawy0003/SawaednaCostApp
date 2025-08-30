@@ -1,5 +1,6 @@
 from app.extensions import db
 from .user import user_project_association
+from .invoice import Invoice # Import Invoice model
 
 class Project(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -23,9 +24,7 @@ class Project(db.Model):
     
     manager = db.relationship('User', foreign_keys=[manager_id])
 
-    # START: New relationship to Invoices
     invoices = db.relationship('Invoice', back_populates='project', lazy='dynamic', cascade="all, delete-orphan")
-    # END: New relationship
 
     @property
     def total_contract_cost(self):
@@ -45,7 +44,7 @@ class Project(db.Model):
 
     @property
     def completion_percentage(self):
-        items_list = self.items # Evaluate once
+        items_list = self.items 
         if not items_list:
             return 0.0
         if len(items_list) == 0:
@@ -55,7 +54,6 @@ class Project(db.Model):
 
     @property
     def financial_completion_percentage(self):
-        # This logic will need to be updated later to use invoices
         total_actual = self.total_actual_cost
         if total_actual == 0:
             return 0.0
@@ -63,13 +61,19 @@ class Project(db.Model):
 
     @property
     def total_paid_amount(self):
-        # This logic will also be updated to sum payments from invoices
-        if not self.legacy_payments:
+        # START: *** THE FIX ***
+        # Calculate total paid amount by summing up the paid amounts of all associated invoices.
+        # This is the new, correct way.
+        if not self.invoices:
             return 0.0
-        return sum(payment.amount for payment in self.legacy_payments)
+        
+        total_paid = db.session.query(db.func.sum(Invoice.paid_amount)).filter(Invoice.project_id == self.id).scalar()
+        return total_paid or 0.0
+        # END: *** THE FIX ***
 
     @property
     def total_remaining_amount(self):
+        # This will now be correct because it depends on total_paid_amount
         return self.total_actual_cost - self.total_paid_amount
 
     def __repr__(self):
