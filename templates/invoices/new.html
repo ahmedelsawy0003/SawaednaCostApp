@@ -1,0 +1,52 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}إضافة مستخلص جديد للمشروع - {{ project.name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>إضافة مستخلص جديد للمشروع: {{ project.name }}</h1>
+    {# A back button will be added later once the main invoices page exists #}
+</div>
+
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h3 class="mb-0">البيانات الأساسية للمستخلص</h3>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('invoice.new_invoice', project_id=project.id) }}">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="invoice_number" class="form-label">رقم المستخلص/الفاتورة</label>
+                        <input type="text" class="form-control" id="invoice_number" name="invoice_number" required>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="invoice_date" class="form-label">تاريخ المستخلص</label>
+                        <input type="date" class="form-control" id="invoice_date" name="invoice_date" required>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="contractor_id" class="form-label">المقاول</label>
+                        <select class="form-select" id="contractor_id" name="contractor_id" required>
+                            <option value="">-- اختر المقاول --</option>
+                            {% for contractor in contractors %}
+                                <option value="{{ contractor.id }}">{{ contractor.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label for="notes" class="form-label">ملاحظات (اختياري)</label>
+                <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save me-1"></i> إنشاء المستخلص والانتقال لإضافة البنود
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

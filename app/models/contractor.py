@@ -11,9 +11,11 @@ class Contractor(db.Model):
     # Relationship to CostDetail (remains the same)
     cost_details = db.relationship('CostDetail', back_populates='contractor', lazy='dynamic')
 
-    # START: New relationship to Item
-    # This will allow us to see all main items assigned to a contractor
+    # This is the relationship for items where this contractor is the main one.
     items = db.relationship('Item', back_populates='contractor', lazy='dynamic')
+    
+    # START: New relationship to Invoices
+    invoices = db.relationship('Invoice', back_populates='contractor', lazy='dynamic', cascade="all, delete-orphan")
     # END: New relationship
 
     def __repr__(self):

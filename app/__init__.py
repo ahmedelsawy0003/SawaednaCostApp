@@ -21,6 +21,8 @@ def create_app():
     from .models.cost_detail import CostDetail
     from .models.audit_log import AuditLog
     from .models.contractor import Contractor
+    from .models.invoice import Invoice
+    from .models.invoice_item import InvoiceItem
 
     @login_manager.user_loader
     def load_user(user_id):
@@ -33,6 +35,9 @@ def create_app():
     from .routes.payment_routes import payment_bp
     from .routes.cost_detail_routes import cost_detail_bp
     from .routes.contractor_routes import contractor_bp
+    # START: Import the new invoice blueprint
+    from .routes.invoice_routes import invoice_bp
+    # END: Import
 
     app.register_blueprint(project_bp)
     app.register_blueprint(item_bp)
@@ -41,6 +46,9 @@ def create_app():
     app.register_blueprint(payment_bp)
     app.register_blueprint(cost_detail_bp)
     app.register_blueprint(contractor_bp)
+    # START: Register the new invoice blueprint
+    app.register_blueprint(invoice_bp)
+    # END: Register
     
     with app.app_context():
         upgrade()

@@ -11,9 +11,7 @@ class Project(db.Model):
     notes = db.Column(db.Text)
     spreadsheet_id = db.Column(db.String(255))
     
-    # START: Add is_archived field
     is_archived = db.Column(db.Boolean, default=False, nullable=False)
-    # END: Add is_archived field
     
     manager_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
 
@@ -24,6 +22,10 @@ class Project(db.Model):
     )
     
     manager = db.relationship('User', foreign_keys=[manager_id])
+
+    # START: New relationship to Invoices
+    invoices = db.relationship('Invoice', back_populates='project', lazy='dynamic', cascade="all, delete-orphan")
+    # END: New relationship
 
     @property
     def total_contract_cost(self):
@@ -43,24 +45,28 @@ class Project(db.Model):
 
     @property
     def completion_percentage(self):
-        if not self.items:
+        items_list = self.items # Evaluate once
+        if not items_list:
             return 0.0
-        if len(self.items) == 0:
+        if len(items_list) == 0:
             return 0.0
-        completed_items = sum(1 for item in self.items if item.status == 'مكتمل')
-        return (completed_items / len(self.items)) * 100
+        completed_items = sum(1 for item in items_list if item.status == 'مكتمل')
+        return (completed_items / len(items_list)) * 100
 
     @property
     def financial_completion_percentage(self):
-        if self.total_actual_cost == 0:
+        # This logic will need to be updated later to use invoices
+        total_actual = self.total_actual_cost
+        if total_actual == 0:
             return 0.0
-        return (self.total_paid_amount / self.total_actual_cost) * 100
+        return (self.total_paid_amount / total_actual) * 100
 
     @property
     def total_paid_amount(self):
-        if not self.payments:
+        # This logic will also be updated to sum payments from invoices
+        if not self.legacy_payments:
             return 0.0
-        return sum(payment.amount for payment in self.payments)
+        return sum(payment.amount for payment in self.legacy_payments)
 
     @property
     def total_remaining_amount(self):

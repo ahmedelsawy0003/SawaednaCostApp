@@ -8,14 +8,23 @@
         <span class="text-muted fw-normal">تفاصيل المشروع:</span> {{ project.name }}
     </h2>
     <div class="d-flex gap-2">
+        {# START: New Invoice Buttons #}
+        <a href="{{ url_for("invoice.get_invoices_by_project", project_id=project.id) }}" class="btn btn-success">
+            <i class="fas fa-file-invoice-dollar me-1"></i> عرض المستخلصات
+        </a>
+        <a href="{{ url_for("invoice.new_invoice", project_id=project.id) }}" class="btn btn-outline-success">
+            <i class="fas fa-plus me-1"></i> إضافة مستخلص
+        </a>
+        {# END: New Invoice Buttons #}
+        
         <a href="{{ url_for("item.get_items_by_project", project_id=project.id) }}" class="btn btn-primary">
             <i class="fas fa-list me-1"></i> عرض البنود
         </a>
         <a href="{{ url_for("project.project_dashboard", project_id=project.id) }}" class="btn btn-info text-white">
             <i class="fas fa-chart-bar me-1"></i> لوحة التحكم
         </a>
-        <a href="{{ url_for("payment.get_payments", project_id=project.id) }}" class="btn btn-success">
-            <i class="fas fa-money-bill-wave me-1"></i> الدفعات
+        <a href="{{ url_for("payment.get_payments", project_id=project.id) }}" class="btn btn-secondary">
+            <i class="fas fa-money-bill-wave me-1"></i> الدفعات (القديمة)
         </a>
         {% if current_user.role == 'admin' %}
         <a href="{{ url_for("project.edit_project", project_id=project.id) }}" class="btn btn-warning">
@@ -25,6 +34,7 @@
     </div>
 </div>
 
+{# ... The rest of the file remains unchanged ... #}
 <div class="row">
     <div class="col-lg-8">
         <div class="card mb-4">
