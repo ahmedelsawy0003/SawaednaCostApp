@@ -158,7 +158,14 @@
                             <td>{{ payment.description or '-' }}</td>
                             <td class="text-end text-success fw-bold">{{ "{:,.2f}".format(payment.amount) }}</td>
                             <td class="text-center">
-                                <button class="btn btn-danger btn-sm" disabled><i class="fas fa-trash"></i></button>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{{ url_for('invoice.edit_payment', payment_id=payment.id) }}" class="btn btn-warning" title="تعديل الدفعة">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deletePaymentModal-{{ payment.id }}" title="حذف الدفعة">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                         {% endfor %}
@@ -203,4 +210,28 @@
         </div>
     </div>
 </div>
+
+{% if invoice.payments %}
+    {% for payment in invoice.payments %}
+    <div class="modal fade" id="deletePaymentModal-{{ payment.id }}" tabindex="-1" aria-labelledby="deletePaymentModalLabel-{{ payment.id }}" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deletePaymentModalLabel-{{ payment.id }}">تأكيد الحذف</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    هل أنت متأكد أنك تريد حذف الدفعة بمبلغ <strong>{{ "{:,.2f}".format(payment.amount) }} ريال</strong>؟
+                </div>
+                <div class="modal-footer">
+                    <form action="{{ url_for('invoice.delete_payment_from_invoice', payment_id=payment.id) }}" method="POST">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                        <button type="submit" class="btn btn-danger">تأكيد الحذف</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+{% endif %}
 {% endblock %}
