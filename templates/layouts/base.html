@@ -48,14 +48,6 @@
                         </li>
                         {% endif %}
                         
-                        {# START: Universal Payment Button #}
-                        <li class="nav-item ms-2">
-                             <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#addPaymentModal">
-                                <i class="fas fa-plus me-1"></i> إضافة دفعة
-                            </button>
-                        </li>
-                        {# END: Universal Payment Button #}
-
                         <li class="nav-item dropdown ms-2">
                             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 <i class="fas fa-user-circle fa-fw me-1"></i>{{ current_user.username }}
@@ -84,12 +76,8 @@
             {% block content %}{% endblock %}
         </div>
     </main>
-
-    {# START: Include Universal Payment Modal #}
-    {% if current_user.is_authenticated %}
-        {% include "partials/_payment_modal.html" %}
-    {% endif %}
-    {# END: Include Universal Payment Modal #}
+    
+    {# تم حذف النافذة المنبثقة من هنا مؤقتاً لإعادة كل شيء لصورته الطبيعية #}
 
     <div class="toast-container position-fixed bottom-0 end-0 p-3">
         {% with messages = get_flashed_messages(with_categories=true) %}

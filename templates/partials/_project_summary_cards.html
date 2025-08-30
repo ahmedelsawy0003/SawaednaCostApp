@@ -1,63 +1,58 @@
-{# Universal Add Payment Modal #}
-<div class="modal fade" id="addPaymentModal" tabindex="-1" aria-labelledby="addPaymentModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="addPaymentModalLabel"><i class="fas fa-money-bill-wave me-2"></i>إضافة دفعة جديدة</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-dollar-sign fa-fw me-2"></i>الملخص المالي</h5>
+    </div>
+    <div class="card-body">
+        {% if current_user.role == 'admin' %}
+        <div class="summary-item">
+            <h6 class="text-muted">التكلفة التعاقدية</h6>
+            <h5 class="text-info mb-0">{{ "{:,.2f}".format(project.total_contract_cost) }} ريال</h5>
+        </div>
+        {% endif %}
+        <div class="summary-item">
+            <h6 class="text-muted">التكلفة الفعلية</h6>
+            <h5 class="text-light mb-0">{{ "{:,.2f}".format(project.total_actual_cost) }} ريال</h5>
             </div>
-            <div class="modal-body">
-                <form id="universalPaymentForm" method="POST" action="{{ url_for('payment.add_universal_payment') }}">
-                    <div id="payment-alert" class="alert alert-danger d-none" role="alert"></div>
-                    
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label for="payment_contractor_id" class="form-label">المقاول</label>
-                            <select id="payment_contractor_id" class="form-select" required>
-                                <option value="" selected disabled>-- اختر مقاول --</option>
-                                {# This will be populated by JavaScript #}
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="payment_project_id" class="form-label">المشروع</label>
-                            <select id="payment_project_id" class="form-select" disabled required>
-                                <option value="" selected disabled>-- اختر مشروع --</option>
-                                {# This will be populated by JavaScript #}
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="payment_item_id" class="form-label">البند</label>
-                            <select id="payment_item_id" class="form-select" disabled required>
-                                <option value="" selected disabled>-- اختر بند --</option>
-                                {# This will be populated by JavaScript #}
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="payment_cost_detail_id" class="form-label">تفصيل التكلفة (المستحق)</label>
-                            <select id="payment_cost_detail_id" name="cost_detail_id" class="form-select" disabled required>
-                                <option value="" selected disabled>-- اختر تفصيل التكلفة --</option>
-                                {# This will be populated by JavaScript #}
-                            </select>
-                        </div>
-                        <hr class="my-3">
-                        <div class="col-md-4">
-                            <label for="payment_amount" class="form-label">المبلغ</label>
-                            <input type="number" step="0.01" id="payment_amount" name="amount" class="form-control" required>
-                        </div>
-                        <div class="col-md-4">
-                            <label for="payment_date" class="form-label">تاريخ الدفعة</label>
-                            <input type="date" id="payment_date" name="payment_date" class="form-control" required>
-                        </div>
-                         <div class="col-md-4">
-                            <label for="payment_description" class="form-label">الوصف (اختياري)</label>
-                            <input type="text" id="payment_description" name="description" class="form-control">
-                        </div>
-                    </div>
-                </form>
+        {% if current_user.role == 'admin' %}
+        <div class="summary-item">
+            <h6 class="text-muted">الوفر / الزيادة</h6>
+            <h5 class="mb-0 {{ "text-success" if project.total_savings >= 0 else "text-danger" }}">
+                {{ "{:,.2f}".format(project.total_savings) }} ريال
+            </h5>
+        </div>
+        {% endif %}
+        <div class="summary-item">
+            <h6 class="text-muted">إجمالي المدفوع</h6>
+            <h5 class="text-light mb-0">{{ "{:,.2f}".format(project.total_paid_amount) }} ريال</h5>
+        </div>
+        <div class="summary-item">
+            <h6 class="text-muted">المبلغ المتبقي</h6>
+            <h5 class="text-danger mb-0">{{ "{:,.2f}".format(project.total_remaining_amount) }} ريال</h5>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-tasks fa-fw me-2"></i>نسب الإنجاز</h5>
+    </div>
+    <div class="card-body">
+        <div class="mb-3">
+            <div class="d-flex justify-content-between mb-1">
+                <span class="text-muted">نسبة إنجاز البنود</span>
+                <span class="fw-bold">{{ "{:.1f}%".format(project.completion_percentage) }}</span>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                <button type="submit" form="universalPaymentForm" class="btn btn-primary"><i class="fas fa-save me-1"></i> حفظ الدفعة</button>
+            <div class="progress" style="height: 10px;">
+                <div class="progress-bar bg-primary" role="progressbar" style="width: {{ project.completion_percentage }}%" aria-valuenow="{{ project.completion_percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+        </div>
+        <div>
+            <div class="d-flex justify-content-between mb-1">
+                <span class="text-muted">نسبة الإنجاز المالي</span>
+                <span class="fw-bold">{{ "{:.1f}%".format(project.financial_completion_percentage) }}</span>
+            </div>
+            <div class="progress" style="height: 10px;">
+                <div class="progress-bar bg-success" role="progressbar" style="width: {{ project.financial_completion_percentage }}%" aria-valuenow="{{ project.financial_completion_percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
             </div>
         </div>
     </div>
