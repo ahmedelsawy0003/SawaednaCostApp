@@ -10,11 +10,6 @@ document.addEventListener("DOMContentLoaded", function() {
         toast.show();
         return toast;
     });
-    
-    // START: *** THE FIX ***
-    // Ensure all modals are initialized. This seems to be missing.
-    var myModal = new bootstrap.Modal(document.getElementById('addPaymentModal'), {});
-    // END: *** THE FIX ***
 
     // Password Toggle Functionality
     const togglePassword = document.querySelector("#togglePassword");
