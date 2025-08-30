@@ -24,15 +24,10 @@ class Item(db.Model):
         db.Index('idx_item_contractor_id', 'contractor_id'),
     )
 
-    @property
-    def paid_amount(self):
-        """Calculates the total paid amount by summing up associated legacy payments."""
-        # START: More robust calculation
-        if not self.legacy_payments:
-            return 0.0
-        total = sum(payment.amount for payment in self.legacy_payments if payment.amount is not None)
-        return total or 0.0
-        # END: More robust calculation
+    # --- START: حذف الخصائص القديمة ---
+    # تم حذف property 'paid_amount'
+    # تم حذف property 'remaining_amount'
+    # --- END: حذف الخصائص القديمة ---
     
     @property
     def contract_total_cost(self):
@@ -55,12 +50,6 @@ class Item(db.Model):
         if self.actual_quantity is not None:
             return self.contract_quantity - self.actual_quantity
         return self.contract_quantity
-
-    @property
-    def remaining_amount(self):
-        # START: More robust calculation
-        return (self.actual_total_cost or 0.0) - (self.paid_amount or 0.0)
-        # END: More robust calculation
         
     @property
     def short_description(self):

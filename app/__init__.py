@@ -14,41 +14,42 @@ def create_app():
     
     commands.init_app(app)
 
+    # --- START: تعديل الاستيرادات ---
+    # تم حذف استيراد CostDetail
     from .models.user import User
     from .models.project import Project
     from .models.item import Item
     from .models.payment import Payment
-    from .models.cost_detail import CostDetail
     from .models.audit_log import AuditLog
     from .models.contractor import Contractor
     from .models.invoice import Invoice
     from .models.invoice_item import InvoiceItem
+    # --- END: تعديل الاستيرادات ---
 
     @login_manager.user_loader
     def load_user(user_id):
         return User.query.get(int(user_id))
 
+    # --- START: تعديل استيراد المسارات (Blueprints) ---
     from .routes.project_routes import project_bp
     from .routes.item_routes import item_bp
     from .routes.google_sheets_routes import sheets_bp
     from .routes.auth_routes import auth_bp
-    from .routes.payment_routes import payment_bp
-    from .routes.cost_detail_routes import cost_detail_bp
     from .routes.contractor_routes import contractor_bp
-    # START: Import the new invoice blueprint
     from .routes.invoice_routes import invoice_bp
-    # END: Import
+    # تم حذف استيراد payment_bp و cost_detail_bp
+    # --- END: تعديل استيراد المسارات ---
 
     app.register_blueprint(project_bp)
     app.register_blueprint(item_bp)
     app.register_blueprint(sheets_bp)
     app.register_blueprint(auth_bp)
-    app.register_blueprint(payment_bp)
-    app.register_blueprint(cost_detail_bp)
     app.register_blueprint(contractor_bp)
-    # START: Register the new invoice blueprint
     app.register_blueprint(invoice_bp)
-    # END: Register
+    # --- START: حذف تسجيل المسارات القديمة ---
+    # تم حذف app.register_blueprint(payment_bp)
+    # تم حذف app.register_blueprint(cost_detail_bp)
+    # --- END: حذف تسجيل المسارات القديمة ---
     
     with app.app_context():
         upgrade()

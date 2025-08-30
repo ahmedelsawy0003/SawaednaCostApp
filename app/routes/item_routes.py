@@ -2,9 +2,8 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from sqlalchemy import cast, Integer
 from app.models.item import Item
 from app.models.project import Project
-from app.models.cost_detail import CostDetail
 from app.models.audit_log import AuditLog
-from app.models.contractor import Contractor # <<< أضف هذا
+from app.models.contractor import Contractor
 from app.extensions import db
 from flask_login import login_required, current_user
 from app.utils import check_project_permission, sanitize_input
@@ -42,7 +41,6 @@ def get_items_by_project(project_id):
     search_description = request.args.get('search_description', '')
     status_filter = request.args.get('status', '')
     
-    # START: Updated contractor filter to search by main item contractor
     contractor_filter = request.args.get('contractor', '')
 
     query = Item.query.filter_by(project_id=project_id)
@@ -59,11 +57,9 @@ def get_items_by_project(project_id):
 
     if contractor_filter:
         query = query.join(Item.contractor).filter(Contractor.name.ilike(f"%{contractor_filter}%"))
-    # END: Updated contractor filter
 
     items = query.order_by(cast(Item.item_number, Integer)).all()
 
-    # Pass filter values back to the template to keep them in the input boxes
     filters = {
         'search_number': search_number,
         'search_description': search_description,
@@ -83,9 +79,7 @@ def bulk_update_items(project_id):
     item_ids_str = form_data.getlist('item_ids')
     bulk_status = form_data.get('bulk_status')
     
-    # START: Handle bulk contractor update
     bulk_contractor_id = form_data.get('bulk_contractor_id')
-    # END: Handle bulk contractor update
 
     if not item_ids_str:
         flash("الرجاء تحديد بند واحد على الأقل لتطبيق التعديلات.", "warning")
@@ -101,11 +95,9 @@ def bulk_update_items(project_id):
             item.status = bulk_status
             updated = True
         
-        # START: Apply bulk contractor update
         if bulk_contractor_id:
             item.contractor_id = int(bulk_contractor_id) if bulk_contractor_id else None
             updated = True
-        # END: Apply bulk contractor update
         
         if updated:
             update_count += 1
@@ -127,7 +119,6 @@ def new_item(project_id):
     if request.method == "POST":
         description = sanitize_input(request.form["description"])
         unit = sanitize_input(request.form["unit"])
-        execution_method = sanitize_input(request.form.get("execution_method"))
         notes = sanitize_input(request.form.get("notes"))
         contract_quantity = float(request.form.get("contract_quantity", 0.0))
         contract_unit_cost = float(request.form.get("contract_unit_cost", 0.0))
@@ -136,14 +127,12 @@ def new_item(project_id):
         actual_unit_cost = float(request.form.get("actual_unit_cost") or 0.0)
         status = request.form["status"]
         
-        # START: Handle contractor_id on new item creation
         contractor_id = request.form.get("contractor_id")
-        # END: Handle contractor_id
 
         new_item = Item(project_id=project_id, item_number=item_number, description=description,
                         unit=unit, contract_quantity=contract_quantity, contract_unit_cost=contract_unit_cost,
                         actual_quantity=actual_quantity, actual_unit_cost=actual_unit_cost, status=status,
-                        execution_method=execution_method, notes=notes,
+                        notes=notes,
                         contractor_id=int(contractor_id) if contractor_id else None)
         db.session.add(new_item)
         db.session.flush()
@@ -151,10 +140,8 @@ def new_item(project_id):
         flash("تم إضافة البند بنجاح!", "success")
         return redirect(url_for("item.get_items_by_project", project_id=project_id))
 
-    # START: Pass contractors to the new item template
     contractors = Contractor.query.order_by(Contractor.name).all()
     return render_template("items/new.html", project=project, contractors=contractors)
-    # END: Pass contractors
 
 
 @item_bp.route("/items/<int:item_id>/edit", methods=["GET", "POST"])
@@ -167,7 +154,6 @@ def edit_item(item_id):
         
         item.description = sanitize_input(request.form["description"])
         item.unit = sanitize_input(request.form["unit"])
-        item.execution_method = sanitize_input(request.form.get("execution_method"))
         item.notes = sanitize_input(request.form.get("notes"))
         if current_user.role == 'admin':
             item.contract_unit_cost = float(request.form.get("contract_unit_cost", 0.0))
@@ -177,27 +163,20 @@ def edit_item(item_id):
         item.actual_unit_cost = float(request.form.get("actual_unit_cost") or 0.0)
         item.status = request.form["status"]
         
-        # START: Save the main contractor_id
         contractor_id = request.form.get("contractor_id")
         item.contractor_id = int(contractor_id) if contractor_id else None
-        # END: Save the main contractor
         
         db.session.commit()
         flash("تم تحديث البند بنجاح!", "success")
         return redirect(url_for("item.get_items_by_project", project_id=item.project_id))
     
-    cost_details = CostDetail.query.filter_by(item_id=item.id).order_by(CostDetail.id.desc()).all()
-    
-    # START: Fetch contractors for the dropdown
     contractors = Contractor.query.order_by(Contractor.name).all()
-    # END: Fetch contractors
     
     return render_template("items/edit.html", 
                            item=item, 
                            project=project, 
-                           cost_details=cost_details, 
                            AuditLog=AuditLog,
-                           contractors=contractors) # <<< أضف هذا
+                           contractors=contractors)
 
 @item_bp.route("/items/<int:item_id>/delete", methods=["POST"])
 @login_required
@@ -213,12 +192,13 @@ def delete_item(item_id):
     return redirect(url_for("item.get_items_by_project", project_id=project_id))
 
 
-# The rest of the file (get_item_details) remains unchanged
 @item_bp.route("/items/<int:item_id>/details")
 @login_required
 def get_item_details(item_id):
     item = Item.query.get_or_404(item_id)
     check_project_permission(item.project)
+    # --- START: التعديل الرئيسي ---
+    # تم حذف paid_amount و remaining_amount من الاستجابة
     return jsonify({
         "item_number": item.item_number,
         "description": item.description,
@@ -234,7 +214,6 @@ def get_item_details(item_id):
         "status": item.status,
         "execution_method": item.execution_method,
         "contractor": item.contractor.name if item.contractor else None,
-        "paid_amount": item.paid_amount,
-        "remaining_amount": item.remaining_amount,
         "notes": item.notes
     })
+    # --- END: التعديل الرئيسي ---

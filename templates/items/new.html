@@ -59,18 +59,17 @@
                             <option value="معلق">معلق</option>
                         </select>
                     </div>
+                    {# --- START: التعديل الرئيسي --- #}
                     <div class="mb-3">
-                        <label for="execution_method" class="form-label">طريقة التنفيذ (اختياري)</label>
-                        <input type="text" class="form-control" id="execution_method" name="execution_method">
+                        <label for="contractor_id" class="form-label">المقاول الرئيسي للبند (اختياري)</label>
+                        <select class="form-select" id="contractor_id" name="contractor_id">
+                            <option value="">-- تنفيذ ذاتي / بدون مقاول --</option>
+                            {% for contractor in contractors %}
+                                <option value="{{ contractor.id }}">{{ contractor.name }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
-                    <div class="mb-3">
-                        <label for="contractor" class="form-label">المقاول/المورد (اختياري)</label>
-                        <input type="text" class="form-control" id="contractor" name="contractor">
-                    </div>
-                    <div class="mb-3">
-                        <label for="paid_amount" class="form-label">المبلغ المدفوع (اختياري)</label>
-                        <input type="number" step="0.01" class="form-control" id="paid_amount" name="paid_amount">
-                    </div>
+                    {# --- END: التعديل الرئيسي --- #}
                 </div>
             </div>
             <div class="mb-3">

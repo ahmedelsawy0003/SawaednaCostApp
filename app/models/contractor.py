@@ -8,15 +8,15 @@ class Contractor(db.Model):
     email = db.Column(db.String(120))
     notes = db.Column(db.Text)
 
-    # Relationship to CostDetail (remains the same)
-    cost_details = db.relationship('CostDetail', back_populates='contractor', lazy='dynamic')
+    # --- START: حذف العلاقة القديمة ---
+    # تم حذف العلاقة cost_details
+    # --- END: حذف العلاقة القديمة ---
 
     # This is the relationship for items where this contractor is the main one.
     items = db.relationship('Item', back_populates='contractor', lazy='dynamic')
     
-    # START: New relationship to Invoices
+    # This relationship is correct and should remain
     invoices = db.relationship('Invoice', back_populates='contractor', lazy='dynamic', cascade="all, delete-orphan")
-    # END: New relationship
 
     def __repr__(self):
         return f'<Contractor {self.name}>'
