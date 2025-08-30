@@ -3,25 +3,21 @@ from flask_login import login_user, logout_user, login_required, current_user
 from app.models.user import User
 from app.models.project import Project
 from app.extensions import db
-# --- START: إضافة استيراد النموذج ---
-from app.forms import LoginForm
-# --- END: إضافة استيراد النموذج ---
+# --- START: إضافة استيراد النموذج الجديد ---
+from app.forms import LoginForm, RegisterForm
+# --- END: إضافة استيراد النموذج الجديد ---
 
 auth_bp = Blueprint("auth", __name__)
 
-# ... (كل الدوال الأخرى تبقى كما هي) ...
 
-# --- START: تعديل دالة تسجيل الدخول ---
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
     if current_user.is_authenticated:
         return redirect(url_for("project.get_projects"))
     
-    form = LoginForm() # 1. إنشاء نسخة من النموذج
+    form = LoginForm()
     
-    # 2. التحقق من أن النموذج تم إرساله وصالح
     if form.validate_on_submit():
-        # 3. الوصول إلى البيانات من النموذج
         username = form.username.data
         password = form.password.data
         
@@ -34,32 +30,30 @@ def login():
         else:
             flash("اسم المستخدم أو كلمة المرور غير صحيحة.", "danger")
             
-    # 4. تمرير النموذج إلى القالب
     return render_template("auth/login.html", form=form)
-# --- END: تعديل دالة تسجيل الدخول ---
 
 
+# --- START: تعديل دالة التسجيل ---
 @auth_bp.route("/register", methods=["GET", "POST"])
 def register():
     if current_user.is_authenticated:
         return redirect(url_for("project.get_projects"))
-    if request.method == "POST":
-        username = request.form["username"]
-        email = request.form["email"]
-        password = request.form["password"]
         
-        if User.query.filter_by(username=username).first():
-            flash("اسم المستخدم موجود بالفعل.", "danger")
-        elif User.query.filter_by(email=email).first():
-            flash("البريد الإلكتروني موجود بالفعل.", "danger")
-        else:
-            new_user = User(username=username, email=email)
-            new_user.set_password(password)
-            db.session.add(new_user)
-            db.session.commit()
-            flash("تم إنشاء الحساب بنجاح! يمكنك الآن تسجيل الدخول.", "success")
-            return redirect(url_for("auth.login"))
-    return render_template("auth/register.html")
+    form = RegisterForm() # 1. إنشاء نسخة من النموذج
+
+    if form.validate_on_submit(): # 2. التحقق من صحة النموذج عند الإرسال
+        # 3. إنشاء مستخدم جديد من بيانات النموذج
+        new_user = User(username=form.username.data, email=form.email.data)
+        new_user.set_password(form.password.data)
+        db.session.add(new_user)
+        db.session.commit()
+        flash("تم إنشاء الحساب بنجاح! يمكنك الآن تسجيل الدخول.", "success")
+        return redirect(url_for("auth.login"))
+        
+    # 4. تمرير النموذج إلى القالب
+    return render_template("auth/register.html", form=form)
+# --- END: تعديل دالة التسجيل ---
+
 
 @auth_bp.route("/logout")
 @login_required
@@ -67,6 +61,8 @@ def logout():
     logout_user()
     flash("تم تسجيل الخروج بنجاح.", "info")
     return redirect(url_for("auth.login"))
+
+# ... (باقي الدوال تبقى كما هي) ...
 
 @auth_bp.route("/profile")
 @login_required
@@ -77,7 +73,7 @@ def profile():
 @login_required
 def admin_dashboard():
     if current_user.role != 'admin':
-        abort(403)
+        abort(43)
     users = User.query.all()
     return render_template("admin/dashboard.html", users=users)
 
