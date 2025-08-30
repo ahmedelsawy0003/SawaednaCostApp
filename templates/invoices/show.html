@@ -61,6 +61,7 @@
     </div>
 </div>
 
+{# START: FIX - The check is now simply `if invoice.payments` #}
 {% if not invoice.payments %}
 <div class="card mb-4">
     <div class="card-header bg-success text-white">
@@ -97,6 +98,7 @@
     لا يمكن إضافة أو تعديل البنود بعد تسجيل أول دفعة على المستخلص لضمان دقة الحسابات.
 </div>
 {% endif %}
+{# END: FIX #}
 
 
 <div class="card mb-4">
@@ -127,7 +129,7 @@
                                 <button type="button" class="btn btn-danger btn-sm" 
                                         data-bs-toggle="modal" 
                                         data-bs-target="#deleteItemModal-{{ inv_item.id }}"
-                                        {% if invoice.payments.first() %}disabled{% endif %}
+                                        {% if invoice.payments %}disabled{% endif %}
                                         title="حذف البند من المستخلص">
                                     <i class="fas fa-trash"></i>
                                 </button>
