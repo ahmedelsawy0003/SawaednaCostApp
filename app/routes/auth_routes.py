@@ -1,20 +1,30 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, abort
 from flask_login import login_user, logout_user, login_required, current_user
 from app.models.user import User
-from app.models.project import Project # <<< Add this import
+from app.models.project import Project
 from app.extensions import db
+# --- START: إضافة استيراد النموذج ---
+from app.forms import LoginForm
+# --- END: إضافة استيراد النموذج ---
 
 auth_bp = Blueprint("auth", __name__)
 
 # ... (كل الدوال الأخرى تبقى كما هي) ...
 
+# --- START: تعديل دالة تسجيل الدخول ---
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
     if current_user.is_authenticated:
         return redirect(url_for("project.get_projects"))
-    if request.method == "POST":
-        username = request.form["username"]
-        password = request.form["password"]
+    
+    form = LoginForm() # 1. إنشاء نسخة من النموذج
+    
+    # 2. التحقق من أن النموذج تم إرساله وصالح
+    if form.validate_on_submit():
+        # 3. الوصول إلى البيانات من النموذج
+        username = form.username.data
+        password = form.password.data
+        
         user = User.query.filter_by(username=username).first()
         if user and user.check_password(password):
             login_user(user)
@@ -23,7 +33,11 @@ def login():
             return redirect(next_page or url_for("project.get_projects"))
         else:
             flash("اسم المستخدم أو كلمة المرور غير صحيحة.", "danger")
-    return render_template("auth/login.html")
+            
+    # 4. تمرير النموذج إلى القالب
+    return render_template("auth/login.html", form=form)
+# --- END: تعديل دالة تسجيل الدخول ---
+
 
 @auth_bp.route("/register", methods=["GET", "POST"])
 def register():
@@ -106,7 +120,6 @@ def delete_user(user_id):
     flash(f"تم حذف المستخدم {user_to_delete.username} بنجاح.", "success")
     return redirect(url_for('auth.admin_dashboard'))
 
-# START: Modified edit_user route
 @auth_bp.route('/admin/user/<int:user_id>/edit', methods=['GET', 'POST'])
 @login_required
 def edit_user(user_id):
@@ -116,14 +129,12 @@ def edit_user(user_id):
     user_to_edit = User.query.get_or_404(user_id)
     
     if request.method == 'POST':
-        # Update user details
         user_to_edit.username = request.form['username']
         user_to_edit.email = request.form['email']
         new_password = request.form.get('password')
         if new_password:
             user_to_edit.set_password(new_password)
         
-        # Update project associations
         assigned_project_ids = request.form.getlist('projects')
         user_to_edit.projects.clear()
         for project_id in assigned_project_ids:
@@ -135,7 +146,5 @@ def edit_user(user_id):
         flash(f"تم تحديث بيانات المستخدم {user_to_edit.username} بنجاح.", "success")
         return redirect(url_for('auth.admin_dashboard'))
 
-    # Fetch all projects to display in the form for GET request
     projects = Project.query.all()
     return render_template('admin/edit_user.html', user=user_to_edit, projects=projects)
-# END: Modified route
