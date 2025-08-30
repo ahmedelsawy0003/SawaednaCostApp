@@ -61,6 +61,7 @@
     </div>
 </div>
 
+{% if not invoice.payments %}
 <div class="card mb-4">
     <div class="card-header bg-success text-white">
         <h3 class="mb-0">إضافة بنود للمستخلص</h3>
@@ -90,6 +91,13 @@
         </form>
     </div>
 </div>
+{% else %}
+<div class="alert alert-warning text-center">
+    <i class="fas fa-lock me-2"></i>
+    لا يمكن إضافة أو تعديل البنود بعد تسجيل أول دفعة على المستخلص لضمان دقة الحسابات.
+</div>
+{% endif %}
+
 
 <div class="card mb-4">
     <div class="card-header">
@@ -116,8 +124,14 @@
                             <td class="text-end">{{ "{:,.2f}".format(inv_item.unit_price) }}</td>
                             <td class="text-end fw-bold">{{ "{:,.2f}".format(inv_item.total_price) }}</td>
                             <td class="text-center">
-                                <button class="btn btn-danger btn-sm" disabled><i class="fas fa-trash"></i></button>
-                            </td>
+                                <button type="button" class="btn btn-danger btn-sm" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#deleteItemModal-{{ inv_item.id }}"
+                                        {% if invoice.payments %}disabled{% endif %}
+                                        title="حذف البند من المستخلص">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                </td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -180,51 +194,29 @@
     </div>
 </div>
 
-<div class="modal fade" id="addPaymentModal" tabindex="-1" aria-labelledby="addPaymentModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="addPaymentModalLabel">تسجيل دفعة جديدة للمستخلص {{ invoice.invoice_number }}</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form action="{{ url_for('invoice.add_payment_to_invoice', invoice_id=invoice.id) }}" method="POST">
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="amount" class="form-label">المبلغ</label>
-                        <input type="number" step="0.01" class="form-control" id="amount" name="amount" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="payment_date" class="form-label">تاريخ الدفعة</label>
-                        <input type="date" class="form-control" id="payment_date" name="payment_date" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="description" class="form-label">الوصف (اختياري)</label>
-                        <textarea class="form-control" id="description" name="description" rows="2"></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                    <button type="submit" class="btn btn-primary">حفظ الدفعة</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
+<div class="modal fade" id="addPaymentModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">تسجيل دفعة جديدة للمستخلص {{ invoice.invoice_number }}</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><form action="{{ url_for('invoice.add_payment_to_invoice', invoice_id=invoice.id) }}" method="POST"><div class="modal-body"><div class="mb-3"><label class="form-label">المبلغ</label><input type="number" step="0.01" class="form-control" name="amount" required></div><div class="mb-3"><label class="form-label">تاريخ الدفعة</label><input type="date" class="form-control" name="payment_date" required></div><div class="mb-3"><label class="form-label">الوصف (اختياري)</label><textarea class="form-control" name="description" rows="2"></textarea></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button><button type="submit" class="btn btn-primary">حفظ الدفعة</button></div></form></div></div></div>
 
 {% if invoice.payments %}
     {% for payment in invoice.payments %}
-    <div class="modal fade" id="deletePaymentModal-{{ payment.id }}" tabindex="-1" aria-labelledby="deletePaymentModalLabel-{{ payment.id }}" aria-hidden="true">
+    <div class="modal fade" id="deletePaymentModal-{{ payment.id }}"></div>
+    {% endfor %}
+{% endif %}
+
+{% if invoice.items %}
+    {% for inv_item in invoice.items %}
+    <div class="modal fade" id="deleteItemModal-{{ inv_item.id }}" tabindex="-1" aria-labelledby="deleteItemModalLabel-{{ inv_item.id }}" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="deletePaymentModalLabel-{{ payment.id }}">تأكيد الحذف</h5>
+                    <h5 class="modal-title" id="deleteItemModalLabel-{{ inv_item.id }}">تأكيد حذف البند</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    هل أنت متأكد أنك تريد حذف الدفعة بمبلغ <strong>{{ "{:,.2f}".format(payment.amount) }} ريال</strong>؟
+                    هل أنت متأكد أنك تريد حذف هذا البند من المستخلص؟
+                    <p class="text-muted small mt-2">{{ inv_item.description }}</p>
                 </div>
                 <div class="modal-footer">
-                    <form action="{{ url_for('invoice.delete_payment_from_invoice', payment_id=payment.id) }}" method="POST">
+                    <form action="{{ url_for('invoice.delete_item_from_invoice', invoice_item_id=inv_item.id) }}" method="POST">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
                         <button type="submit" class="btn btn-danger">تأكيد الحذف</button>
                     </form>

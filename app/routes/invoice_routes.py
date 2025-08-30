@@ -129,6 +129,30 @@ def add_payment_to_invoice(invoice_id):
     flash("تم تسجيل الدفعة بنجاح.", "success")
     return redirect(url_for('invoice.show_invoice', invoice_id=invoice_id))
 
+@invoice_bp.route("/payments/<int:payment_id>/edit", methods=["GET", "POST"])
+@login_required
+def edit_payment(payment_id):
+    payment = Payment.query.get_or_404(payment_id)
+    invoice = payment.invoice
+    check_project_permission(invoice.project)
+    if request.method == "POST":
+        amount_str = request.form.get("amount")
+        payment_date_str = request.form.get("payment_date")
+        description = sanitize_input(request.form.get("description"))
+        if not amount_str or not payment_date_str:
+            flash("المبلغ وتاريخ الدفعة حقول مطلوبة.", "danger")
+            return redirect(url_for('invoice.edit_payment', payment_id=payment.id))
+        try:
+            payment.amount = float(amount_str)
+            payment.payment_date = datetime.datetime.strptime(payment_date_str, "%Y-%m-%d").date()
+            payment.description = description
+            db.session.commit()
+            flash("تم تحديث الدفعة بنجاح.", "success")
+            return redirect(url_for('invoice.show_invoice', invoice_id=invoice.id))
+        except (ValueError, TypeError):
+            flash("البيانات المدخلة للمبلغ أو التاريخ غير صالحة.", "danger")
+    return render_template("invoices/edit_payment.html", payment=payment)
+
 @invoice_bp.route("/payments/<int:payment_id>/delete", methods=["POST"])
 @login_required
 def delete_payment_from_invoice(payment_id):
@@ -141,34 +165,23 @@ def delete_payment_from_invoice(payment_id):
     flash("تم حذف الدفعة بنجاح.", "success")
     return redirect(url_for('invoice.show_invoice', invoice_id=invoice_id))
 
-# START: New route to edit a payment
-@invoice_bp.route("/payments/<int:payment_id>/edit", methods=["GET", "POST"])
+# START: New route to delete an item from an invoice
+@invoice_bp.route("/items/<int:invoice_item_id>/delete", methods=["POST"])
 @login_required
-def edit_payment(payment_id):
-    payment = Payment.query.get_or_404(payment_id)
-    invoice = payment.invoice
+def delete_item_from_invoice(invoice_item_id):
+    invoice_item = InvoiceItem.query.get_or_404(invoice_item_id)
+    invoice = invoice_item.invoice
     check_project_permission(invoice.project)
 
-    if request.method == "POST":
-        amount_str = request.form.get("amount")
-        payment_date_str = request.form.get("payment_date")
-        description = sanitize_input(request.form.get("description"))
-
-        if not amount_str or not payment_date_str:
-            flash("المبلغ وتاريخ الدفعة حقول مطلوبة.", "danger")
-            return redirect(url_for('invoice.edit_payment', payment_id=payment.id))
+    # Prevent deleting if the invoice has payments
+    if invoice.payments:
+        flash("لا يمكن حذف بنود من مستخلص تم تسجيل دفعات له. يجب حذف الدفعات أولاً.", "danger")
+        return redirect(url_for('invoice.show_invoice', invoice_id=invoice.id))
         
-        try:
-            payment.amount = float(amount_str)
-            payment.payment_date = datetime.datetime.strptime(payment_date_str, "%Y-%m-%d").date()
-            payment.description = description
-            
-            db.session.commit() # The event listener will update the invoice status
-            flash("تم تحديث الدفعة بنجاح.", "success")
-            return redirect(url_for('invoice.show_invoice', invoice_id=invoice.id))
-        except (ValueError, TypeError):
-            flash("البيانات المدخلة للمبلغ أو التاريخ غير صالحة.", "danger")
-    
-    # For GET request, show the edit form
-    return render_template("invoices/edit_payment.html", payment=payment)
+    invoice_id = invoice.id
+    db.session.delete(invoice_item)
+    db.session.commit()
+
+    flash("تم حذف البند من المستخلص بنجاح.", "success")
+    return redirect(url_for('invoice.show_invoice', invoice_id=invoice_id))
 # END: New route
