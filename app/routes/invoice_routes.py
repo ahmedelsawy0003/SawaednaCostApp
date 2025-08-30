@@ -171,18 +171,12 @@ def delete_item_from_invoice(invoice_item_id):
     invoice_item = InvoiceItem.query.get_or_404(invoice_item_id)
     invoice = invoice_item.invoice
     check_project_permission(invoice.project)
-
-    # START: *** THE FIX ***
-    # Correct way to check if the list is not empty
     if invoice.payments:
-    # END: *** THE FIX ***
         flash("لا يمكن حذف بنود من مستخلص تم تسجيل دفعات له. يجب حذف الدفعات أولاً.", "danger")
         return redirect(url_for('invoice.show_invoice', invoice_id=invoice.id))
-        
     invoice_id = invoice.id
     db.session.delete(invoice_item)
     db.session.commit()
-
     flash("تم حذف البند من المستخلص بنجاح.", "success")
     return redirect(url_for('invoice.show_invoice', invoice_id=invoice_id))
 
@@ -194,7 +188,7 @@ def edit_item_from_invoice(invoice_item_id):
     invoice = invoice_item.invoice
     check_project_permission(invoice.project)
 
-    if invoice.payments.first() is not None:
+    if invoice.payments:
         flash("لا يمكن تعديل بنود مستخلص تم تسجيل دفعات له.", "danger")
         return redirect(url_for('invoice.show_invoice', invoice_id=invoice.id))
 
