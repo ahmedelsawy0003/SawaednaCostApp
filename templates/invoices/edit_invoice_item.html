@@ -1,0 +1,34 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}تعديل بند المستخلص{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>
+        تعديل بند في المستخلص <a href="{{ url_for('invoice.show_invoice', invoice_id=invoice_item.invoice_id) }}">{{ invoice_item.invoice.invoice_number }}</a>
+    </h1>
+    <a href="{{ url_for('invoice.show_invoice', invoice_id=invoice_item.invoice_id) }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-right me-1"></i> العودة للمستخلص
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h3 class="mb-0">تفاصيل البند</h3>
+    </div>
+    <div class="card-body">
+        <p><strong>البند:</strong> {{ invoice_item.description }}</p>
+        <p><strong>سعر الوحدة:</strong> {{ "{:,.2f}".format(invoice_item.unit_price) }} ريال</p>
+        <hr>
+        <form method="POST" action="{{ url_for('invoice.edit_item_from_invoice', invoice_item_id=invoice_item.id) }}">
+            <div class="mb-3">
+                <label for="quantity" class="form-label">الكمية الجديدة</label>
+                <input type="number" step="0.01" class="form-control" id="quantity" name="quantity" value="{{ invoice_item.quantity }}" required>
+            </div>
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save me-1"></i> حفظ التعديلات
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -32,10 +32,14 @@ class Payment(db.Model):
     def __repr__(self):
         return f'<Payment {self.amount} for Invoice {self.invoice_id}>'
 
+# Add an event listener to automatically update the invoice status after a payment is made or deleted.
 @event.listens_for(Payment, 'after_insert')
 @event.listens_for(Payment, 'after_update')
 @event.listens_for(Payment, 'after_delete')
 def receive_after_payment_change(mapper, connection, target):
     """After a payment is saved or deleted, update the parent invoice's status."""
     if target.invoice:
+        # The session is already in a flush process, so we just need to
+        # make the change. The session commit that the user initiated
+        # in the route will handle saving this change.
         target.invoice.update_status()

@@ -165,23 +165,50 @@ def delete_payment_from_invoice(payment_id):
     flash("تم حذف الدفعة بنجاح.", "success")
     return redirect(url_for('invoice.show_invoice', invoice_id=invoice_id))
 
-# START: New route to delete an item from an invoice
 @invoice_bp.route("/items/<int:invoice_item_id>/delete", methods=["POST"])
 @login_required
 def delete_item_from_invoice(invoice_item_id):
     invoice_item = InvoiceItem.query.get_or_404(invoice_item_id)
     invoice = invoice_item.invoice
     check_project_permission(invoice.project)
-
-    # Prevent deleting if the invoice has payments
-    if invoice.payments:
+    if invoice.payments.first() is not None:
         flash("لا يمكن حذف بنود من مستخلص تم تسجيل دفعات له. يجب حذف الدفعات أولاً.", "danger")
         return redirect(url_for('invoice.show_invoice', invoice_id=invoice.id))
-        
     invoice_id = invoice.id
     db.session.delete(invoice_item)
     db.session.commit()
-
     flash("تم حذف البند من المستخلص بنجاح.", "success")
     return redirect(url_for('invoice.show_invoice', invoice_id=invoice_id))
+
+# START: New route to edit an item from an invoice
+@invoice_bp.route("/items/<int:invoice_item_id>/edit", methods=["GET", "POST"])
+@login_required
+def edit_item_from_invoice(invoice_item_id):
+    invoice_item = InvoiceItem.query.get_or_404(invoice_item_id)
+    invoice = invoice_item.invoice
+    check_project_permission(invoice.project)
+
+    if invoice.payments.first() is not None:
+        flash("لا يمكن تعديل بنود مستخلص تم تسجيل دفعات له.", "danger")
+        return redirect(url_for('invoice.show_invoice', invoice_id=invoice.id))
+
+    if request.method == "POST":
+        quantity_str = request.form.get("quantity")
+        try:
+            quantity = float(quantity_str)
+            if quantity <= 0:
+                flash("يجب أن تكون الكمية أكبر من صفر.", "danger")
+                return redirect(url_for('invoice.edit_item_from_invoice', invoice_item_id=invoice_item.id))
+            
+            # Update quantity and recalculate total price
+            invoice_item.quantity = quantity
+            invoice_item.total_price = quantity * invoice_item.unit_price
+            
+            db.session.commit()
+            flash("تم تحديث كمية البند بنجاح.", "success")
+            return redirect(url_for('invoice.show_invoice', invoice_id=invoice.id))
+        except (ValueError, TypeError):
+            flash("الكمية المدخلة غير صالحة.", "danger")
+    
+    return render_template("invoices/edit_invoice_item.html", invoice_item=invoice_item)
 # END: New route
