@@ -14,8 +14,9 @@ import datetime # Import the datetime module
 # Blueprint
 invoice_bp = Blueprint("invoice", __name__, url_prefix='/invoices')
 
-# ... (all the previous routes remain unchanged) ...
-@invoice_bp.route("/project/<int/project_id>")
+# START: *** FIX *** Corrected the URL rule
+@invoice_bp.route("/project/<int:project_id>")
+# END: *** FIX ***
 @login_required
 def get_invoices_by_project(project_id):
     project = Project.query.get_or_404(project_id)
@@ -25,7 +26,7 @@ def get_invoices_by_project(project_id):
     
     return render_template("invoices/index.html", project=project, invoices=invoices)
 
-@invoice_bp.route("/project/<int/project_id>/new", methods=["GET", "POST"])
+@invoice_bp.route("/project/<int:project_id>/new", methods=["GET", "POST"])
 @login_required
 def new_invoice(project_id):
     project = Project.query.get_or_404(project_id)
@@ -117,7 +118,6 @@ def add_item_to_invoice(invoice_id):
     flash(f"تمت إضافة البند '{item.item_number}' إلى المستخلص بنجاح.", "success")
     return redirect(url_for('invoice.show_invoice', invoice_id=invoice_id))
 
-# START: New route to add a payment to an invoice
 @invoice_bp.route("/<int:invoice_id>/add_payment", methods=["POST"])
 @login_required
 def add_payment_to_invoice(invoice_id):
@@ -150,9 +150,7 @@ def add_payment_to_invoice(invoice_id):
     )
 
     db.session.add(new_payment)
-    # The event listener in payment.py will automatically update the invoice status
     db.session.commit()
 
     flash("تم تسجيل الدفعة بنجاح.", "success")
     return redirect(url_for('invoice.show_invoice', invoice_id=invoice_id))
-# END: New payment route
