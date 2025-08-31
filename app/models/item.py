@@ -18,7 +18,12 @@ class Item(db.Model):
     
     contractor_id = db.Column(db.Integer, db.ForeignKey('contractor.id'), nullable=True)
 
-    project = db.relationship('Project', backref=db.backref('items', lazy=True, cascade="all, delete-orphan"))
+    # --- START: THE FIX ---
+    # We will define the relationship from the "many" side (Item)
+    # and use back_populates to link it to the "one" side (Project)
+    project = db.relationship('Project', back_populates='items')
+    # --- END: THE FIX ---
+
     contractor = db.relationship('Contractor', back_populates='items')
 
     __table_args__ = (
@@ -29,8 +34,8 @@ class Item(db.Model):
     @property
     def all_payments(self):
         """
-        تجلب قائمة بجميع الدفعات المسجلة لهذا البند
-        عبر جميع الفواتير المرتبط بها.
+        Fetches a list of all payments registered for this specific item
+        across all its associated invoices.
         """
         return Payment.query.join(
             InvoiceItem, Payment.invoice_item_id == InvoiceItem.id
@@ -41,8 +46,8 @@ class Item(db.Model):
     @property
     def paid_amount(self):
         """
-        يحسب إجمالي المبلغ المدفوع لهذا البند المحدد
-        عن طريق جمع كل الدفعات المرتبطة بظهور هذا البند في كل الفواتير.
+        Calculates the total paid amount for this specific item by summing up
+        all payments linked to this item's appearances in all invoices.
         """
         total_paid = db.session.query(func.sum(Payment.amount)).join(
             InvoiceItem, Payment.invoice_item_id == InvoiceItem.id
@@ -60,8 +65,8 @@ class Item(db.Model):
     @property
     def actual_total_cost(self):
         """
-        يحسب التكلفة الإجمالية الفعلية. إذا لم يتم إدخالها، 
-        فإنها تساوي المبلغ المدفوع تلقائياً.
+        Calculates the actual total cost. If not manually entered,
+        it defaults to the total paid amount.
         """
         manual_actual_cost = 0.0
         if self.actual_quantity is not None and self.actual_unit_cost is not None:
@@ -74,7 +79,7 @@ class Item(db.Model):
     
     @property
     def remaining_amount(self):
-        """يحسب المبلغ المتبقي للبند بناءً على التكلفة الفعلية والمبلغ المدفوع."""
+        """Calculates the remaining amount for the item based on actual cost and paid amount."""
         return self.actual_total_cost - self.paid_amount
 
     @property
@@ -96,3 +101,4 @@ class Item(db.Model):
 
     def __repr__(self):
         return f'<Item {self.item_number} - {self.description}>'
+
