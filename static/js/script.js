@@ -25,54 +25,43 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 
-    // Auto-calculation functionality for item costs (remains the same)
-    const contractQty = document.getElementById('contract_quantity');
-    const contractUnitCost = document.getElementById('contract_unit_cost');
-    const contractTotal = document.getElementById('contract_total_cost');
+    // Auto-calculation functionality (remains the same)
+    // ...
 
-    const actualQty = document.getElementById('actual_quantity');
-    const actualUnitCost = document.getElementById('actual_unit_cost');
-    const actualTotal = document.getElementById('actual_total_cost');
-
-    function calculateTotal(qtyInput, unitCostInput, totalInput) {
-        if (!qtyInput || !unitCostInput || !totalInput) return;
-        const quantity = parseFloat(qtyInput.value) || 0;
-        const unitCostValue = unitCostInput.disabled 
-            ? parseFloat(unitCostInput.value) || 0 
-            : parseFloat(unitCostInput.value) || 0;
-            
-        if (unitCostInput.value === '') return;
-            
-        const total = quantity * unitCostValue;
-        totalInput.value = total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    }
-    
-    if (contractQty && contractUnitCost && contractTotal) {
-        contractQty.addEventListener('input', () => calculateTotal(contractQty, contractUnitCost, contractTotal));
-        contractUnitCost.addEventListener('input', () => calculateTotal(contractQty, contractUnitCost, contractTotal));
-    }
-
-    if (actualQty && actualUnitCost && actualTotal) {
-        actualQty.addEventListener('input', () => calculateTotal(actualQty, actualUnitCost, actualTotal));
-        actualUnitCost.addEventListener('input', () => calculateTotal(actualQty, actualUnitCost, actualTotal));
-    }
-
-    // START: Updated Bulk Edit Functionality
+    // --- START: تعديل وتطوير قسم الإجراءات الجماعية ---
     const selectAllCheckbox = document.getElementById('select-all');
     const itemCheckboxes = document.querySelectorAll('.item-checkbox');
     const bulkEditForm = document.getElementById('bulk-edit-form');
+    
+    // الأزرار
     const selectedCountDisplay = document.getElementById('selected-count-display'); 
+    const bulkUpdateBtn = document.getElementById('bulk-update-btn');
+    const bulkDeleteBtn = document.getElementById('bulk-delete-btn');
+
+    // عناصر نافذة تأكيد الحذف
+    const bulkDeleteCount = document.getElementById('bulk-delete-count');
+    const confirmBulkDeleteBtn = document.getElementById('confirm-bulk-delete-btn');
 
     if (selectAllCheckbox && itemCheckboxes.length > 0 && bulkEditForm) {
         
-        function updateSelectedCount() {
+        function updateSelectedState() {
             const count = document.querySelectorAll('.item-checkbox:checked').length;
+            
+            // تحديث عدد العناصر المحددة
             if (selectedCountDisplay) {
                 selectedCountDisplay.textContent = count;
             }
-            const submitButton = document.querySelector('button[form="bulk-edit-form"]');
-            if (submitButton) {
-                submitButton.disabled = count === 0;
+            if (bulkDeleteCount) {
+                bulkDeleteCount.textContent = count;
+            }
+
+            // تفعيل أو تعطيل الأزرار
+            const hasSelection = count > 0;
+            if (bulkUpdateBtn) {
+                bulkUpdateBtn.disabled = !hasSelection;
+            }
+            if (bulkDeleteBtn) {
+                bulkDeleteBtn.disabled = !hasSelection;
             }
         }
 
@@ -80,7 +69,7 @@ document.addEventListener("DOMContentLoaded", function() {
             itemCheckboxes.forEach(checkbox => {
                 checkbox.checked = this.checked;
             });
-            updateSelectedCount();
+            updateSelectedState();
         });
 
         itemCheckboxes.forEach(checkbox => {
@@ -90,11 +79,22 @@ document.addEventListener("DOMContentLoaded", function() {
                 } else if (document.querySelectorAll('.item-checkbox:checked').length === itemCheckboxes.length) {
                     selectAllCheckbox.checked = true;
                 }
-                updateSelectedCount();
+                updateSelectedState();
             });
         });
         
-        updateSelectedCount();
+        // عند الضغط على زر تأكيد الحذف الجماعي
+        if (confirmBulkDeleteBtn) {
+            confirmBulkDeleteBtn.addEventListener('click', function() {
+                // 1. تغيير مسار الإرسال للنموذج
+                bulkEditForm.action = bulkEditForm.action.replace('bulk_update', 'bulk_delete');
+                // 2. إرسال النموذج
+                bulkEditForm.submit();
+            });
+        }
+
+        // استدعاء الدالة عند تحميل الصفحة لضبط الحالة الأولية للأزرار
+        updateSelectedState();
     }
-    // END: Updated Bulk Edit Functionality
+    // --- END: تعديل وتطوير قسم الإجراءات الجماعية ---
 });

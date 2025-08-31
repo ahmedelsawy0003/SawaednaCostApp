@@ -17,7 +17,7 @@
     </div>
 </div>
 
-{# ... (Filter and bulk edit section remains the same) ... #}
+{# Filter section remains the same #}
 <div class="card mb-4">
     <div class="accordion" id="filterAccordion">
         <div class="accordion-item">
@@ -50,15 +50,25 @@
             <div class="accordion-item">
                 <h2 class="accordion-header">
                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseBulkEdit" aria-expanded="false" aria-controls="collapseBulkEdit">
-                        <i class="fas fa-edit me-2"></i>التعديل الجماعي للبنود المحددة (<span id="selected-count-display">0</span>)
+                        <i class="fas fa-edit me-2"></i>الإجراءات الجماعية للبنود المحددة (<span id="selected-count-display">0</span>)
                     </button>
                 </h2>
                 <div id="collapseBulkEdit" class="accordion-collapse collapse" data-bs-parent="#bulkEditAccordion">
                     <div class="accordion-body">
                         <div class="row align-items-end g-3">
-                            <div class="col-md-4"><label for="bulk-status" class="form-label">تغيير حالة المحدد</label><select name="bulk_status" id="bulk-status" class="form-select"><option value="">-- اختر --</option><option value="نشط">نشط</option><option value="مكتمل">مكتمل</option><option value="معلق">معلق</option></select></div>
-                            <div class="col-md-5"><label for="bulk-contractor" class="form-label">تغيير مقاول المحدد</label><input type="text" name="bulk_contractor" id="bulk-contractor" class="form-control" placeholder="اتركه فارغاً لعدم التغيير"></div>
-                            <div class="col-md-3"><button type="submit" class="btn btn-warning w-100"><i class="fas fa-save me-1"></i> تطبيق التعديلات</button></div>
+                            {# --- START: تعديلات على قسم التعديل الجماعي --- #}
+                            <div class="col-md-3"><label for="bulk-status" class="form-label">تغيير حالة المحدد</label><select name="bulk_status" id="bulk-status" class="form-select"><option value="">-- اختر --</option><option value="نشط">نشط</option><option value="مكتمل">مكتمل</option><option value="معلق">معلق</option></select></div>
+                            <div class="col-md-4"><label for="bulk-contractor" class="form-label">تغيير مقاول المحدد</label><input type="text" name="bulk_contractor" id="bulk-contractor" class="form-control" placeholder="اتركه فارغاً لعدم التغيير"></div>
+                            <div class="col-md-2"><button type="submit" class="btn btn-warning w-100" id="bulk-update-btn"><i class="fas fa-save me-1"></i> تطبيق التعديلات</button></div>
+                            
+                            {# --- زر الحذف الجماعي الجديد --- #}
+                            <div class="col-md-3">
+                                <button type="button" class="btn btn-danger w-100" id="bulk-delete-btn" data-bs-toggle="modal" data-bs-target="#bulkDeleteConfirmModal">
+                                    <i class="fas fa-trash me-1"></i> حذف المحدد
+                                </button>
+                            </div>
+                            {# --- نهاية زر الحذف الجماعي --- #}
+                            {# --- END: تعديلات على قسم التعديل الجماعي --- #}
                         </div>
                     </div>
                 </div>
@@ -108,11 +118,9 @@
                                 </td>
                                 <td class="text-center">
                                     <div class="btn-group btn-group-sm">
-                                        {# --- START: الزر الجديد لعرض الدفعات --- #}
                                         <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#paymentsModal-{{ item.id }}" title="عرض الدفعات">
                                             <i class="fas fa-money-bill-wave"></i>
                                         </button>
-                                        {# --- END: الزر الجديد --- #}
                                         <a href="{{ url_for("item.edit_item", item_id=item.id) }}" class="btn btn-warning" title="تعديل"><i class="fas fa-edit"></i></a>
                                         {% if current_user.role == 'admin' %}
                                         <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteItemModal-{{ item.id }}" title="حذف"><i class="fas fa-trash"></i></button>
@@ -131,9 +139,30 @@
     </div>
 </form>
 
-{# --- START: إضافة النوافذ المنبثقة للدفعات --- #}
+{# --- START: نافذة تأكيد الحذف الجماعي --- #}
+<div class="modal fade" id="bulkDeleteConfirmModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">تأكيد الحذف الجماعي</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>هل أنت متأكد أنك تريد حذف البنود المحددة؟</p>
+                <p class="text-danger"><i class="fas fa-exclamation-triangle me-2"></i>سيتم حذف <strong id="bulk-delete-count">0</strong> بنود بشكل نهائي. لا يمكن التراجع عن هذا الإجراء.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-danger" id="confirm-bulk-delete-btn">نعم، قم بالحذف</button>
+            </div>
+        </div>
+    </div>
+</div>
+{# --- END: نافذة تأكيد الحذف الجماعي --- #}
+
+
+{# Payment and single delete modals remain the same #}
 {% for item in items %}
-{# ... The existing delete modal for the item ... #}
 <div class="modal fade" id="deleteItemModal-{{ item.id }}" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -152,7 +181,6 @@
     </div>
 </div>
 
-{# --- New Payments Modal for each item --- #}
 <div class="modal fade" id="paymentsModal-{{ item.id }}" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
@@ -205,6 +233,5 @@
     </div>
 </div>
 {% endfor %}
-{# --- END: إضافة النوافذ المنبثقة للدفعات --- #}
 
 {% endblock %}

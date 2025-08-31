@@ -110,6 +110,41 @@ def bulk_update_items(project_id):
 
     return redirect(url_for('item.get_items_by_project', project_id=project_id))
 
+# --- START: دالة الحذف الجماعي الجديدة ---
+@item_bp.route("/projects/<int:project_id>/items/bulk_delete", methods=["POST"])
+@login_required
+def bulk_delete_items(project_id):
+    # التأكد من أن المستخدم له صلاحية admin
+    if current_user.role != 'admin':
+        abort(403)
+
+    project = Project.query.get_or_404(project_id)
+    check_project_permission(project)
+
+    item_ids_str = request.form.getlist('item_ids')
+    if not item_ids_str:
+        flash("الرجاء تحديد بند واحد على الأقل للحذف.", "warning")
+        return redirect(url_for('item.get_items_by_project', project_id=project_id))
+
+    item_ids = [int(id_str) for id_str in item_ids_str]
+    
+    # جلب البنود المراد حذفها والتأكد من أنها تابعة للمشروع الصحيح
+    items_to_delete = Item.query.filter(Item.id.in_(item_ids), Item.project_id == project_id).all()
+    
+    delete_count = len(items_to_delete)
+    
+    if delete_count > 0:
+        for item in items_to_delete:
+            # سيقوم cascade بحذف السجلات المرتبطة تلقائياً
+            db.session.delete(item)
+        db.session.commit()
+        flash(f"تم حذف {delete_count} بنود بنجاح.", "success")
+    else:
+        flash("لم يتم العثور على بنود للحذف.", "info")
+
+    return redirect(url_for('item.get_items_by_project', project_id=project_id))
+# --- END: دالة الحذف الجماعي الجديدة ---
+
 
 @item_bp.route("/projects/<int:project_id>/items/new", methods=["GET", "POST"])
 @login_required
