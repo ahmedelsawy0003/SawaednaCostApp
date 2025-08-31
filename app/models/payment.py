@@ -7,7 +7,6 @@ class Payment(db.Model):
     payment_date = db.Column(db.Date, nullable=False)
     description = db.Column(db.Text)
 
-    # invoice_id يبقى قابلاً لأن يكون فارغاً
     invoice_id = db.Column(db.Integer, db.ForeignKey('invoice.id'), nullable=True)
     invoice_item_id = db.Column(db.Integer, db.ForeignKey('invoice_item.id'), nullable=True)
 
@@ -15,11 +14,6 @@ class Payment(db.Model):
     invoice = db.relationship('Invoice', back_populates='payments')
     invoice_item = db.relationship('InvoiceItem', back_populates='payments')
     
-    # أبقينا على هذه الحقول للتعامل مع البيانات القديمة إذا وجدت
-    item_id = db.Column(db.Integer, db.ForeignKey('item.id'), nullable=True)
-    project_id = db.Column(db.Integer, db.ForeignKey('project.id'), nullable=True)
-
-
     __table_args__ = (
         db.Index('idx_payment_invoice_id', 'invoice_id'),
         db.Index('idx_payment_invoice_item_id', 'invoice_item_id'),
