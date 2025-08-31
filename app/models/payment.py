@@ -7,26 +7,27 @@ class Payment(db.Model):
     payment_date = db.Column(db.Date, nullable=False)
     description = db.Column(db.Text)
 
-    invoice_id = db.Column(db.Integer, db.ForeignKey('invoice.id'), nullable=False)
-
-    # --- START: الإضافة الجديدة ---
-    # هذا الحقل اختياري، يسمح بربط الدفعة ببند معين داخل الفاتورة
+    # --- START: الإصلاح الرئيسي ---
+    # نجعله قابلاً ليكون فارغاً للتعامل مع الدفعات القديمة
+    invoice_id = db.Column(db.Integer, db.ForeignKey('invoice.id'), nullable=True)
+    # --- END: الإصلاح الرئيسي ---
+    
     invoice_item_id = db.Column(db.Integer, db.ForeignKey('invoice_item.id'), nullable=True)
-    # --- END: الإضافة الجديدة ---
 
     # Relationships
     invoice = db.relationship('Invoice', back_populates='payments')
-    
-    # --- START: العلاقة الجديدة ---
     invoice_item = db.relationship('InvoiceItem', back_populates='payments')
-    # --- END: العلاقة الجديدة ---
+    
+    # --- START: إعادة العلاقات القديمة للقراءة فقط ---
+    # سنعيد هذه الحقول حتى لا يتعطل أي جزء قديم من النظام تماماً
+    item_id = db.Column(db.Integer, db.ForeignKey('item.id'), nullable=True)
+    project_id = db.Column(db.Integer, db.ForeignKey('project.id'), nullable=True)
+    # --- END: إعادة العلاقات القديمة ---
 
 
     __table_args__ = (
         db.Index('idx_payment_invoice_id', 'invoice_id'),
-        # --- START: الفهرس الجديد ---
         db.Index('idx_payment_invoice_item_id', 'invoice_item_id'),
-        # --- END: الفهرس الجديد ---
     )
 
     def __repr__(self):
@@ -36,11 +37,7 @@ class Payment(db.Model):
 @event.listens_for(Payment, 'after_update')
 @event.listens_for(Payment, 'after_delete')
 def receive_after_payment_change(mapper, connection, target):
-    """After a payment is saved or deleted, update the parent invoice's status."""
     if target.invoice:
         target.invoice.update_status()
 
-# --- START: استيراد النموذج المرتبط ---
-# نحتاج لاستيراده هنا لتجنب الأخطاء
 from .invoice_item import InvoiceItem
-# --- END: استيراد النموذج المرتبط ---
