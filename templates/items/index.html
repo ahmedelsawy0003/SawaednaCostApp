@@ -17,7 +17,7 @@
     </div>
 </div>
 
-{# ... (جزء الفلترة والتعديل الجماعي يبقى كما هو) ... #}
+{# ... (Filter and bulk edit section remains the same) ... #}
 <div class="card mb-4">
     <div class="accordion" id="filterAccordion">
         <div class="accordion-item">
@@ -83,10 +83,8 @@
                                 <th>التكلفة التعاقدية</th>
                                 {% endif %}
                                 <th>التكلفة الفعلية</th>
-                                {# --- START: إضافة الأعمدة الجديدة --- #}
                                 <th>المبلغ المدفوع</th>
                                 <th>المبلغ المتبقي</th>
-                                {# --- END: إضافة الأعمدة الجديدة --- #}
                                 <th>الحالة</th>
                                 <th class="text-center">الإجراءات</th>
                             </tr>
@@ -101,10 +99,8 @@
                                 <td>{{ "{:,.2f}".format(item.contract_total_cost) }}</td>
                                 {% endif %}
                                 <td>{{ "{:,.2f}".format(item.actual_total_cost) }}</td>
-                                {# --- START: عرض البيانات الجديدة --- #}
                                 <td class="text-success">{{ "{:,.2f}".format(item.paid_amount) }}</td>
                                 <td class="text-danger">{{ "{:,.2f}".format(item.remaining_amount) }}</td>
-                                {# --- END: عرض البيانات الجديدة --- #}
                                 <td>
                                     <span class="badge {{ "bg-warning" if item.status == "نشط" else "bg-success" if item.status == "مكتمل" else "bg-info" }}">
                                         {{ item.status }}
@@ -112,6 +108,11 @@
                                 </td>
                                 <td class="text-center">
                                     <div class="btn-group btn-group-sm">
+                                        {# --- START: الزر الجديد لعرض الدفعات --- #}
+                                        <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#paymentsModal-{{ item.id }}" title="عرض الدفعات">
+                                            <i class="fas fa-money-bill-wave"></i>
+                                        </button>
+                                        {# --- END: الزر الجديد --- #}
                                         <a href="{{ url_for("item.edit_item", item_id=item.id) }}" class="btn btn-warning" title="تعديل"><i class="fas fa-edit"></i></a>
                                         {% if current_user.role == 'admin' %}
                                         <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteItemModal-{{ item.id }}" title="حذف"><i class="fas fa-trash"></i></button>
@@ -130,8 +131,9 @@
     </div>
 </form>
 
-{# ... (النوافذ المنبثقة للحذف تبقى كما هي) ... #}
+{# --- START: إضافة النوافذ المنبثقة للدفعات --- #}
 {% for item in items %}
+{# ... The existing delete modal for the item ... #}
 <div class="modal fade" id="deleteItemModal-{{ item.id }}" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -149,6 +151,60 @@
         </div>
     </div>
 </div>
+
+{# --- New Payments Modal for each item --- #}
+<div class="modal fade" id="paymentsModal-{{ item.id }}" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">سجل الدفعات للبند: {{ item.item_number }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <h6 class="text-muted">{{ item.description }}</h6>
+                <hr>
+                {% set payments = item.all_payments %}
+                {% if payments %}
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped table-hover">
+                           <thead class="table-light">
+                                <tr>
+                                    <th>تاريخ الدفعة</th>
+                                    <th class="text-end">المبلغ</th>
+                                    <th>الوصف</th>
+                                    <th>رقم المستخلص</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for payment in payments %}
+                                <tr>
+                                    <td>{{ payment.payment_date.strftime('%Y-%m-%d') }}</td>
+                                    <td class="text-end text-success fw-bold">{{ "{:,.2f}".format(payment.amount) }} ريال</td>
+                                    <td>{{ payment.description or '-' }}</td>
+                                    <td>
+                                        <a href="{{ url_for('invoice.show_invoice', invoice_id=payment.invoice_id) }}">
+                                            {{ payment.invoice.invoice_number }}
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="alert alert-secondary text-center">
+                        <i class="fas fa-info-circle me-2"></i>
+                        لا توجد دفعات مسجلة لهذا البند حتى الآن.
+                    </div>
+                {% endif %}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endfor %}
+{# --- END: إضافة النوافذ المنبثقة للدفعات --- #}
 
 {% endblock %}

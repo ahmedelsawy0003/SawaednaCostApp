@@ -15,6 +15,7 @@ class Item(db.Model):
     actual_unit_cost = db.Column(db.Float)
     status = db.Column(db.String(50), default='نشط')
     notes = db.Column(db.Text)
+    
     contractor_id = db.Column(db.Integer, db.ForeignKey('contractor.id'), nullable=True)
 
     project = db.relationship('Project', backref=db.backref('items', lazy=True, cascade="all, delete-orphan"))
@@ -26,7 +27,23 @@ class Item(db.Model):
     )
 
     @property
+    def all_payments(self):
+        """
+        تجلب قائمة بجميع الدفعات المسجلة لهذا البند
+        عبر جميع الفواتير المرتبط بها.
+        """
+        return Payment.query.join(
+            InvoiceItem, Payment.invoice_item_id == InvoiceItem.id
+        ).filter(
+            InvoiceItem.item_id == self.id
+        ).order_by(Payment.payment_date.desc()).all()
+
+    @property
     def paid_amount(self):
+        """
+        يحسب إجمالي المبلغ المدفوع لهذا البند المحدد
+        عن طريق جمع كل الدفعات المرتبطة بظهور هذا البند في كل الفواتير.
+        """
         total_paid = db.session.query(func.sum(Payment.amount)).join(
             InvoiceItem, Payment.invoice_item_id == InvoiceItem.id
         ).filter(
@@ -42,6 +59,10 @@ class Item(db.Model):
 
     @property
     def actual_total_cost(self):
+        """
+        يحسب التكلفة الإجمالية الفعلية. إذا لم يتم إدخالها، 
+        فإنها تساوي المبلغ المدفوع تلقائياً.
+        """
         manual_actual_cost = 0.0
         if self.actual_quantity is not None and self.actual_unit_cost is not None:
             manual_actual_cost = self.actual_quantity * self.actual_unit_cost
@@ -50,9 +71,10 @@ class Item(db.Model):
             return manual_actual_cost
         
         return self.paid_amount
-
+    
     @property
     def remaining_amount(self):
+        """يحسب المبلغ المتبقي للبند بناءً على التكلفة الفعلية والمبلغ المدفوع."""
         return self.actual_total_cost - self.paid_amount
 
     @property
@@ -67,6 +89,7 @@ class Item(db.Model):
         
     @property
     def short_description(self):
+        """Returns a truncated version of the description for display purposes."""
         if len(self.description) > 50:
             return self.description[:50] + '...'
         return self.description
