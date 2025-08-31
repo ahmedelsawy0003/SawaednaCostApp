@@ -7,11 +7,11 @@
     <h2 class="mb-0">
         <i class="fas fa-hard-hat fa-fw me-2 text-muted"></i>قائمة المقاولين
     </h2>
-    {# START: Add New Contractor Button #}
+    {% if current_user.role == 'admin' %}
     <a href="{{ url_for('contractor.new_contractor') }}" class="btn btn-primary">
         <i class="fas fa-plus me-1"></i> إضافة مقاول جديد
     </a>
-    {# END: Add New Contractor Button #}
+    {% endif %}
 </div>
 
 <div class="card">
@@ -43,7 +43,14 @@
                                     <a href="{{ url_for('contractor.show_contractor', contractor_id=contractor.id) }}" class="btn btn-info" title="عرض التفاصيل والمدفوعات">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    {# يمكن إضافة أزرار للتعديل والحذف هنا في المستقبل #}
+                                    {% if current_user.role == 'admin' %}
+                                    <a href="{{ url_for('contractor.edit_contractor', contractor_id=contractor.id) }}" class="btn btn-warning" title="تعديل بيانات المقاول">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteContractorModal-{{ contractor.id }}" title="حذف المقاول">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                    {% endif %}
                                 </div>
                             </td>
                         </tr>
@@ -59,4 +66,32 @@
         {% endif %}
     </div>
 </div>
+
+{# --- START: Delete Confirmation Modals --- #}
+{% for contractor in contractors %}
+<div class="modal fade" id="deleteContractorModal-{{ contractor.id }}" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">تأكيد الحذف</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>هل أنت متأكد أنك تريد حذف المقاول <strong>{{ contractor.name }}</strong>؟</p>
+                <p class="text-danger small">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    لا يمكن حذف المقاول إذا كان مرتبطًا بأي مستخلصات.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <form action="{{ url_for('contractor.delete_contractor', contractor_id=contractor.id) }}" method="POST" class="d-inline">
+                    <button type="submit" class="btn btn-danger">تأكيد الحذف</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{# --- END: Delete Confirmation Modals --- #}
 {% endblock %}
