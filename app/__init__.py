@@ -1,7 +1,6 @@
-from flask import Flask
+from flask import Flask, redirect, url_for
 from .extensions import db, migrate, login_manager
 from . import commands
-from flask_migrate import upgrade
 
 def create_app():
     app = Flask(__name__, template_folder='../templates', static_folder='../static')
@@ -51,7 +50,11 @@ def create_app():
     # تم حذف app.register_blueprint(cost_detail_bp)
     # --- END: حذف تسجيل المسارات القديمة ---
     
-    with app.app_context():
-        upgrade()
+    # <<< START: إضافة المسار الرئيسي هنا
+    @app.route('/')
+    def index():
+        return redirect(url_for('project.get_projects'))
+    # <<< END: إضافة المسار الرئيسي هنا
    
     return app
+
