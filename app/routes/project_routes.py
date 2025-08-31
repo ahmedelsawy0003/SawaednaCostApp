@@ -5,6 +5,7 @@ from app.models.project import Project
 from app.models.user import User, user_project_association
 from app.models.item import Item
 from app.models.invoice import Invoice
+from app.models.invoice_item import InvoiceItem # <<< THE FIX IS HERE
 from app.models.payment import Payment
 from app.extensions import db
 from flask_login import login_required, current_user
@@ -64,8 +65,9 @@ def get_projects():
 @project_bp.route("/projects/<int:project_id>")
 @login_required
 def get_project(project_id):
-    project = Project.query.get_or_404(project_id)
+    project = Project.query.options(joinedload(Project.items)).get_or_404(project_id)
     check_project_permission(project)
+    
     # Since we removed the properties, we need to calculate them here for the single project view
     items = project.items
     project.total_contract_cost = sum(item.contract_total_cost for item in items)
@@ -181,7 +183,6 @@ def toggle_archive(project_id):
 @project_bp.route("/projects/<int:project_id>/dashboard")
 @login_required
 def project_dashboard(project_id):
-    # We can reuse the logic from get_project to load data efficiently
     return redirect(url_for('project.get_project', project_id=project_id))
 
 @project_bp.route("/dashboard")
@@ -189,8 +190,5 @@ def project_dashboard(project_id):
 def all_projects_dashboard():
     if current_user.role != 'admin':
         abort(403)
-    
-    # Redirect to the main projects page, which now loads data efficiently
-    # The template can be adjusted later if a different view is needed
     return redirect(url_for('project.get_projects'))
 
