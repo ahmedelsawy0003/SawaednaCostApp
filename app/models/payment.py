@@ -7,22 +7,17 @@ class Payment(db.Model):
     payment_date = db.Column(db.Date, nullable=False)
     description = db.Column(db.Text)
 
-    # --- START: الإصلاح الرئيسي ---
-    # نجعله قابلاً ليكون فارغاً للتعامل مع الدفعات القديمة
+    # invoice_id يبقى قابلاً لأن يكون فارغاً
     invoice_id = db.Column(db.Integer, db.ForeignKey('invoice.id'), nullable=True)
-    # --- END: الإصلاح الرئيسي ---
-    
     invoice_item_id = db.Column(db.Integer, db.ForeignKey('invoice_item.id'), nullable=True)
 
     # Relationships
     invoice = db.relationship('Invoice', back_populates='payments')
     invoice_item = db.relationship('InvoiceItem', back_populates='payments')
     
-    # --- START: إعادة العلاقات القديمة للقراءة فقط ---
-    # سنعيد هذه الحقول حتى لا يتعطل أي جزء قديم من النظام تماماً
+    # أبقينا على هذه الحقول للتعامل مع البيانات القديمة إذا وجدت
     item_id = db.Column(db.Integer, db.ForeignKey('item.id'), nullable=True)
     project_id = db.Column(db.Integer, db.ForeignKey('project.id'), nullable=True)
-    # --- END: إعادة العلاقات القديمة ---
 
 
     __table_args__ = (
@@ -31,7 +26,7 @@ class Payment(db.Model):
     )
 
     def __repr__(self):
-        return f'<Payment {self.amount} for Invoice {self.invoice_id}>'
+        return f'<Payment {self.amount}>'
 
 @event.listens_for(Payment, 'after_insert')
 @event.listens_for(Payment, 'after_update')
