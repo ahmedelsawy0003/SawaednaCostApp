@@ -209,3 +209,33 @@ a:hover {
         flex-direction: row !important;
     }
 }
+
+
+/* 6. AUTHENTICATION PAGE STYLES
+/* ========================================================================== */
+
+.auth-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 80vh; /* يجعل الحاوية تأخذ معظم ارتفاع الشاشة */
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 450px; /* يحدد أقصى عرض لصندوق الدخول */
+    border: none; /* إزالة الحدود لجعلها أكثر اندماجاً مع الخلفية */
+}
+
+.password-container {
+    position: relative;
+}
+
+.password-toggle-icon {
+    position: absolute;
+    top: 50%;
+    left: 15px; /* يضع الأيقونة على اليسار لتناسب التصميم العربي */
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: var(--text-muted);
+}
