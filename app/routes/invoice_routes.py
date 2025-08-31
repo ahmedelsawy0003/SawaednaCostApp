@@ -14,7 +14,6 @@ import datetime
 # Blueprint
 invoice_bp = Blueprint("invoice", __name__, url_prefix='/invoices')
 
-# ... (all previous routes remain the same) ...
 @invoice_bp.route("/project/<int:project_id>")
 @login_required
 def get_invoices_by_project(project_id):
@@ -56,8 +55,31 @@ def new_invoice(project_id):
         db.session.commit()
         flash("تم إنشاء المستخلص بنجاح. يمكنك الآن إضافة البنود إليه.", "success")
         return redirect(url_for("invoice.show_invoice", invoice_id=new_invoice.id))
-    contractors = Contractor.query.join(Item).filter(Item.project_id == project_id).distinct().order_by(Contractor.name).all()
+    
+    # --- START: التعديل الرئيسي هنا ---
+    # تم تغيير الاستعلام ليجلب كل المقاولين بدلاً من المقاولين المرتبطين بالبنود فقط
+    contractors = Contractor.query.order_by(Contractor.name).all()
+    # --- END: التعديل الرئيسي ---
+
     return render_template("invoices/new.html", project=project, contractors=contractors)
+
+# --- START: إضافة دالة حذف المستخلص ---
+@invoice_bp.route("/<int:invoice_id>/delete", methods=["POST"])
+@login_required
+def delete_invoice(invoice_id):
+    invoice = Invoice.query.get_or_404(invoice_id)
+    check_project_permission(invoice.project)
+    project_id = invoice.project_id
+    
+    # التأكد من أن المستخدم مدير قبل الحذف
+    if current_user.role != 'admin':
+        abort(403)
+        
+    db.session.delete(invoice)
+    db.session.commit()
+    flash(f"تم حذف المستخلص رقم '{invoice.invoice_number}' وكل ما يتعلق به بنجاح.", "success")
+    return redirect(url_for("invoice.get_invoices_by_project", project_id=project_id))
+# --- END: إضافة دالة حذف المستخلص ---
 
 @invoice_bp.route("/<int:invoice_id>")
 @login_required
@@ -106,6 +128,8 @@ def add_payment_to_invoice(invoice_id):
     amount_str = request.form.get("amount")
     payment_date_str = request.form.get("payment_date")
     description = sanitize_input(request.form.get("description"))
+    invoice_item_id = request.form.get("invoice_item_id") # Get the selected item
+
     if not amount_str or not payment_date_str:
         flash("المبلغ وتاريخ الدفعة حقول مطلوبة.", "danger")
         return redirect(url_for('invoice.show_invoice', invoice_id=invoice_id))
@@ -118,11 +142,14 @@ def add_payment_to_invoice(invoice_id):
     except (ValueError, TypeError):
         flash("البيانات المدخلة للمبلغ أو التاريخ غير صالحة.", "danger")
         return redirect(url_for('invoice.show_invoice', invoice_id=invoice_id))
+    
     new_payment = Payment(
         invoice_id=invoice.id,
         amount=amount,
         payment_date=payment_date,
-        description=description
+        description=description,
+        # Set invoice_item_id to integer if selected, otherwise None
+        invoice_item_id=int(invoice_item_id) if invoice_item_id else None
     )
     db.session.add(new_payment)
     db.session.commit()
@@ -180,7 +207,6 @@ def delete_item_from_invoice(invoice_item_id):
     flash("تم حذف البند من المستخلص بنجاح.", "success")
     return redirect(url_for('invoice.show_invoice', invoice_id=invoice_id))
 
-# START: New route to edit an item from an invoice
 @invoice_bp.route("/items/<int:invoice_item_id>/edit", methods=["GET", "POST"])
 @login_required
 def edit_item_from_invoice(invoice_item_id):
@@ -200,7 +226,6 @@ def edit_item_from_invoice(invoice_item_id):
                 flash("يجب أن تكون الكمية أكبر من صفر.", "danger")
                 return redirect(url_for('invoice.edit_item_from_invoice', invoice_item_id=invoice_item.id))
             
-            # Update quantity and recalculate total price
             invoice_item.quantity = quantity
             invoice_item.total_price = quantity * invoice_item.unit_price
             
@@ -211,4 +236,3 @@ def edit_item_from_invoice(invoice_item_id):
             flash("الكمية المدخلة غير صالحة.", "danger")
     
     return render_template("invoices/edit_invoice_item.html", invoice_item=invoice_item)
-# END: New route
