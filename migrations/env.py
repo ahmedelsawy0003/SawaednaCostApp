@@ -5,6 +5,18 @@ from flask import current_app
 
 from alembic import context
 
+# --- START: استيراد صريح لجميع الموديلات لضمان رؤيتها ---
+from app.models.user import User
+from app.models.project import Project
+from app.models.item import Item
+from app.models.payment import Payment
+from app.models.audit_log import AuditLog
+from app.models.contractor import Contractor
+from app.models.invoice import Invoice
+from app.models.invoice_item import InvoiceItem
+from app.models.cost_detail import CostDetail
+# --- END: استيراد صريح ---
+
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
