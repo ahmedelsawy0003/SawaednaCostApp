@@ -1,6 +1,11 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, abort
+from sqlalchemy import func
+from sqlalchemy.orm import joinedload
 from app.models.project import Project
 from app.models.user import User 
+from app.models.item import Item
+from app.models.invoice import Invoice
+from app.models.payment import Payment
 from app.extensions import db
 from flask_login import login_required, current_user
 from app.utils import check_project_permission, sanitize_input
@@ -8,28 +13,77 @@ from app.forms import ProjectForm
 
 project_bp = Blueprint("project", __name__)
 
-# ... get_projects and get_project remain the same ...
 @project_bp.route("/projects")
 @login_required
 def get_projects():
     show_archived = request.args.get('show_archived', 'false').lower() == 'true'
+
+    # --- START: Performance Optimization ---
     
-    query = Project.query
+    # 1. Subquery to calculate total contract cost per project
+    contract_cost_sq = db.session.query(
+        Item.project_id,
+        func.sum(Item.contract_quantity * Item.contract_unit_cost).label("total_contract_cost")
+    ).group_by(Item.project_id).subquery()
+
+    # 2. Subquery to calculate total paid amount per project
+    paid_amount_sq = db.session.query(
+        Invoice.project_id,
+        func.sum(func.coalesce(Payment.amount, 0)).label("total_paid_amount")
+    ).join(Payment, Invoice.id == Payment.invoice_id).group_by(Invoice.project_id).subquery()
+
+    # 3. Main query that joins the project with the calculated values
+    query = db.session.query(
+        Project,
+        func.coalesce(contract_cost_sq.c.total_contract_cost, 0).label("total_contract_cost"),
+        func.coalesce(paid_amount_sq.c.total_paid_amount, 0).label("total_paid_amount")
+    ).outerjoin(
+        contract_cost_sq, Project.id == contract_cost_sq.c.project_id
+    ).outerjoin(
+        paid_amount_sq, Project.id == paid_amount_sq.c.project_id
+    ).options(joinedload(Project.items)) # Pre-load all items for each project
+
     if current_user.role != 'admin':
         query = query.join(User.projects).filter(User.id == current_user.id)
 
-    if show_archived:
-        projects = query.filter(Project.is_archived == True).all()
-    else:
-        projects = query.filter(Project.is_archived == False).all()
+    query = query.filter(Project.is_archived == show_archived)
+
+    results = query.all()
+
+    projects_with_costs = []
+    for project, contract_cost, paid_amount in results:
+        project.total_contract_cost = float(contract_cost)
+        project.total_paid_amount = float(paid_amount)
         
-    return render_template("projects/index.html", projects=projects, show_archived=show_archived)
+        # Calculate other values in Python after getting the main data
+        # This is much faster as it doesn't require new DB queries
+        total_actual_cost = sum(item.actual_total_cost for item in project.items if item.actual_total_cost is not None)
+
+        project.total_actual_cost = total_actual_cost
+        project.total_savings = project.total_contract_cost - project.total_actual_cost
+        project.total_remaining_amount = project.total_actual_cost - project.total_paid_amount
+        
+        projects_with_costs.append(project)
+    # --- END: Performance Optimization ---
+
+    return render_template("projects/index.html", projects=projects_with_costs, show_archived=show_archived)
+
 
 @project_bp.route("/projects/<int:project_id>")
 @login_required
 def get_project(project_id):
     project = Project.query.get_or_404(project_id)
     check_project_permission(project)
+    
+    # Pre-calculate totals for the single project view to ensure speed
+    project.total_contract_cost = sum(item.contract_total_cost for item in project.items)
+    project.total_paid_amount = db.session.query(func.sum(Payment.amount)).join(Invoice).filter(Invoice.project_id == project.id).scalar() or 0.0
+    project.total_actual_cost = sum(item.actual_total_cost for item in project.items if item.actual_total_cost is not None)
+    project.total_savings = project.total_contract_cost - project.total_actual_cost
+    project.total_remaining_amount = project.total_actual_cost - project.total_paid_amount
+    project.completion_percentage = (sum(1 for item in project.items if item.status == 'مكتمل') / len(project.items.all()) * 100) if project.items.count() > 0 else 0.0
+    project.financial_completion_percentage = (project.total_paid_amount / project.total_actual_cost * 100) if project.total_actual_cost > 0 else 0.0
+
     return render_template("projects/show.html", project=project)
 
 
@@ -155,10 +209,12 @@ def project_summary(project_id):
 @project_bp.route("/dashboard")
 @login_required
 def all_projects_dashboard():
+    # This route could also be optimized, but let's focus on the main list first.
     if current_user.role != 'admin':
         abort(403)
     projects = Project.query.all()
     
+    # Note: This part remains slow and should be optimized next if needed.
     total_contract_cost_all = sum(p.total_contract_cost for p in projects)
     total_actual_cost_all = sum(p.total_actual_cost for p in projects)
     total_savings_all = sum(p.total_savings for p in projects)
