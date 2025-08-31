@@ -2,12 +2,9 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, TextAreaField, SelectField
 from wtforms.fields import DateField
 from wtforms.validators import DataRequired, Email, EqualTo, Length, ValidationError, Optional
-# --- START: حذف الاستيراد القديم ---
-# from wtforms_sqlalchemy.fields import QuerySelectField 
-# --- END: حذف الاستيراد القديم ---
 from app.models.user import User
 
-# ... (LoginForm و RegisterForm يبقيان كما هما) ...
+# ... LoginForm and RegisterForm remain the same ...
 class LoginForm(FlaskForm):
     username = StringField('اسم المستخدم', validators=[DataRequired(message="هذا الحقل مطلوب.")])
     password = PasswordField('كلمة المرور', validators=[DataRequired(message="هذا الحقل مطلوب.")])
@@ -31,7 +28,6 @@ class RegisterForm(FlaskForm):
 
 # --- START: تعديل نموذج المشروع ---
 class ProjectForm(FlaskForm):
-    """نموذج لإضافة أو تعديل مشروع."""
     name = StringField('اسم المشروع', validators=[DataRequired(message="اسم المشروع مطلوب.")])
     location = StringField('الموقع')
     start_date = DateField('تاريخ البداية', validators=[Optional()])
@@ -45,7 +41,7 @@ class ProjectForm(FlaskForm):
     notes = TextAreaField('ملاحظات')
     spreadsheet_id = StringField('معرّف Google Sheets')
     
-    # تم تغيير الحقل إلى SelectField عادي، وسنملؤه لاحقاً من الـ route
+    # تم تغيير اسم الحقل وتحديد coerce=int لضمان أن القيمة رقمية
     manager_id = SelectField('مدير المشروع', coerce=int, validators=[Optional()])
     
     submit = SubmitField('حفظ المشروع')

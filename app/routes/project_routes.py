@@ -8,6 +8,7 @@ from app.forms import ProjectForm
 
 project_bp = Blueprint("project", __name__)
 
+# ... get_projects and get_project remain the same ...
 @project_bp.route("/projects")
 @login_required
 def get_projects():
@@ -24,6 +25,14 @@ def get_projects():
         
     return render_template("projects/index.html", projects=projects, show_archived=show_archived)
 
+@project_bp.route("/projects/<int:project_id>")
+@login_required
+def get_project(project_id):
+    project = Project.query.get_or_404(project_id)
+    check_project_permission(project)
+    return render_template("projects/show.html", project=project)
+
+
 # --- START: تعديل دالة إضافة مشروع جديد ---
 @project_bp.route("/projects/new", methods=["GET", "POST"])
 @login_required
@@ -32,11 +41,12 @@ def new_project():
         abort(403)
     
     form = ProjectForm()
-    # تعبئة قائمة مدراء المشاريع
+    # تعبئة قائمة مدراء المشاريع يدوياً
     form.manager_id.choices = [(user.id, user.username) for user in User.query.order_by('username').all()]
-    form.manager_id.choices.insert(0, (0, '-- اختر مديرًا للمشروع --')) # إضافة خيار افتراضي
+    form.manager_id.choices.insert(0, (0, '-- اختر مديرًا للمشروع --'))
 
     if form.validate_on_submit():
+        manager_id_val = form.manager_id.data
         new_project = Project(
             name=form.name.data,
             location=form.location.data,
@@ -45,7 +55,7 @@ def new_project():
             status=form.status.data,
             notes=form.notes.data,
             spreadsheet_id=form.spreadsheet_id.data,
-            manager_id=form.manager_id.data if form.manager_id.data != 0 else None
+            manager_id=manager_id_val if manager_id_val != 0 else None
         )
         
         db.session.add(new_project)
@@ -56,13 +66,6 @@ def new_project():
     return render_template("projects/new.html", form=form)
 # --- END: تعديل دالة إضافة مشروع جديد ---
 
-@project_bp.route("/projects/<int:project_id>")
-@login_required
-def get_project(project_id):
-    project = Project.query.get_or_404(project_id)
-    check_project_permission(project)
-    return render_template("projects/show.html", project=project)
-
 # --- START: تعديل دالة تعديل المشروع ---
 @project_bp.route("/projects/<int:project_id>/edit", methods=["GET", "POST"])
 @login_required
@@ -72,11 +75,12 @@ def edit_project(project_id):
         abort(403)
     
     form = ProjectForm(obj=project)
-    # تعبئة قائمة مدراء المشاريع
+    # تعبئة قائمة مدراء المشاريع يدوياً
     form.manager_id.choices = [(user.id, user.username) for user in User.query.order_by('username').all()]
     form.manager_id.choices.insert(0, (0, '-- اختر مديرًا للمشروع --'))
 
     if form.validate_on_submit():
+        manager_id_val = form.manager_id.data
         project.name = form.name.data
         project.location = form.location.data
         project.notes = form.notes.data
@@ -84,19 +88,20 @@ def edit_project(project_id):
         project.end_date = form.end_date.data
         project.status = form.status.data
         project.spreadsheet_id = form.spreadsheet_id.data
-        project.manager_id = form.manager_id.data if form.manager_id.data != 0 else None
+        project.manager_id = manager_id_val if manager_id_val != 0 else None
 
         db.session.commit()
         flash("تم تحديث المشروع بنجاح!", "success")
         return redirect(url_for("project.get_project", project_id=project.id))
-    
-    # للتأكد من عرض المدير الحالي بشكل صحيح عند تحميل الصفحة لأول مرة
-    form.manager_id.data = project.manager_id
+
+    # للتأكد من عرض المدير الحالي بشكل صحيح
+    if request.method == 'GET':
+        form.manager_id.data = project.manager_id
 
     return render_template("projects/edit.html", form=form, project=project)
 # --- END: تعديل دالة تعديل المشروع ---
 
-
+# ... (باقي الدوال تبقى كما هي) ...
 @project_bp.route("/projects/<int:project_id>/delete", methods=["POST"])
 @login_required
 def delete_project(project_id):
@@ -108,8 +113,6 @@ def delete_project(project_id):
     db.session.commit()
     flash("تم حذف المشروع بنجاح!", "success")
     return redirect(url_for("project.get_projects"))
-
-# ... (باقي الدوال تبقى كما هي) ...
 
 @project_bp.route("/projects/<int:project_id>/toggle-archive", methods=["POST"])
 @login_required

@@ -9,4 +9,3 @@ google-auth-oauthlib==1.0.0
 psycopg[binary]
 bleach==6.1.0
 Flask-WTF==1.2.1
-WTForms-SQLAlchemy==0.3
