@@ -1,9 +1,7 @@
 from app.extensions import db
-from sqlalchemy import func
 from .user import user_project_association
 from .invoice import Invoice
 from .payment import Payment
-from .item import Item
 
 class Project(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -27,9 +25,13 @@ class Project(db.Model):
     
     manager = db.relationship('User', foreign_keys=[manager_id])
 
-    # Relationships
-    items = db.relationship('Item', back_populates='project', lazy='dynamic', cascade="all, delete-orphan")
+    # --- START: THE FIX ---
+    # We define the relationship here and specify the back_populates
+    items = db.relationship('Item', back_populates='project', cascade="all, delete-orphan")
+    # --- END: THE FIX ---
+
     invoices = db.relationship('Invoice', back_populates='project', lazy='dynamic', cascade="all, delete-orphan")
 
     def __repr__(self):
         return f'<Project {self.name}>'
+
