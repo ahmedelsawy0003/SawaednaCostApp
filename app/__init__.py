@@ -14,7 +14,6 @@ def create_app():
     commands.init_app(app)
 
     # --- START: تعديل الاستيرادات ---
-    # تم حذف استيراد CostDetail
     from .models.user import User
     from .models.project import Project
     from .models.item import Item
@@ -23,6 +22,8 @@ def create_app():
     from .models.contractor import Contractor
     from .models.invoice import Invoice
     from .models.invoice_item import InvoiceItem
+    # --- إضافة استيراد الموديل الجديد ---
+    from .models.cost_detail import CostDetail
     # --- END: تعديل الاستيرادات ---
 
     @login_manager.user_loader
@@ -36,7 +37,8 @@ def create_app():
     from .routes.auth_routes import auth_bp
     from .routes.contractor_routes import contractor_bp
     from .routes.invoice_routes import invoice_bp
-    # تم حذف استيراد payment_bp و cost_detail_bp
+    # --- إضافة استيراد المسار الجديد ---
+    from .routes.cost_detail_routes import cost_detail_bp
     # --- END: تعديل استيراد المسارات ---
 
     app.register_blueprint(project_bp)
@@ -45,16 +47,12 @@ def create_app():
     app.register_blueprint(auth_bp)
     app.register_blueprint(contractor_bp)
     app.register_blueprint(invoice_bp)
-    # --- START: حذف تسجيل المسارات القديمة ---
-    # تم حذف app.register_blueprint(payment_bp)
-    # تم حذف app.register_blueprint(cost_detail_bp)
-    # --- END: حذف تسجيل المسارات القديمة ---
+    # --- START: تسجيل المسار الجديد ---
+    app.register_blueprint(cost_detail_bp)
+    # --- END: تسجيل المسار الجديد ---
     
-    # <<< START: إضافة المسار الرئيسي هنا
     @app.route('/')
     def index():
         return redirect(url_for('project.get_projects'))
-    # <<< END: إضافة المسار الرئيسي هنا
    
     return app
-

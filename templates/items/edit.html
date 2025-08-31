@@ -52,16 +52,16 @@
                 <div class="col-md-6">
                      <div class="row">
                         <div class="col-6">
-                            <label for="actual_quantity" class="form-label">الكمية الفعلية</label>
+                            <label for="actual_quantity" class="form-label">الكمية الفعلية (للتحكم بالمستخلصات)</label>
                             <input type="number" step="0.01" class="form-control" id="actual_quantity" name="actual_quantity" value="{{ item.actual_quantity if item.actual_quantity is not none else "" }}">
                         </div>
                         <div class="col-6">
-                             <label for="actual_unit_cost" class="form-label">التكلفة الإفرادية الفعلية</label>
+                             <label for="actual_unit_cost" class="form-label">التكلفة الإفرادية الفعلية (يدوي)</label>
                              <input type="number" step="0.01" class="form-control" id="actual_unit_cost" name="actual_unit_cost" value="{{ item.actual_unit_cost if item.actual_unit_cost is not none else "" }}">
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label for="actual_total_cost" class="form-label">الإجمالي الفعلي</label>
+                        <label for="actual_total_cost" class="form-label">الإجمالي الفعلي (محسوب تلقائياً)</label>
                         <input type="text" class="form-control" id="actual_total_cost" value="{{ "{:,.2f}".format(item.actual_total_cost) }}" disabled>
                     </div>
 
@@ -98,9 +98,114 @@
     </div>
 </div>
 
-{# --- START: حذف قسم تفاصيل التكاليف القديم بالكامل --- #}
-{# تم حذف قسم "تفاصيل التكاليف الفعلية" و "سجل الدفعات" القديم #}
-{# --- END: حذف القسم القديم --- #}
+{# --- START: قسم إدارة تفاصيل التكاليف الفعلية الجديد --- #}
+<div class="card mb-4">
+    <div class="card-header bg-success text-white">
+        <h3 class="mb-0">تفاصيل التكاليف الفعلية</h3>
+    </div>
+    <div class="card-body">
+        {# --- Form to Add New Cost Detail --- #}
+        <form method="POST" action="{{ url_for('cost_detail.add_cost_detail', item_id=item.id) }}">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label">الوصف</label>
+                    <input type="text" name="description" class="form-control" required>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">الكمية</label>
+                    <input type="number" step="0.01" name="quantity" class="form-control" required>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">تكلفة الوحدة</label>
+                    <input type="number" step="0.01" name="unit_cost" class="form-control" required>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">الوحدة</label>
+                    <input type="text" name="unit" class="form-control">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">المورد</label>
+                     <select name="contractor_id" class="form-select">
+                        <option value="">-- لا يوجد --</option>
+                        {% for contractor in contractors %}
+                            <option value="{{ contractor.id }}">{{ contractor.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-1">
+                    <button type="submit" class="btn btn-success w-100"><i class="fas fa-plus"></i></button>
+                </div>
+            </div>
+        </form>
+
+        <hr>
+
+        {# --- Table of Existing Cost Details --- #}
+        {% set details = item.cost_details.order_by(CostDetail.id.desc()).all() %}
+        {% if details %}
+            <div class="table-responsive">
+                <table class="table table-sm table-hover table-striped">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>الوصف</th>
+                            <th>المورد/المقاول</th>
+                            <th class="text-center">الكمية</th>
+                            <th class="text-end">تكلفة الوحدة</th>
+                            <th class="text-end">الإجمالي</th>
+                            <th class="text-center">الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for detail in details %}
+                        <tr>
+                            <td>{{ detail.description }}</td>
+                            <td>{{ detail.contractor.name if detail.contractor else '-' }}</td>
+                            <td class="text-center">{{ detail.quantity }} {{ detail.unit }}</td>
+                            <td class="text-end">{{ "{:,.2f}".format(detail.unit_cost) }}</td>
+                            <td class="text-end fw-bold">{{ "{:,.2f}".format(detail.total_cost) }}</td>
+                            <td class="text-center">
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{{ url_for('cost_detail.edit_cost_detail', detail_id=detail.id) }}" class="btn btn-warning"><i class="fas fa-edit"></i></a>
+                                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteDetailModal-{{ detail.id }}"><i class="fas fa-trash"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+             <div class="alert alert-info text-center">لم يتم تسجيل أي تفاصيل تكاليف لهذا البند بعد.</div>
+        {% endif %}
+    </div>
+</div>
+{# --- END: قسم إدارة تفاصيل التكاليف الفعلية الجديد --- #}
+
+{# --- Modals for deleting cost details --- #}
+{% for detail in item.cost_details %}
+<div class="modal fade" id="deleteDetailModal-{{ detail.id }}" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">تأكيد الحذف</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>هل أنت متأكد أنك تريد حذف تفصيل التكلفة <strong>"{{ detail.description }}"</strong>؟</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <form action="{{ url_for('cost_detail.delete_cost_detail', detail_id=detail.id) }}" method="POST">
+                    <button type="submit" class="btn btn-danger">تأكيد الحذف</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+
+{# --- سجل التغييرات يبقى كما هو --- #}
 
 <div class="card">
     <div class="card-header bg-secondary text-white">
