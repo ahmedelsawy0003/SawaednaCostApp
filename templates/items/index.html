@@ -17,6 +17,7 @@
     </div>
 </div>
 
+{# ... (جزء الفلترة والتعديل الجماعي يبقى كما هو) ... #}
 <div class="card mb-4">
     <div class="accordion" id="filterAccordion">
         <div class="accordion-item">
@@ -82,6 +83,10 @@
                                 <th>التكلفة التعاقدية</th>
                                 {% endif %}
                                 <th>التكلفة الفعلية</th>
+                                {# --- START: إضافة الأعمدة الجديدة --- #}
+                                <th>المبلغ المدفوع</th>
+                                <th>المبلغ المتبقي</th>
+                                {# --- END: إضافة الأعمدة الجديدة --- #}
                                 <th>الحالة</th>
                                 <th class="text-center">الإجراءات</th>
                             </tr>
@@ -96,6 +101,10 @@
                                 <td>{{ "{:,.2f}".format(item.contract_total_cost) }}</td>
                                 {% endif %}
                                 <td>{{ "{:,.2f}".format(item.actual_total_cost) }}</td>
+                                {# --- START: عرض البيانات الجديدة --- #}
+                                <td class="text-success">{{ "{:,.2f}".format(item.paid_amount) }}</td>
+                                <td class="text-danger">{{ "{:,.2f}".format(item.remaining_amount) }}</td>
+                                {# --- END: عرض البيانات الجديدة --- #}
                                 <td>
                                     <span class="badge {{ "bg-warning" if item.status == "نشط" else "bg-success" if item.status == "مكتمل" else "bg-info" }}">
                                         {{ item.status }}
@@ -120,6 +129,8 @@
         </div>
     </div>
 </form>
+
+{# ... (النوافذ المنبثقة للحذف تبقى كما هي) ... #}
 {% for item in items %}
 <div class="modal fade" id="deleteItemModal-{{ item.id }}" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">

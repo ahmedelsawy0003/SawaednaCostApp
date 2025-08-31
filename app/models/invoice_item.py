@@ -14,10 +14,14 @@ class InvoiceItem(db.Model):
     invoice = db.relationship('Invoice', back_populates='items')
     item = db.relationship('Item', backref=db.backref('invoice_items', lazy=True))
 
+    # --- START: الإضافة الجديدة ---
+    # علاقة عكسية مع نموذج الدفعات
+    payments = db.relationship('Payment', back_populates='invoice_item', cascade="all, delete-orphan")
+    # --- END: الإضافة الجديدة ---
+
     def __init__(self, item, quantity):
         self.item = item
         self.description = f"{item.item_number} - {item.description}"
-        self.quantity = quantity
         # Use actual_unit_cost if available, otherwise use contract_unit_cost
         self.unit_price = item.actual_unit_cost if item.actual_unit_cost is not None and item.actual_unit_cost > 0 else item.contract_unit_cost
         self.total_price = self.quantity * self.unit_price

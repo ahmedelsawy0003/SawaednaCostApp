@@ -3,6 +3,7 @@
 {% block title %}تفاصيل المستخلص - {{ invoice.invoice_number }}{% endblock %}
 
 {% block content %}
+{# ... (الجزء العلوي من الملف يبقى كما هو) ... #}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="mb-0">
         <span class="text-muted fw-normal">مستخلص رقم:</span> {{ invoice.invoice_number }}
@@ -61,7 +62,6 @@
     </div>
 </div>
 
-{# START: FIX - The check is now simply `if invoice.payments` #}
 {% if not invoice.payments %}
 <div class="card mb-4">
     <div class="card-header bg-success text-white">
@@ -98,7 +98,6 @@
     لا يمكن إضافة أو تعديل البنود بعد تسجيل أول دفعة على المستخلص لضمان دقة الحسابات.
 </div>
 {% endif %}
-{# END: FIX #}
 
 
 <div class="card mb-4">
@@ -203,8 +202,53 @@
     </div>
 </div>
 
-<div class="modal fade" id="addPaymentModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">تسجيل دفعة جديدة للمستخلص {{ invoice.invoice_number }}</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><form action="{{ url_for('invoice.add_payment_to_invoice', invoice_id=invoice.id) }}" method="POST"><div class="modal-body"><div class="mb-3"><label class="form-label">المبلغ</label><input type="number" step="0.01" class="form-control" name="amount" required></div><div class="mb-3"><label class="form-label">تاريخ الدفعة</label><input type="date" class="form-control" name="payment_date" required></div><div class="mb-3"><label class="form-label">الوصف (اختياري)</label><textarea class="form-control" name="description" rows="2"></textarea></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button><button type="submit" class="btn btn-primary">حفظ الدفعة</button></div></form></div></div></div>
+{# --- START: تعديل نافذة إضافة دفعة --- #}
+<div class="modal fade" id="addPaymentModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">تسجيل دفعة جديدة للمستخلص {{ invoice.invoice_number }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('invoice.add_payment_to_invoice', invoice_id=invoice.id) }}" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">المبلغ</label>
+                        <input type="number" step="0.01" class="form-control" name="amount" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">تاريخ الدفعة</label>
+                        <input type="date" class="form-control" name="payment_date" required>
+                    </div>
+                    
+                    {# --- الإضافة الجديدة هنا --- #}
+                    <div class="mb-3">
+                        <label for="invoice_item_id" class="form-label">ربط الدفعة ببند (اختياري)</label>
+                        <select class="form-select" id="invoice_item_id" name="invoice_item_id">
+                            <option value="">-- دفعة عامة للمستخلص --</option>
+                            {% for inv_item in invoice.items %}
+                                <option value="{{ inv_item.id }}">{{ inv_item.description }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {# --- نهاية الإضافة --- #}
 
+                    <div class="mb-3">
+                        <label class="form-label">الوصف (اختياري)</label>
+                        <textarea class="form-control" name="description" rows="2"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-primary">حفظ الدفعة</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{# --- END: تعديل نافذة إضافة دفعة --- #}
+
+{# ... (باقي النوافذ المنبثقة تبقى كما هي) ... #}
 {% for payment in invoice.payments %}
 <div class="modal fade" id="deletePaymentModal-{{ payment.id }}" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">تأكيد الحذف</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body">هل أنت متأكد أنك تريد حذف الدفعة بمبلغ <strong>{{ "{:,.2f}".format(payment.amount) }} ريال</strong>؟</div><div class="modal-footer"><form action="{{ url_for('invoice.delete_payment_from_invoice', payment_id=payment.id) }}" method="POST"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button><button type="submit" class="btn btn-danger">تأكيد الحذف</button></form></div></div></div></div>
 {% endfor %}

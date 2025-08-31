@@ -1,4 +1,7 @@
 from app.extensions import db
+from sqlalchemy import func
+from .payment import Payment
+from .invoice_item import InvoiceItem
 
 class Item(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -24,10 +27,23 @@ class Item(db.Model):
         db.Index('idx_item_contractor_id', 'contractor_id'),
     )
 
-    # --- START: حذف الخصائص القديمة ---
-    # تم حذف property 'paid_amount'
-    # تم حذف property 'remaining_amount'
-    # --- END: حذف الخصائص القديمة ---
+    # --- START: إعادة الخصائص بمنطق حسابي جديد ودقيق ---
+    @property
+    def paid_amount(self):
+        """
+        يحسب إجمالي المبلغ المدفوع لهذا البند المحدد
+        عن طريق جمع كل الدفعات المرتبطة بظهور هذا البند في كل الفواتير.
+        """
+        total_paid = db.session.query(func.sum(Payment.amount)).join(InvoiceItem).filter(
+            InvoiceItem.item_id == self.id
+        ).scalar()
+        return total_paid or 0.0
+
+    @property
+    def remaining_amount(self):
+        """يحسب المبلغ المتبقي للبند بناءً على التكلفة الفعلية والمبلغ المدفوع."""
+        return self.actual_total_cost - self.paid_amount
+    # --- END: إعادة الخصائص ---
     
     @property
     def contract_total_cost(self):
