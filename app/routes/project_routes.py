@@ -4,9 +4,7 @@ from app.models.user import User
 from app.extensions import db
 from flask_login import login_required, current_user
 from app.utils import check_project_permission, sanitize_input
-# --- START: إضافة استيراد النموذج ---
 from app.forms import ProjectForm
-# --- END: إضافة استيراد النموذج ---
 
 project_bp = Blueprint("project", __name__)
 
@@ -34,6 +32,9 @@ def new_project():
         abort(403)
     
     form = ProjectForm()
+    # تعبئة قائمة مدراء المشاريع
+    form.manager_id.choices = [(user.id, user.username) for user in User.query.order_by('username').all()]
+    form.manager_id.choices.insert(0, (0, '-- اختر مديرًا للمشروع --')) # إضافة خيار افتراضي
 
     if form.validate_on_submit():
         new_project = Project(
@@ -44,7 +45,7 @@ def new_project():
             status=form.status.data,
             notes=form.notes.data,
             spreadsheet_id=form.spreadsheet_id.data,
-            manager=form.manager.data # WTForms-SQLAlchemy يعيد الكائن (object) مباشرة
+            manager_id=form.manager_id.data if form.manager_id.data != 0 else None
         )
         
         db.session.add(new_project)
@@ -70,11 +71,12 @@ def edit_project(project_id):
     if current_user.role != 'admin':
         abort(403)
     
-    # عند التعديل، نمرر كائن المشروع للنموذج ليقوم بتعبئة الحقول بالبيانات الحالية
     form = ProjectForm(obj=project)
+    # تعبئة قائمة مدراء المشاريع
+    form.manager_id.choices = [(user.id, user.username) for user in User.query.order_by('username').all()]
+    form.manager_id.choices.insert(0, (0, '-- اختر مديرًا للمشروع --'))
 
     if form.validate_on_submit():
-        # تحديث بيانات المشروع من النموذج
         project.name = form.name.data
         project.location = form.location.data
         project.notes = form.notes.data
@@ -82,11 +84,14 @@ def edit_project(project_id):
         project.end_date = form.end_date.data
         project.status = form.status.data
         project.spreadsheet_id = form.spreadsheet_id.data
-        project.manager = form.manager.data
+        project.manager_id = form.manager_id.data if form.manager_id.data != 0 else None
 
         db.session.commit()
         flash("تم تحديث المشروع بنجاح!", "success")
         return redirect(url_for("project.get_project", project_id=project.id))
+    
+    # للتأكد من عرض المدير الحالي بشكل صحيح عند تحميل الصفحة لأول مرة
+    form.manager_id.data = project.manager_id
 
     return render_template("projects/edit.html", form=form, project=project)
 # --- END: تعديل دالة تعديل المشروع ---
@@ -103,6 +108,8 @@ def delete_project(project_id):
     db.session.commit()
     flash("تم حذف المشروع بنجاح!", "success")
     return redirect(url_for("project.get_projects"))
+
+# ... (باقي الدوال تبقى كما هي) ...
 
 @project_bp.route("/projects/<int:project_id>/toggle-archive", methods=["POST"])
 @login_required
