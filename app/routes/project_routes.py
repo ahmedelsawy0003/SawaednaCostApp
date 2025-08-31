@@ -1,10 +1,12 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, abort
 from app.models.project import Project
-from app.models.item import Item
 from app.models.user import User 
 from app.extensions import db
 from flask_login import login_required, current_user
 from app.utils import check_project_permission, sanitize_input
+# --- START: إضافة استيراد النموذج ---
+from app.forms import ProjectForm
+# --- END: إضافة استيراد النموذج ---
 
 project_bp = Blueprint("project", __name__)
 
@@ -24,36 +26,34 @@ def get_projects():
         
     return render_template("projects/index.html", projects=projects, show_archived=show_archived)
 
+# --- START: تعديل دالة إضافة مشروع جديد ---
 @project_bp.route("/projects/new", methods=["GET", "POST"])
 @login_required
 def new_project():
     if current_user.role != 'admin':
         abort(403)
+    
+    form = ProjectForm()
 
-    if request.method == "POST":
-        name = sanitize_input(request.form["name"])
-        location = sanitize_input(request.form["location"])
-        notes = sanitize_input(request.form["notes"])
-        start_date = request.form["start_date"]
-        end_date = request.form["end_date"]
-        status = request.form["status"]
-        spreadsheet_id = request.form.get("spreadsheet_id")
-        manager_id = request.form.get("manager_id") 
-
-        new_project = Project(name=name, location=location, start_date=start_date, 
-                              end_date=end_date, status=status, notes=notes,
-                              spreadsheet_id=spreadsheet_id)
-        
-        if manager_id:
-            new_project.manager_id = int(manager_id)
+    if form.validate_on_submit():
+        new_project = Project(
+            name=form.name.data,
+            location=form.location.data,
+            start_date=form.start_date.data,
+            end_date=form.end_date.data,
+            status=form.status.data,
+            notes=form.notes.data,
+            spreadsheet_id=form.spreadsheet_id.data,
+            manager=form.manager.data # WTForms-SQLAlchemy يعيد الكائن (object) مباشرة
+        )
         
         db.session.add(new_project)
         db.session.commit()
         flash("تم إضافة المشروع بنجاح!", "success")
         return redirect(url_for("project.get_projects"))
     
-    users = User.query.all()
-    return render_template("projects/new.html", users=users)
+    return render_template("projects/new.html", form=form)
+# --- END: تعديل دالة إضافة مشروع جديد ---
 
 @project_bp.route("/projects/<int:project_id>")
 @login_required
@@ -62,6 +62,7 @@ def get_project(project_id):
     check_project_permission(project)
     return render_template("projects/show.html", project=project)
 
+# --- START: تعديل دالة تعديل المشروع ---
 @project_bp.route("/projects/<int:project_id>/edit", methods=["GET", "POST"])
 @login_required
 def edit_project(project_id):
@@ -69,24 +70,27 @@ def edit_project(project_id):
     if current_user.role != 'admin':
         abort(403)
     
-    if request.method == "POST":
-        project.name = sanitize_input(request.form["name"])
-        project.location = sanitize_input(request.form["location"])
-        project.notes = sanitize_input(request.form["notes"])
-        project.start_date = request.form["start_date"]
-        project.end_date = request.form["end_date"]
-        project.status = request.form["status"]
-        project.spreadsheet_id = request.form.get("spreadsheet_id")
-        
-        manager_id = request.form.get("manager_id")
-        project.manager_id = int(manager_id) if manager_id else None
+    # عند التعديل، نمرر كائن المشروع للنموذج ليقوم بتعبئة الحقول بالبيانات الحالية
+    form = ProjectForm(obj=project)
+
+    if form.validate_on_submit():
+        # تحديث بيانات المشروع من النموذج
+        project.name = form.name.data
+        project.location = form.location.data
+        project.notes = form.notes.data
+        project.start_date = form.start_date.data
+        project.end_date = form.end_date.data
+        project.status = form.status.data
+        project.spreadsheet_id = form.spreadsheet_id.data
+        project.manager = form.manager.data
 
         db.session.commit()
         flash("تم تحديث المشروع بنجاح!", "success")
         return redirect(url_for("project.get_project", project_id=project.id))
 
-    users = User.query.all()
-    return render_template("projects/edit.html", project=project, users=users)
+    return render_template("projects/edit.html", form=form, project=project)
+# --- END: تعديل دالة تعديل المشروع ---
+
 
 @project_bp.route("/projects/<int:project_id>/delete", methods=["POST"])
 @login_required
@@ -118,15 +122,12 @@ def toggle_archive(project_id):
     show_archived = request.args.get('show_archived', 'false')
     return redirect(url_for("project.get_projects", show_archived=show_archived))
 
-# START: Simplified dashboard route without chart data
 @project_bp.route("/projects/<int:project_id>/dashboard")
 @login_required
 def project_dashboard(project_id):
     project = Project.query.get_or_404(project_id)
     check_project_permission(project)
-    # The data for the chart is no longer needed
     return render_template("projects/dashboard.html", project=project)
-# END: Simplified route
 
 @project_bp.route("/projects/<int:project_id>/summary")
 @login_required

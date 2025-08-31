@@ -1,15 +1,17 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField
-from wtforms.validators import DataRequired, Email, EqualTo, Length, ValidationError
-from app.models.user import User # نحتاج لاستيراد نموذج المستخدم للتحقق من وجوده
+from wtforms import StringField, PasswordField, SubmitField, TextAreaField, SelectField
+from wtforms.fields import DateField # استخدام حقل التاريخ الصحيح
+from wtforms.validators import DataRequired, Email, EqualTo, Length, ValidationError, Optional
+from wtforms_sqlalchemy.fields import QuerySelectField # لاستيراد حقل القائمة المنسدلة من قاعدة البيانات
+from app.models.user import User
 
+# ... (LoginForm و RegisterForm يبقيان كما هما) ...
 class LoginForm(FlaskForm):
     """نموذج تسجيل الدخول."""
     username = StringField('اسم المستخدم', validators=[DataRequired(message="هذا الحقل مطلوب.")])
     password = PasswordField('كلمة المرور', validators=[DataRequired(message="هذا الحقل مطلوب.")])
     submit = SubmitField('تسجيل الدخول')
 
-# --- START: إضافة نموذج التسجيل الجديد ---
 class RegisterForm(FlaskForm):
     """نموذج تسجيل مستخدم جديد."""
     username = StringField('اسم المستخدم', validators=[
@@ -30,7 +32,6 @@ class RegisterForm(FlaskForm):
     ])
     submit = SubmitField('تسجيل الحساب')
 
-    # دوال التحقق المخصصة
     def validate_username(self, username):
         user = User.query.filter_by(username=username.data).first()
         if user:
@@ -40,4 +41,36 @@ class RegisterForm(FlaskForm):
         user = User.query.filter_by(email=email.data).first()
         if user:
             raise ValidationError('البريد الإلكتروني هذا مسجل بالفعل. الرجاء استخدام بريد آخر.')
-# --- END: إضافة نموذج التسجيل الجديد ---
+
+# --- START: إضافة نموذج المشروع ---
+
+# دالة مساعدة لجلب قائمة المستخدمين لعرضها في القائمة المنسدلة
+def get_users():
+    return User.query.all()
+
+class ProjectForm(FlaskForm):
+    """نموذج لإضافة أو تعديل مشروع."""
+    name = StringField('اسم المشروع', validators=[DataRequired(message="اسم المشروع مطلوب.")])
+    location = StringField('الموقع')
+    start_date = DateField('تاريخ البداية', validators=[Optional()])
+    end_date = DateField('تاريخ النهاية', validators=[Optional()])
+    status = SelectField('الحالة', choices=[
+        ('قيد التنفيذ', 'قيد التنفيذ'),
+        ('مكتمل', 'مكتمل'),
+        ('معلق', 'معلق'),
+        ('ملغي', 'ملغي')
+    ], validators=[DataRequired()])
+    notes = TextAreaField('ملاحظات')
+    spreadsheet_id = StringField('معرّف Google Sheets')
+    
+    # حقل ديناميكي لجلب مدراء المشاريع من قاعدة البيانات
+    manager = QuerySelectField(
+        'مدير المشروع',
+        query_factory=get_users,
+        get_label='username',
+        allow_blank=True,
+        blank_text='-- اختر مديرًا للمشروع --',
+        validators=[Optional()]
+    )
+    submit = SubmitField('حفظ المشروع')
+# --- END: إضافة نموذج المشروع ---

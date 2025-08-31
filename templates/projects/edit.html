@@ -15,62 +15,56 @@
         <h3 class="mb-0">بيانات المشروع</h3>
     </div>
     <div class="card-body">
-        <form method="POST" action="{{ url_for("project.edit_project", project_id=project.id) }}">
+        {# --- START: النموذج الجديد --- #}
+        <form method="POST" action="{{ url_for("project.edit_project", project_id=project.id) }}" novalidate>
+            {{ form.hidden_tag() }}
             <div class="row">
                 <div class="col-md-6">
                     <div class="mb-3">
-                        <label for="name" class="form-label">اسم المشروع</label>
-                        <input type="text" class="form-control" id="name" name="name" value="{{ project.name }}" required>
+                        {{ form.name.label(class="form-label") }}
+                        {{ form.name(class="form-control") }}
+                        {% for error in form.name.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
                     </div>
                     <div class="mb-3">
-                        <label for="location" class="form-label">الموقع</label>
-                        <input type="text" class="form-control" id="location" name="location" value="{{ project.location if project.location else "" }}">
+                        {{ form.location.label(class="form-label") }}
+                        {{ form.location(class="form-control") }}
                     </div>
                     <div class="mb-3">
-                        <label for="status" class="form-label">الحالة</label>
-                        <select class="form-select" id="status" name="status" required>
-                            <option value="قيد التنفيذ" {% if project.status == "قيد التنفيذ" %}selected{% endif %}>قيد التنفيذ</option>
-                            <option value="مكتمل" {% if project.status == "مكتمل" %}selected{% endif %}>مكتمل</option>
-                            <option value="معلق" {% if project.status == "معلق" %}selected{% endif %}>معلق</option>
-                            <option value="ملغي" {% if project.status == "ملغي" %}selected{% endif %}>ملغي</option>
-                        </select>
+                        {{ form.status.label(class="form-label") }}
+                        {{ form.status(class="form-select") }}
                     </div>
                     <div class="mb-3">
-                        <label for="manager_id" class="form-label">مدير المشروع (اختياري)</label>
-                        <select class="form-select" id="manager_id" name="manager_id">
-                            <option value="">-- اختر مديرًا للمشروع --</option>
-                            {% for user in users %}
-                                <option value="{{ user.id }}" {% if project.manager_id == user.id %}selected{% endif %}>
-                                    {{ user.username }}
-                                </option>
-                            {% endfor %}
-                        </select>
+                        {{ form.manager.label(class="form-label") }}
+                        {{ form.manager(class="form-select") }}
                     </div>
                     </div>
                 <div class="col-md-6">
                     <div class="mb-3">
-                        <label for="start_date" class="form-label">تاريخ البداية</label>
-                        <input type="date" class="form-control" id="start_date" name="start_date" value="{{ project.start_date if project.start_date else "" }}">
+                        {{ form.start_date.label(class="form-label") }}
+                        {{ form.start_date(class="form-control") }}
                     </div>
                     <div class="mb-3">
-                        <label for="end_date" class="form-label">تاريخ النهاية</label>
-                        <input type="date" class="form-control" id="end_date" name="end_date" value="{{ project.end_date if project.end_date else "" }}">
+                        {{ form.end_date.label(class="form-label") }}
+                        {{ form.end_date(class="form-control") }}
                     </div>
                     <div class="mb-3">
-                        <label for="spreadsheet_id" class="form-label">معرّف Google Sheets (اختياري)</label>
-                        <input type="text" class="form-control" id="spreadsheet_id" name="spreadsheet_id" value="{{ project.spreadsheet_id if project.spreadsheet_id else "" }}">
+                        {{ form.spreadsheet_id.label(class="form-label") }}
+                        {{ form.spreadsheet_id(class="form-control") }}
                         <div class="form-text">يمكنك العثور على معرّف جدول البيانات في رابط Google Sheet الخاص بك</div>
                     </div>
                 </div>
             </div>
             <div class="mb-3">
-                <label for="notes" class="form-label">ملاحظات</label>
-                <textarea class="form-control" id="notes" name="notes" rows="4">{{ project.notes if project.notes else "" }}</textarea>
+                {{ form.notes.label(class="form-label") }}
+                {{ form.notes(class="form-control", rows="4") }}
             </div>
-            <button type="submit" class="btn btn-primary">
-                <i class="fas fa-save me-1"></i> تحديث المشروع
-            </button>
+            
+            {{ form.submit(class="btn btn-primary", value="تحديث المشروع") }} {# تغيير نص الزر #}
+
         </form>
+        {# --- END: النموذج الجديد --- #}
     </div>
 </div>
 {% endblock %}
