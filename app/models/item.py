@@ -18,12 +18,7 @@ class Item(db.Model):
     
     contractor_id = db.Column(db.Integer, db.ForeignKey('contractor.id'), nullable=True)
 
-    # --- START: THE FIX ---
-    # We will define the relationship from the "many" side (Item)
-    # and use back_populates to link it to the "one" side (Project)
     project = db.relationship('Project', back_populates='items')
-    # --- END: THE FIX ---
-
     contractor = db.relationship('Contractor', back_populates='items')
 
     __table_args__ = (
@@ -101,4 +96,3 @@ class Item(db.Model):
 
     def __repr__(self):
         return f'<Item {self.item_number} - {self.description}>'
-
