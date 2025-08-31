@@ -14,17 +14,23 @@ class InvoiceItem(db.Model):
     invoice = db.relationship('Invoice', back_populates='items')
     item = db.relationship('Item', backref=db.backref('invoice_items', lazy=True))
 
-    # --- START: الإضافة الجديدة ---
-    # علاقة عكسية مع نموذج الدفعات
     payments = db.relationship('Payment', back_populates='invoice_item', cascade="all, delete-orphan")
-    # --- END: الإضافة الجديدة ---
 
     def __init__(self, item, quantity):
         self.item = item
         self.description = f"{item.item_number} - {item.description}"
-        # Use actual_unit_cost if available, otherwise use contract_unit_cost
-        self.unit_price = item.actual_unit_cost if item.actual_unit_cost is not None and item.actual_unit_cost > 0 else item.contract_unit_cost
-        self.total_price = self.quantity * self.unit_price
+        self.quantity = quantity
+        
+        # --- START: التعديل الرئيسي لإصلاح الخطأ ---
+        # استخدام السعر الفعلي أولاً، ثم التعاقدي، وإذا كان كلاهما غير موجود، استخدم 0.0
+        actual_cost = item.actual_unit_cost
+        contract_cost = item.contract_unit_cost
+        
+        # نستخدم القيمة 0.0 كقيمة افتراضية آمنة
+        self.unit_price = actual_cost if actual_cost is not None and actual_cost > 0 else (contract_cost or 0.0)
+        
+        self.total_price = (self.quantity or 0.0) * self.unit_price
+        # --- END: التعديل الرئيسي ---
 
     def __repr__(self):
         return f'<InvoiceItem for Item {self.item_id} on Invoice {self.invoice_id}>'
