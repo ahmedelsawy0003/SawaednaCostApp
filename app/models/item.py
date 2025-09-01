@@ -1,12 +1,9 @@
 from app.extensions import db
-from sqlalchemy import func
+from sqlalchemy import func, or_
 from .payment import Payment
 from .invoice_item import InvoiceItem
 from .invoice import Invoice
-
-# --- START: استيراد الموديل الجديد ---
 from .cost_detail import CostDetail
-# --- END: استيراد الموديل الجديد ---
 
 class Item(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -25,15 +22,31 @@ class Item(db.Model):
 
     project = db.relationship('Project', back_populates='items')
     contractor = db.relationship('Contractor', back_populates='items')
-
-    # --- START: العلاقة الجديدة مع تفاصيل التكاليف ---
     cost_details = db.relationship('CostDetail', back_populates='item', lazy='dynamic', cascade="all, delete-orphan")
-    # --- END: العلاقة الجديدة ---
 
     __table_args__ = (
         db.Index('idx_item_project_id', 'project_id'),
         db.Index('idx_item_contractor_id', 'contractor_id'),
     )
+
+    # --- START: تعديل منطق عرض الدفعات ---
+    @property
+    def all_payments(self):
+        """
+        Fetches a list of all payments related to this item.
+        It includes payments linked directly to the invoice_item and
+        payments linked to the parent invoice in general.
+        """
+        # 1. Find all invoices where this item appears
+        invoice_ids_subquery = db.session.query(InvoiceItem.invoice_id).filter(InvoiceItem.item_id == self.id).distinct()
+        
+        # 2. Find all payments linked to those invoices
+        payments = Payment.query.filter(
+            Payment.invoice_id.in_(invoice_ids_subquery)
+        ).order_by(Payment.payment_date.desc()).all()
+        
+        return payments
+    # --- END: تعديل منطق عرض الدفعات ---
 
     @property
     def paid_amount(self):
@@ -69,7 +82,6 @@ class Item(db.Model):
             return self.contract_quantity * self.contract_unit_cost
         return 0.0
 
-    # --- START: المنطق الجديد والمعدل لحساب التكلفة الفعلية ---
     @property
     def actual_total_cost(self):
         """
@@ -77,28 +89,20 @@ class Item(db.Model):
         Priority 1: Sum of all associated cost_details.
         Priority 2: Manually entered actual_quantity * actual_unit_cost if no details exist.
         """
-        # الأولوية الأولى: حساب المجموع من تفاصيل التكاليف
         total_from_details = db.session.query(
             func.sum(CostDetail.quantity * CostDetail.unit_cost)
         ).filter(CostDetail.item_id == self.id).scalar()
 
-        # إذا كان هناك مجموع من التفاصيل، قم بإرجاعه
         if total_from_details is not None and total_from_details > 0:
             return total_from_details
 
-        # الأولوية الثانية (الاحتياطية): استخدام الإدخال اليدوي
         if self.actual_quantity is not None and self.actual_unit_cost is not None:
             return self.actual_quantity * self.actual_unit_cost
 
-        # إذا لم يتوفر أي مما سبق، فالتكلفة هي صفر
         return 0.0
-    # --- END: المنطق الجديد ---
     
     @property
     def remaining_amount(self):
-        """Calculates the remaining amount for the item based on actual cost and paid amount."""
-        # ملاحظة: هذا الرقم قد لا يكون له معنى محاسبي دقيق الآن بعد فصل الأنظمة
-        # لكن يمكن استخدامه كمؤشر عام.
         return self.actual_total_cost - self.paid_amount
 
     @property
@@ -107,7 +111,6 @@ class Item(db.Model):
         
     @property
     def short_description(self):
-        """Returns a truncated version of the description for display purposes."""
         if len(self.description) > 50:
             return self.description[:50] + '...'
         return self.description
