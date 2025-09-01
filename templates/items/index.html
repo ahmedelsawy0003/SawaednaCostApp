@@ -17,7 +17,7 @@
     </div>
 </div>
 
-{# Filter section remains the same #}
+{# Filter and bulk edit sections remain the same #}
 <div class="card mb-4">
     <div class="accordion" id="filterAccordion">
         <div class="accordion-item">
@@ -44,7 +44,6 @@
 </div>
 
 <form id="bulk-edit-form" method="POST" action="{{ url_for('item.bulk_update_items', project_id=project.id) }}">
-    
     <div class="card mb-4">
         <div class="accordion" id="bulkEditAccordion">
             <div class="accordion-item">
@@ -56,19 +55,14 @@
                 <div id="collapseBulkEdit" class="accordion-collapse collapse" data-bs-parent="#bulkEditAccordion">
                     <div class="accordion-body">
                         <div class="row align-items-end g-3">
-                            {# --- START: تعديلات على قسم التعديل الجماعي --- #}
                             <div class="col-md-3"><label for="bulk-status" class="form-label">تغيير حالة المحدد</label><select name="bulk_status" id="bulk-status" class="form-select"><option value="">-- اختر --</option><option value="نشط">نشط</option><option value="مكتمل">مكتمل</option><option value="معلق">معلق</option></select></div>
                             <div class="col-md-4"><label for="bulk-contractor" class="form-label">تغيير مقاول المحدد</label><input type="text" name="bulk_contractor" id="bulk-contractor" class="form-control" placeholder="اتركه فارغاً لعدم التغيير"></div>
                             <div class="col-md-2"><button type="submit" class="btn btn-warning w-100" id="bulk-update-btn"><i class="fas fa-save me-1"></i> تطبيق التعديلات</button></div>
-                            
-                            {# --- زر الحذف الجماعي الجديد --- #}
                             <div class="col-md-3">
                                 <button type="button" class="btn btn-danger w-100" id="bulk-delete-btn" data-bs-toggle="modal" data-bs-target="#bulkDeleteConfirmModal">
                                     <i class="fas fa-trash me-1"></i> حذف المحدد
                                 </button>
                             </div>
-                            {# --- نهاية زر الحذف الجماعي --- #}
-                            {# --- END: تعديلات على قسم التعديل الجماعي --- #}
                         </div>
                     </div>
                 </div>
@@ -93,8 +87,11 @@
                                 <th>التكلفة التعاقدية</th>
                                 {% endif %}
                                 <th>التكلفة الفعلية</th>
-                                <th>المبلغ المدفوع</th>
-                                <th>المبلغ المتبقي</th>
+                                {# --- START: التعديل الرئيسي هنا --- #}
+                                {% if current_user.role == 'admin' %}
+                                <th>الوفر / الزيادة</th>
+                                {% endif %}
+                                {# --- END: التعديل الرئيسي هنا --- #}
                                 <th>الحالة</th>
                                 <th class="text-center">الإجراءات</th>
                             </tr>
@@ -109,8 +106,15 @@
                                 <td>{{ "{:,.2f}".format(item.contract_total_cost) }}</td>
                                 {% endif %}
                                 <td>{{ "{:,.2f}".format(item.actual_total_cost) }}</td>
-                                <td class="text-success">{{ "{:,.2f}".format(item.paid_amount) }}</td>
-                                <td class="text-danger">{{ "{:,.2f}".format(item.remaining_amount) }}</td>
+                                {# --- START: التعديل الرئيسي هنا --- #}
+                                {% if current_user.role == 'admin' %}
+                                <td>
+                                    <span class="{{ 'text-success' if item.cost_variance >= 0 else 'text-danger' }}">
+                                        {{ "{:,.2f}".format(item.cost_variance) }}
+                                    </span>
+                                </td>
+                                {% endif %}
+                                {# --- END: التعديل الرئيسي هنا --- #}
                                 <td>
                                     <span class="badge {{ "bg-warning" if item.status == "نشط" else "bg-success" if item.status == "مكتمل" else "bg-info" }}">
                                         {{ item.status }}
@@ -139,29 +143,7 @@
     </div>
 </form>
 
-{# --- START: نافذة تأكيد الحذف الجماعي --- #}
-<div class="modal fade" id="bulkDeleteConfirmModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title">تأكيد الحذف الجماعي</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <p>هل أنت متأكد أنك تريد حذف البنود المحددة؟</p>
-                <p class="text-danger"><i class="fas fa-exclamation-triangle me-2"></i>سيتم حذف <strong id="bulk-delete-count">0</strong> بنود بشكل نهائي. لا يمكن التراجع عن هذا الإجراء.</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                <button type="button" class="btn btn-danger" id="confirm-bulk-delete-btn">نعم، قم بالحذف</button>
-            </div>
-        </div>
-    </div>
-</div>
-{# --- END: نافذة تأكيد الحذف الجماعي --- #}
-
-
-{# Payment and single delete modals remain the same #}
+{# Modals remain the same #}
 {% for item in items %}
 <div class="modal fade" id="deleteItemModal-{{ item.id }}" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
@@ -233,5 +215,23 @@
     </div>
 </div>
 {% endfor %}
+<div class="modal fade" id="bulkDeleteConfirmModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">تأكيد الحذف الجماعي</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>هل أنت متأكد أنك تريد حذف البنود المحددة؟</p>
+                <p class="text-danger"><i class="fas fa-exclamation-triangle me-2"></i>سيتم حذف <strong id="bulk-delete-count">0</strong> بنود بشكل نهائي. لا يمكن التراجع عن هذا الإجراء.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-danger" id="confirm-bulk-delete-btn">نعم، قم بالحذف</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 {% endblock %}

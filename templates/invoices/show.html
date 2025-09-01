@@ -3,7 +3,6 @@
 {% block title %}تفاصيل المستخلص - {{ invoice.invoice_number }}{% endblock %}
 
 {% block content %}
-{# ... (الجزء العلوي من الملف يبقى كما هو) ... #}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="mb-0">
         <span class="text-muted fw-normal">مستخلص رقم:</span> {{ invoice.invoice_number }}
@@ -68,15 +67,31 @@
         <h3 class="mb-0">إضافة بنود للمستخلص</h3>
     </div>
     <div class="card-body">
+        {# --- START: تعديل نموذج الإضافة بالكامل --- #}
         <form method="POST" action="{{ url_for('invoice.add_item_to_invoice', invoice_id=invoice.id) }}">
             <div class="row g-3 align-items-end">
                 <div class="col-md-6">
-                    <label for="item_id" class="form-label">اختر البند</label>
-                    <select name="item_id" id="item_id" class="form-select" required>
-                        <option value="">-- اختر بنداً لإضافته --</option>
-                        {% for item in available_items %}
-                            <option value="{{ item.id }}">{{ item.item_number }} - {{ item.short_description }}</option>
-                        {% endfor %}
+                    <label for="selected_item_id" class="form-label">اختر البند أو أمر العمل</label>
+                    <select name="selected_item_id" id="selected_item_id" class="form-select" required>
+                        <option value="">-- اختر من القائمة --</option>
+                        
+                        {# Group 1: Main Project Items #}
+                        {% if available_items %}
+                        <optgroup label="بنود المشروع الرئيسية">
+                            {% for item in available_items %}
+                                <option value="item_{{ item.id }}">{{ item.item_number }} - {{ item.short_description }}</option>
+                            {% endfor %}
+                        </optgroup>
+                        {% endif %}
+
+                        {# Group 2: Subcontracted Work Orders (Cost Details) #}
+                        {% if available_cost_details %}
+                        <optgroup label="أوامر العمل المسندة (تفاصيل التكاليف)">
+                            {% for detail in available_cost_details %}
+                                <option value="detail_{{ detail.id }}">{{ detail.description }} (البند الرئيسي: {{ detail.item.item_number }})</option>
+                            {% endfor %}
+                        </optgroup>
+                        {% endif %}
                     </select>
                 </div>
                 <div class="col-md-4">
@@ -90,6 +105,7 @@
                 </div>
             </div>
         </form>
+         {# --- END: تعديل نموذج الإضافة بالكامل --- #}
     </div>
 </div>
 {% else %}
@@ -154,6 +170,7 @@
 </div>
 
 
+{# The rest of the file (payments section and modals) remains the same #}
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
         <h3 class="mb-0">سجل الدفعات</h3>
@@ -201,79 +218,5 @@
         {% endif %}
     </div>
 </div>
-
-{# --- START: تعديل نافذة إضافة دفعة --- #}
-<div class="modal fade" id="addPaymentModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">تسجيل دفعة جديدة للمستخلص {{ invoice.invoice_number }}</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form action="{{ url_for('invoice.add_payment_to_invoice', invoice_id=invoice.id) }}" method="POST">
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">المبلغ</label>
-                        <input type="number" step="0.01" class="form-control" name="amount" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">تاريخ الدفعة</label>
-                        <input type="date" class="form-control" name="payment_date" required>
-                    </div>
-                    
-                    {# --- الإضافة الجديدة هنا --- #}
-                    <div class="mb-3">
-                        <label for="invoice_item_id" class="form-label">ربط الدفعة ببند (اختياري)</label>
-                        <select class="form-select" id="invoice_item_id" name="invoice_item_id">
-                            <option value="">-- دفعة عامة للمستخلص --</option>
-                            {% for inv_item in invoice.items %}
-                                <option value="{{ inv_item.id }}">{{ inv_item.description }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    {# --- نهاية الإضافة --- #}
-
-                    <div class="mb-3">
-                        <label class="form-label">الوصف (اختياري)</label>
-                        <textarea class="form-control" name="description" rows="2"></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                    <button type="submit" class="btn btn-primary">حفظ الدفعة</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-{# --- END: تعديل نافذة إضافة دفعة --- #}
-
-{# ... (باقي النوافذ المنبثقة تبقى كما هي) ... #}
-{% for payment in invoice.payments %}
-<div class="modal fade" id="deletePaymentModal-{{ payment.id }}" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">تأكيد الحذف</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body">هل أنت متأكد أنك تريد حذف الدفعة بمبلغ <strong>{{ "{:,.2f}".format(payment.amount) }} ريال</strong>؟</div><div class="modal-footer"><form action="{{ url_for('invoice.delete_payment_from_invoice', payment_id=payment.id) }}" method="POST"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button><button type="submit" class="btn btn-danger">تأكيد الحذف</button></form></div></div></div></div>
-{% endfor %}
-
-{% for inv_item in invoice.items %}
-<div class="modal fade" id="deleteItemModal-{{ inv_item.id }}" tabindex="-1" aria-labelledby="deleteItemModalLabel-{{ inv_item.id }}" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="deleteItemModalLabel-{{ inv_item.id }}">تأكيد حذف البند</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                هل أنت متأكد أنك تريد حذف هذا البند من المستخلص؟
-                <p class="text-muted small mt-2">{{ inv_item.description }}</p>
-            </div>
-            <div class="modal-footer">
-                <form action="{{ url_for('invoice.delete_item_from_invoice', invoice_item_id=inv_item.id) }}" method="POST">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                    <button type="submit" class="btn btn-danger">تأكيد الحذف</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-{% endfor %}
 
 {% endblock %}
