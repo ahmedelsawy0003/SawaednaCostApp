@@ -12,10 +12,11 @@
         <a href="{{ url_for("invoice.get_invoices_by_project", project_id=project.id) }}" class="btn btn-success">
             <i class="fas fa-file-invoice-dollar me-1"></i> عرض المستخلصات
         </a>
+        {# --- تم إصلاح الرابط هنا --- #}
         <a href="{{ url_for("invoice.new_invoice", project_id=project.id) }}" class="btn btn-outline-success">
             <i class="fas fa-plus me-1"></i> إضافة مستخلص
         </a>
-        {# END: New Invoice Buttons #}
+        {# --- نهاية الإصلاح --- #}
         
         <a href="{{ url_for("item.get_items_by_project", project_id=project.id) }}" class="btn btn-primary">
             <i class="fas fa-list me-1"></i> عرض البنود
@@ -24,10 +25,6 @@
             <i class="fas fa-chart-bar me-1"></i> لوحة التحكم
         </a>
         
-        {# --- START: تم حذف الزر القديم من هنا --- #}
-        {# تم حذف زر "الدفعات (القديمة)" لأنه لم يعد مستخدماً #}
-        {# --- END: تم حذف الزر القديم من هنا --- #}
-
         {% if current_user.role == 'admin' %}
         <a href="{{ url_for("project.edit_project", project_id=project.id) }}" class="btn btn-warning">
             <i class="fas fa-edit me-1"></i> تعديل
@@ -36,7 +33,6 @@
     </div>
 </div>
 
-{# ... The rest of the file remains unchanged ... #}
 <div class="row">
     <div class="col-lg-8">
         <div class="card mb-4">
