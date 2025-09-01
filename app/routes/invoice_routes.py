@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, abort
-from sqlalchemy import func # <<< تأكد من استيراد func
+from sqlalchemy import func
 from app.models.project import Project
 from app.models.contractor import Contractor
 from app.models.item import Item
@@ -15,6 +15,7 @@ import datetime
 invoice_bp = Blueprint("invoice", __name__, url_prefix='/invoices')
 
 # ... (get_invoices_by_project, new_invoice, delete_invoice, show_invoice remain the same) ...
+
 @invoice_bp.route("/project/<int:project_id>")
 @login_required
 def get_invoices_by_project(project_id):
@@ -29,6 +30,7 @@ def new_invoice(project_id):
     project = Project.query.get_or_404(project_id)
     check_project_permission(project)
     if request.method == "POST":
+        # ... (code remains the same) ...
         invoice_number = sanitize_input(request.form.get("invoice_number"))
         invoice_date_str = request.form.get("invoice_date")
         contractor_id = request.form.get("contractor_id")
@@ -60,16 +62,15 @@ def new_invoice(project_id):
     contractors = Contractor.query.order_by(Contractor.name).all()
     return render_template("invoices/new.html", project=project, contractors=contractors)
 
+
 @invoice_bp.route("/<int:invoice_id>/delete", methods=["POST"])
 @login_required
 def delete_invoice(invoice_id):
     invoice = Invoice.query.get_or_404(invoice_id)
     check_project_permission(invoice.project)
     project_id = invoice.project_id
-    
     if current_user.role != 'admin':
         abort(403)
-        
     db.session.delete(invoice)
     db.session.commit()
     flash(f"تم حذف المستخلص رقم '{invoice.invoice_number}' وكل ما يتعلق به بنجاح.", "success")
@@ -88,8 +89,6 @@ def show_invoice(invoice_id):
     ).order_by(Item.item_number).all()
     return render_template("invoices/show.html", invoice=invoice, available_items=available_items)
 
-
-# --- START: التعديل الجوهري وإضافة شرط التحقق من الكمية ---
 @invoice_bp.route("/<int:invoice_id>/add_item", methods=["POST"])
 @login_required
 def add_item_to_invoice(invoice_id):
@@ -97,12 +96,9 @@ def add_item_to_invoice(invoice_id):
     check_project_permission(invoice.project)
     item_id = request.form.get("item_id")
     quantity_str = request.form.get("quantity")
-
-    # 1. التحقق الأساسي من المدخلات
     if not item_id or not quantity_str:
         flash("الرجاء اختيار بند وإدخال الكمية.", "danger")
         return redirect(url_for('invoice.show_invoice', invoice_id=invoice_id))
-    
     try:
         new_quantity = float(quantity_str)
         if new_quantity <= 0:
@@ -111,40 +107,29 @@ def add_item_to_invoice(invoice_id):
     except ValueError:
         flash("الكمية المدخلة غير صالحة.", "danger")
         return redirect(url_for('invoice.show_invoice', invoice_id=invoice_id))
-
     item = Item.query.get_or_404(item_id)
-
-    # 2. التحقق من وجود كمية فعلية مسجلة في البند الرئيسي
     max_quantity = item.actual_quantity
     if max_quantity is None or max_quantity <= 0:
         flash(f"لا يمكن إضافة البند '{item.item_number}' للمستخلص لعدم وجود 'كمية فعلية' مسجلة له في صفحة البنود.", "danger")
         return redirect(url_for('invoice.show_invoice', invoice_id=invoice_id))
-
-    # 3. حساب الكمية التي تمت فوترتها مسبقاً في المستخلصات الأخرى
     previously_invoiced_qty = db.session.query(
         func.sum(InvoiceItem.quantity)
     ).filter(
         InvoiceItem.item_id == item.id,
-        InvoiceItem.invoice_id != invoice.id  # استثناء المستخلص الحالي
+        InvoiceItem.invoice_id != invoice.id
     ).scalar() or 0.0
-
-    # 4. تطبيق الشرط الرئيسي
     if (previously_invoiced_qty + new_quantity) > max_quantity:
         remaining_qty = max_quantity - previously_invoiced_qty
         flash(f"لا يمكن إضافة هذه الكمية. الكمية القصوى المسموح بها لهذا البند هي {max_quantity}. تمت فوترة {previously_invoiced_qty} مسبقاً. الكمية المتبقية المتاحة هي {remaining_qty:.2f} فقط.", "danger")
         return redirect(url_for('invoice.show_invoice', invoice_id=invoice_id))
-
-    # 5. إذا نجحت كل الشروط، قم بإضافة البند للمستخلص
     new_invoice_item = InvoiceItem(item=item, quantity=new_quantity)
     new_invoice_item.invoice_id = invoice.id
     db.session.add(new_invoice_item)
     db.session.commit()
     flash(f"تمت إضافة البند '{item.item_number}' إلى المستخلص بنجاح.", "success")
     return redirect(url_for('invoice.show_invoice', invoice_id=invoice_id))
-# --- END: التعديل الجوهري ---
 
-
-# ... (باقي الدوال في الملف تبقى كما هي بدون تغيير) ...
+# --- START: التعديل الرئيسي وإضافة شرط التحقق من المبلغ ---
 @invoice_bp.route("/<int:invoice_id>/add_payment", methods=["POST"])
 @login_required
 def add_payment_to_invoice(invoice_id):
@@ -153,7 +138,7 @@ def add_payment_to_invoice(invoice_id):
     amount_str = request.form.get("amount")
     payment_date_str = request.form.get("payment_date")
     description = sanitize_input(request.form.get("description"))
-    invoice_item_id = request.form.get("invoice_item_id") # Get the selected item
+    invoice_item_id = request.form.get("invoice_item_id")
 
     if not amount_str or not payment_date_str:
         flash("المبلغ وتاريخ الدفعة حقول مطلوبة.", "danger")
@@ -167,7 +152,17 @@ def add_payment_to_invoice(invoice_id):
     except (ValueError, TypeError):
         flash("البيانات المدخلة للمبلغ أو التاريخ غير صالحة.", "danger")
         return redirect(url_for('invoice.show_invoice', invoice_id=invoice_id))
+
+    # --- الشرط الجديد للتحقق من تجاوز المبلغ ---
+    total_invoice_amount = invoice.total_amount or 0.0
+    paid_amount = invoice.paid_amount or 0.0
     
+    if (paid_amount + amount) > total_invoice_amount:
+        remaining_to_pay = total_invoice_amount - paid_amount
+        flash(f"لا يمكن إضافة هذه الدفعة. المبلغ الإجمالي للمستخلص هو {total_invoice_amount:,.2f} ريال. تم دفع {paid_amount:,.2f} ريال بالفعل. أقصى مبلغ يمكن دفعه الآن هو {remaining_to_pay:,.2f} ريال.", "danger")
+        return redirect(url_for('invoice.show_invoice', invoice_id=invoice_id))
+    # --- نهاية الشرط الجديد ---
+
     new_payment = Payment(
         invoice_id=invoice.id,
         amount=amount,
@@ -179,10 +174,12 @@ def add_payment_to_invoice(invoice_id):
     db.session.commit()
     flash("تم تسجيل الدفعة بنجاح.", "success")
     return redirect(url_for('invoice.show_invoice', invoice_id=invoice_id))
+# --- END: التعديل الرئيسي ---
 
 @invoice_bp.route("/payments/<int:payment_id>/edit", methods=["GET", "POST"])
 @login_required
 def edit_payment(payment_id):
+    # ... (code remains the same) ...
     payment = Payment.query.get_or_404(payment_id)
     invoice = payment.invoice
     check_project_permission(invoice.project)
@@ -207,6 +204,7 @@ def edit_payment(payment_id):
 @invoice_bp.route("/payments/<int:payment_id>/delete", methods=["POST"])
 @login_required
 def delete_payment_from_invoice(payment_id):
+    # ... (code remains the same) ...
     payment = Payment.query.get_or_404(payment_id)
     invoice = payment.invoice
     check_project_permission(invoice.project)
@@ -219,6 +217,7 @@ def delete_payment_from_invoice(payment_id):
 @invoice_bp.route("/items/<int:invoice_item_id>/delete", methods=["POST"])
 @login_required
 def delete_item_from_invoice(invoice_item_id):
+    # ... (code remains the same) ...
     invoice_item = InvoiceItem.query.get_or_404(invoice_item_id)
     invoice = invoice_item.invoice
     check_project_permission(invoice.project)
@@ -234,14 +233,13 @@ def delete_item_from_invoice(invoice_item_id):
 @invoice_bp.route("/items/<int:invoice_item_id>/edit", methods=["GET", "POST"])
 @login_required
 def edit_item_from_invoice(invoice_item_id):
+    # ... (code remains the same) ...
     invoice_item = InvoiceItem.query.get_or_404(invoice_item_id)
     invoice = invoice_item.invoice
     check_project_permission(invoice.project)
-
     if invoice.payments:
         flash("لا يمكن تعديل بنود مستخلص تم تسجيل دفعات له.", "danger")
         return redirect(url_for('invoice.show_invoice', invoice_id=invoice.id))
-
     if request.method == "POST":
         quantity_str = request.form.get("quantity")
         try:
