@@ -237,18 +237,20 @@
                         <label for="description" class="form-label">الوصف (اختياري)</label>
                         <textarea name="description" class="form-control" rows="2"></textarea>
                     </div>
+                    <!-- START: Reverted to Select Dropdown with Truncated Text -->
                     <div class="mb-3">
                         <label for="invoice_item_id" class="form-label">ربط الدفعة ببند (اختياري)</label>
-                        <select name="invoice_item_id" class="form-select">
+                        <select name="invoice_item_id" id="invoice_item_id" class="form-select">
                             <option value="">-- دفعة عامة على إجمالي المستخلص --</option>
                             {% for inv_item in invoice.items %}
-                                <option value="{{ inv_item.id }}">{{ inv_item.description }}</option>
+                                <option value="{{ inv_item.id }}">{{ inv_item.description | truncate(80, True) }}</option>
                             {% endfor %}
                         </select>
                         <div class="form-text">
                             اختر بندًا لربط هذه الدفعة به مباشرةً، أو اتركه فارغًا لتسجيل الدفعة على كامل المستخلص.
                         </div>
                     </div>
+                    <!-- END: Reverted to Select Dropdown -->
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
@@ -310,4 +312,9 @@
 
 <!-- END: THE FIX -->
 {% endblock %}
+
+
+<!-- START: SCRIPT BLOCK REMOVED AS IT'S NO LONGER NEEDED -->
+{% block scripts %}{% endblock %}
+<!-- END: SCRIPT BLOCK REMOVED -->
 
