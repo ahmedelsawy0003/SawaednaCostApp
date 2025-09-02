@@ -32,43 +32,71 @@ class Item(db.Model):
     @property
     def all_payments(self):
         """
-        Fetches a list of all payments related to this item.
-        It includes payments linked directly to the invoice_item and
-        payments linked to the parent invoice in general.
+        Fetches a list of all payments specifically linked to this item or its cost details.
         """
-        invoice_ids_subquery = db.session.query(InvoiceItem.invoice_id).filter(InvoiceItem.item_id == self.id).distinct()
+        # Get all invoice_item IDs related to this main item or its cost details
+        related_invoice_item_ids_query = db.session.query(InvoiceItem.id).filter(
+            or_(
+                InvoiceItem.item_id == self.id,
+                InvoiceItem.cost_detail.has(item_id=self.id)
+            )
+        )
         
-        payments = Payment.query.filter(
-            Payment.invoice_id.in_(invoice_ids_subquery)
+        related_invoice_item_ids = [item[0] for item in related_invoice_item_ids_query.all()]
+
+        if not related_invoice_item_ids:
+            return []
+
+        # Fetch only payments directly linked to those specific invoice_items
+        direct_payments = Payment.query.filter(
+            Payment.invoice_item_id.in_(related_invoice_item_ids)
         ).order_by(Payment.payment_date.desc()).all()
         
-        return payments
-
+        return direct_payments
+    
     @property
     def paid_amount(self):
         """
-        Calculates the total paid amount for this item by proportionally
-        distributing payments from all invoices it appears on.
+        Calculates the total paid amount for this item by summing up payments
+        specifically linked to it, and its proportional share of general invoice payments.
         """
         total_paid_for_item = 0.0
-        invoice_items = InvoiceItem.query.filter_by(item_id=self.id).all()
-        invoice_ids = {ii.invoice_id for ii in invoice_items}
+        
+        related_invoice_items = InvoiceItem.query.filter(
+            or_(
+                InvoiceItem.item_id == self.id,
+                InvoiceItem.cost_detail.has(item_id=self.id)
+            )
+        ).all()
+        
+        invoice_map = {}
+        for ii in related_invoice_items:
+            if ii.invoice_id not in invoice_map:
+                invoice_map[ii.invoice_id] = []
+            invoice_map[ii.invoice_id].append(ii)
 
-        for invoice_id in invoice_ids:
+        for invoice_id, items_on_invoice in invoice_map.items():
             invoice = Invoice.query.get(invoice_id)
-            if not invoice or invoice.total_amount == 0 or invoice.paid_amount == 0:
+            if not invoice or invoice.total_amount == 0:
                 continue
 
-            value_of_this_item_on_invoice = db.session.query(
-                func.sum(InvoiceItem.total_price)
-            ).filter(
-                InvoiceItem.invoice_id == invoice_id,
-                InvoiceItem.item_id == self.id
+            value_of_this_item_on_invoice = sum(ii.total_price for ii in items_on_invoice)
+            
+            general_payments_on_invoice = db.session.query(func.sum(Payment.amount)).filter(
+                Payment.invoice_id == invoice_id,
+                Payment.invoice_item_id.is_(None)
+            ).scalar() or 0.0
+
+            if general_payments_on_invoice > 0:
+                proportion = value_of_this_item_on_invoice / invoice.total_amount
+                total_paid_for_item += general_payments_on_invoice * proportion
+
+            related_invoice_item_ids = [ii.id for ii in items_on_invoice]
+            direct_payments_to_item = db.session.query(func.sum(Payment.amount)).filter(
+                Payment.invoice_item_id.in_(related_invoice_item_ids)
             ).scalar() or 0.0
             
-            proportion = value_of_this_item_on_invoice / invoice.total_amount
-            paid_for_this_item_on_this_invoice = invoice.paid_amount * proportion
-            total_paid_for_item += paid_for_this_item_on_this_invoice
+            total_paid_for_item += direct_payments_to_item
             
         return total_paid_for_item
 
@@ -78,20 +106,11 @@ class Item(db.Model):
             return self.contract_quantity * self.contract_unit_cost
         return 0.0
 
-    # --- START: THE FIX AS YOU REQUESTED ---
     @property
     def actual_total_cost(self):
-        """
-        Calculates the actual total cost ONLY from the manually entered
-        actual_quantity and actual_unit_cost fields.
-        """
-        # The logic now depends only on manual entry
         if self.actual_quantity is not None and self.actual_unit_cost is not None:
             return self.actual_quantity * self.actual_unit_cost
-
-        # If the values are not entered manually, the cost is zero
         return 0.0
-    # --- END: THE FIX ---
     
     @property
     def remaining_amount(self):
@@ -103,10 +122,10 @@ class Item(db.Model):
         
     @property
     def short_description(self):
-        """Returns a truncated version of the description for display purposes."""
         if len(self.description) > 50:
             return self.description[:50] + '...'
         return self.description
 
     def __repr__(self):
         return f'<Item {self.item_number} - {self.description}>'
+

@@ -98,88 +98,83 @@
     </div>
 </div>
 
-{# --- START: قسم إدارة تفاصيل التكاليف الفعلية الجديد --- #}
+<!-- START: Tree-view for Cost Details -->
 <div class="card mb-4">
     <div class="card-header bg-success text-white">
-        <h3 class="mb-0">تفاصيل التكاليف الفعلية</h3>
+        <h3 class="mb-0">شجرة تفاصيل التكاليف الفعلية</h3>
     </div>
     <div class="card-body">
-        {# --- Form to Add New Cost Detail --- #}
-        <form method="POST" action="{{ url_for('cost_detail.add_cost_detail', item_id=item.id) }}">
-            <div class="row g-3 align-items-end">
-                <div class="col-md-3">
-                    <label class="form-label">الوصف</label>
-                    <input type="text" name="description" class="form-control" required>
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label">الكمية</label>
-                    <input type="number" step="0.01" name="quantity" class="form-control" required>
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label">تكلفة الوحدة</label>
-                    <input type="number" step="0.01" name="unit_cost" class="form-control" required>
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label">الوحدة</label>
-                    <input type="text" name="unit" class="form-control">
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label">المورد</label>
-                     <select name="contractor_id" class="form-select">
-                        <option value="">-- لا يوجد --</option>
-                        {% for contractor in contractors %}
-                            <option value="{{ contractor.id }}">{{ contractor.name }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="col-md-1">
-                    <button type="submit" class="btn btn-success w-100"><i class="fas fa-plus"></i></button>
-                </div>
-            </div>
-        </form>
+        <ul class="list-group">
+            <!-- Main Item -->
+            <li class="list-group-item list-group-item-dark">
+                <strong><i class="fas fa-cube me-2"></i>البند الرئيسي:</strong> {{ item.description }}
+                <span class="float-end badge bg-info">{{ "{:,.2f}".format(item.actual_total_cost) }} ريال</span>
+            </li>
 
-        <hr>
+            <!-- Cost Details (Children) -->
+            {% set details = item.cost_details.order_by(CostDetail.id.desc()).all() %}
+            {% if details %}
+                {% for detail in details %}
+                <li class="list-group-item d-flex justify-content-between align-items-center" style="padding-right: 3rem;">
+                    <div>
+                        <i class="fas fa-level-up-alt fa-rotate-90 text-muted me-2"></i>
+                        <strong>تفصيل:</strong> {{ detail.description }}
+                        <small class="text-muted ms-2">({{ detail.contractor.name if detail.contractor else 'غير محدد' }})</small>
+                    </div>
+                    <div>
+                        <span class="badge bg-secondary me-3">{{ "{:,.2f}".format(detail.total_cost) }} ريال</span>
+                        <div class="btn-group btn-group-sm d-inline-block">
+                            <a href="{{ url_for('cost_detail.edit_cost_detail', detail_id=detail.id) }}" class="btn btn-warning"><i class="fas fa-edit"></i></a>
+                            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteDetailModal-{{ detail.id }}"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                </li>
+                {% endfor %}
+            {% else %}
+                <li class="list-group-item text-center text-muted" style="padding-right: 3rem;">
+                    <i class="fas fa-info-circle me-2"></i>لا توجد تفاصيل تكاليف مضافة لهذا البند.
+                </li>
+            {% endif %}
 
-        {# --- Table of Existing Cost Details --- #}
-        {% set details = item.cost_details.order_by(CostDetail.id.desc()).all() %}
-        {% if details %}
-            <div class="table-responsive">
-                <table class="table table-sm table-hover table-striped">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>الوصف</th>
-                            <th>المورد/المقاول</th>
-                            <th class="text-center">الكمية</th>
-                            <th class="text-end">تكلفة الوحدة</th>
-                            <th class="text-end">الإجمالي</th>
-                            <th class="text-center">الإجراءات</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for detail in details %}
-                        <tr>
-                            <td>{{ detail.description }}</td>
-                            <td>{{ detail.contractor.name if detail.contractor else '-' }}</td>
-                            <td class="text-center">{{ detail.quantity }} {{ detail.unit }}</td>
-                            <td class="text-end">{{ "{:,.2f}".format(detail.unit_cost) }}</td>
-                            <td class="text-end fw-bold">{{ "{:,.2f}".format(detail.total_cost) }}</td>
-                            <td class="text-center">
-                                <div class="btn-group btn-group-sm">
-                                    <a href="{{ url_for('cost_detail.edit_cost_detail', detail_id=detail.id) }}" class="btn btn-warning"><i class="fas fa-edit"></i></a>
-                                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteDetailModal-{{ detail.id }}"><i class="fas fa-trash"></i></button>
-                                </div>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        {% else %}
-             <div class="alert alert-info text-center">لم يتم تسجيل أي تفاصيل تكاليف لهذا البند بعد.</div>
-        {% endif %}
+            <!-- Form to Add New Detail -->
+            <li class="list-group-item" style="padding-right: 3rem;">
+                <form method="POST" action="{{ url_for('cost_detail.add_cost_detail', item_id=item.id) }}">
+                    <div class="row g-2 align-items-end">
+                        <div class="col-md-3">
+                            <label class="form-label small">وصف التفصيل</label>
+                            <input type="text" name="description" class="form-control form-control-sm" required>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small">الكمية</label>
+                            <input type="number" step="0.01" name="quantity" class="form-control form-control-sm" required>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small">تكلفة الوحدة</label>
+                            <input type="number" step="0.01" name="unit_cost" class="form-control form-control-sm" required>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small">الوحدة</label>
+                            <input type="text" name="unit" class="form-control form-control-sm">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small">المورد</label>
+                             <select name="contractor_id" class="form-select form-select-sm">
+                                <option value="">-- لا يوجد --</option>
+                                {% for contractor in contractors %}
+                                    <option value="{{ contractor.id }}">{{ contractor.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-1">
+                            <button type="submit" class="btn btn-success btn-sm w-100"><i class="fas fa-plus"></i></button>
+                        </div>
+                    </div>
+                </form>
+            </li>
+        </ul>
     </div>
 </div>
-{# --- END: قسم إدارة تفاصيل التكاليف الفعلية الجديد --- #}
+<!-- END: Tree-view for Cost Details -->
 
 {# --- Modals for deleting cost details --- #}
 {% for detail in item.cost_details %}
@@ -204,9 +199,7 @@
 </div>
 {% endfor %}
 
-
 {# --- سجل التغييرات يبقى كما هو --- #}
-
 <div class="card">
     <div class="card-header bg-secondary text-white">
         <h3 class="mb-0">سجل التغييرات</h3>
@@ -252,7 +245,6 @@
     </div>
 </div>
 
-{# تم حذف النوافذ المنبثقة (Modals) الخاصة بالنظام القديم #}
 {% endblock %}
 
 {% block scripts %}
@@ -285,3 +277,4 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 </script>
 {% endblock %}
+
