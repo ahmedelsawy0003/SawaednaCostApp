@@ -14,7 +14,6 @@ import datetime
 
 invoice_bp = Blueprint("invoice", __name__, url_prefix='/invoices')
 
-# ... existing code ...
 @invoice_bp.route("/project/<int:project_id>")
 @login_required
 def get_invoices_by_project(project_id):
@@ -163,7 +162,7 @@ def add_payment_to_invoice(invoice_id):
     amount_str = request.form.get("amount")
     payment_date_str = request.form.get("payment_date")
     description = sanitize_input(request.form.get("description"))
-    invoice_item_id = request.form.get("invoice_item_id")
+    invoice_item_id_str = request.form.get("invoice_item_id")
     if not amount_str or not payment_date_str:
         flash("المبلغ وتاريخ الدفعة حقول مطلوبة.", "danger")
         return redirect(url_for('invoice.show_invoice', invoice_id=invoice_id))
@@ -182,12 +181,15 @@ def add_payment_to_invoice(invoice_id):
         remaining_to_pay = total_invoice_amount - paid_amount
         flash(f"لا يمكن إضافة هذه الدفعة. المبلغ الإجمالي للمستخلص هو {total_invoice_amount:,.2f} ريال. تم دفع {paid_amount:,.2f} ريال بالفعل. أقصى مبلغ يمكن دفعه الآن هو {remaining_to_pay:,.2f} ريال.", "danger")
         return redirect(url_for('invoice.show_invoice', invoice_id=invoice_id))
+    
+    invoice_item_id = int(invoice_item_id_str) if invoice_item_id_str and invoice_item_id_str.isdigit() else None
+
     new_payment = Payment(
         invoice_id=invoice.id,
         amount=amount,
         payment_date=payment_date,
         description=description,
-        invoice_item_id=int(invoice_item_id) if invoice_item_id else None
+        invoice_item_id=invoice_item_id
     )
     db.session.add(new_payment)
     db.session.commit()
@@ -200,23 +202,40 @@ def edit_payment(payment_id):
     payment = Payment.query.get_or_404(payment_id)
     invoice = payment.invoice
     check_project_permission(invoice.project)
+
     if request.method == "POST":
         amount_str = request.form.get("amount")
         payment_date_str = request.form.get("payment_date")
         description = sanitize_input(request.form.get("description"))
+        # START: THE FIX - Capture the selected invoice item ID
+        invoice_item_id_str = request.form.get("invoice_item_id")
+        # END: THE FIX
+
         if not amount_str or not payment_date_str:
             flash("المبلغ وتاريخ الدفعة حقول مطلوبة.", "danger")
             return redirect(url_for('invoice.edit_payment', payment_id=payment.id))
+        
         try:
             payment.amount = float(amount_str)
             payment.payment_date = datetime.datetime.strptime(payment_date_str, "%Y-%m-%d").date()
             payment.description = description
+            
+            # START: THE FIX - Update the linked item
+            if invoice_item_id_str and invoice_item_id_str.isdigit():
+                payment.invoice_item_id = int(invoice_item_id_str)
+            else:
+                payment.invoice_item_id = None # Set to None if no item is selected
+            # END: THE FIX
+            
             db.session.commit()
             flash("تم تحديث الدفعة بنجاح.", "success")
             return redirect(url_for('invoice.show_invoice', invoice_id=invoice.id))
         except (ValueError, TypeError):
             flash("البيانات المدخلة للمبلغ أو التاريخ غير صالحة.", "danger")
-    return render_template("invoices/edit_payment.html", payment=payment)
+    
+    # START: THE FIX - Pass the invoice object to the template
+    return render_template("invoices/edit_payment.html", payment=payment, invoice=invoice)
+    # END: THE FIX
 
 @invoice_bp.route("/payments/<int:payment_id>/delete", methods=["POST"])
 @login_required
@@ -236,14 +255,11 @@ def delete_item_from_invoice(invoice_item_id):
     invoice_item = InvoiceItem.query.get_or_404(invoice_item_id)
     invoice = invoice_item.invoice
     check_project_permission(invoice.project)
-    
-    # --- START: THE FIX ---
-    # Check if the specific item has payments, not the whole invoice.
+
     if invoice_item.payments:
-        flash("لا يمكن حذف هذا البند لوجود دفعات مسجلة مرتبطة به مباشرة. يجب حذف الدفعات المرتبطة أولاً.", "danger")
+        flash("لا يمكن حذف بند تم تسجيل دفعات مرتبطة به مباشرة. يجب حذف الدفعات المرتبطة بهذا البند أولاً.", "danger")
         return redirect(url_for('invoice.show_invoice', invoice_id=invoice.id))
-    # --- END: THE FIX ---
-        
+    
     invoice_id = invoice.id
     db.session.delete(invoice_item)
     db.session.commit()
@@ -257,12 +273,9 @@ def edit_item_from_invoice(invoice_item_id):
     invoice = invoice_item.invoice
     check_project_permission(invoice.project)
 
-    # --- START: THE FIX ---
-    # Check if the specific item has payments.
     if invoice_item.payments:
-        flash("لا يمكن تعديل هذا البند لوجود دفعات مسجلة مرتبطة به مباشرة.", "danger")
+        flash("لا يمكن تعديل كمية بند تم تسجيل دفعات مرتبطة به مباشرة.", "danger")
         return redirect(url_for('invoice.show_invoice', invoice_id=invoice.id))
-    # --- END: THE FIX ---
 
     if request.method == "POST":
         quantity_str = request.form.get("quantity")
@@ -282,3 +295,4 @@ def edit_item_from_invoice(invoice_item_id):
             flash("الكمية المدخلة غير صالحة.", "danger")
     
     return render_template("invoices/edit_invoice_item.html", invoice_item=invoice_item)
+

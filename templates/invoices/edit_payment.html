@@ -30,6 +30,21 @@
                 <label for="description" class="form-label">الوصف (اختياري)</label>
                 <textarea class="form-control" id="description" name="description" rows="3">{{ payment.description or '' }}</textarea>
             </div>
+            
+            <!-- START: THE FIX - Adding the dropdown to edit the linked item -->
+            <div class="mb-3">
+                <label for="invoice_item_id" class="form-label">ربط الدفعة ببند (اختياري)</label>
+                <select name="invoice_item_id" id="invoice_item_id" class="form-select">
+                    <option value="">-- دفعة عامة على إجمالي المستخلص --</option>
+                    {% for inv_item in invoice.items %}
+                        <option value="{{ inv_item.id }}" {% if payment.invoice_item_id == inv_item.id %}selected{% endif %}>
+                            {{ inv_item.description | truncate(80, True) }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <!-- END: THE FIX -->
+
             <button type="submit" class="btn btn-primary">
                 <i class="fas fa-save me-1"></i> حفظ التعديلات
             </button>
