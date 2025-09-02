@@ -78,20 +78,20 @@ class Item(db.Model):
             return self.contract_quantity * self.contract_unit_cost
         return 0.0
 
-    # --- START: التعديل الرئيسي حسب طلبك ---
+    # --- START: THE FIX AS YOU REQUESTED ---
     @property
     def actual_total_cost(self):
         """
         Calculates the actual total cost ONLY from the manually entered
         actual_quantity and actual_unit_cost fields.
         """
-        # المنطق الآن يعتمد فقط على الإدخال اليدوي
+        # The logic now depends only on manual entry
         if self.actual_quantity is not None and self.actual_unit_cost is not None:
             return self.actual_quantity * self.actual_unit_cost
 
-        # إذا لم يتم إدخال القيم يدوياً، فالتكلفة هي صفر
+        # If the values are not entered manually, the cost is zero
         return 0.0
-    # --- END: التعديل الرئيسي ---
+    # --- END: THE FIX ---
     
     @property
     def remaining_amount(self):

@@ -14,6 +14,7 @@ import datetime
 
 invoice_bp = Blueprint("invoice", __name__, url_prefix='/invoices')
 
+# ... existing code ...
 @invoice_bp.route("/project/<int:project_id>")
 @login_required
 def get_invoices_by_project(project_id):
@@ -235,9 +236,14 @@ def delete_item_from_invoice(invoice_item_id):
     invoice_item = InvoiceItem.query.get_or_404(invoice_item_id)
     invoice = invoice_item.invoice
     check_project_permission(invoice.project)
-    if invoice.payments:
-        flash("لا يمكن حذف بنود من مستخلص تم تسجيل دفعات له. يجب حذف الدفعات أولاً.", "danger")
+    
+    # --- START: THE FIX ---
+    # Check if the specific item has payments, not the whole invoice.
+    if invoice_item.payments:
+        flash("لا يمكن حذف هذا البند لوجود دفعات مسجلة مرتبطة به مباشرة. يجب حذف الدفعات المرتبطة أولاً.", "danger")
         return redirect(url_for('invoice.show_invoice', invoice_id=invoice.id))
+    # --- END: THE FIX ---
+        
     invoice_id = invoice.id
     db.session.delete(invoice_item)
     db.session.commit()
@@ -251,9 +257,12 @@ def edit_item_from_invoice(invoice_item_id):
     invoice = invoice_item.invoice
     check_project_permission(invoice.project)
 
-    if invoice.payments:
-        flash("لا يمكن تعديل بنود مستخلص تم تسجيل دفعات له.", "danger")
+    # --- START: THE FIX ---
+    # Check if the specific item has payments.
+    if invoice_item.payments:
+        flash("لا يمكن تعديل هذا البند لوجود دفعات مسجلة مرتبطة به مباشرة.", "danger")
         return redirect(url_for('invoice.show_invoice', invoice_id=invoice.id))
+    # --- END: THE FIX ---
 
     if request.method == "POST":
         quantity_str = request.form.get("quantity")

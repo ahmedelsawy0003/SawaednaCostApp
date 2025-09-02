@@ -39,7 +39,9 @@ def export_project(project_id):
                 item.item_number, item.description, item.unit,
                 item.contract_quantity, item.contract_unit_cost, item.contract_total_cost,
                 item.actual_quantity, item.actual_unit_cost, item.actual_total_cost,
-                item.status, item.contractor, item.paid_amount, item.remaining_amount, item.notes
+                item.status,
+                item.contractor.name if item.contractor else "", # <-- تم الإصلاح هنا
+                item.paid_amount, item.remaining_amount, item.notes
             ])
         
         success, error_message = service.write_data("تفاصيل بنود المشروع", data)
