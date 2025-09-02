@@ -163,9 +163,17 @@ def add_payment_to_invoice(invoice_id):
     payment_date_str = request.form.get("payment_date")
     description = sanitize_input(request.form.get("description"))
     invoice_item_id_str = request.form.get("invoice_item_id")
+
+    # --- START: THE FIX - Making item selection mandatory ---
+    if not invoice_item_id_str:
+        flash("يجب ربط الدفعة بأحد بنود المستخلص. الرجاء اختيار بند.", "danger")
+        return redirect(url_for('invoice.show_invoice', invoice_id=invoice_id))
+    # --- END: THE FIX ---
+
     if not amount_str or not payment_date_str:
         flash("المبلغ وتاريخ الدفعة حقول مطلوبة.", "danger")
         return redirect(url_for('invoice.show_invoice', invoice_id=invoice_id))
+    
     try:
         amount = float(amount_str)
         payment_date = datetime.datetime.strptime(payment_date_str, "%Y-%m-%d").date()
@@ -175,6 +183,7 @@ def add_payment_to_invoice(invoice_id):
     except (ValueError, TypeError):
         flash("البيانات المدخلة للمبلغ أو التاريخ غير صالحة.", "danger")
         return redirect(url_for('invoice.show_invoice', invoice_id=invoice_id))
+    
     total_invoice_amount = invoice.total_amount or 0.0
     paid_amount = invoice.paid_amount or 0.0
     if (paid_amount + amount) > total_invoice_amount:
@@ -182,14 +191,12 @@ def add_payment_to_invoice(invoice_id):
         flash(f"لا يمكن إضافة هذه الدفعة. المبلغ الإجمالي للمستخلص هو {total_invoice_amount:,.2f} ريال. تم دفع {paid_amount:,.2f} ريال بالفعل. أقصى مبلغ يمكن دفعه الآن هو {remaining_to_pay:,.2f} ريال.", "danger")
         return redirect(url_for('invoice.show_invoice', invoice_id=invoice_id))
     
-    invoice_item_id = int(invoice_item_id_str) if invoice_item_id_str and invoice_item_id_str.isdigit() else None
-
     new_payment = Payment(
         invoice_id=invoice.id,
         amount=amount,
         payment_date=payment_date,
         description=description,
-        invoice_item_id=invoice_item_id
+        invoice_item_id=int(invoice_item_id_str) # It's now guaranteed to be a valid string integer
     )
     db.session.add(new_payment)
     db.session.commit()
@@ -295,4 +302,5 @@ def edit_item_from_invoice(invoice_item_id):
             flash("الكمية المدخلة غير صالحة.", "danger")
     
     return render_template("invoices/edit_invoice_item.html", invoice_item=invoice_item)
+
 

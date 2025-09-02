@@ -87,11 +87,10 @@
                                 <th>التكلفة التعاقدية</th>
                                 {% endif %}
                                 <th>التكلفة الفعلية</th>
-                                {# --- START: التعديل الرئيسي هنا --- #}
                                 {% if current_user.role == 'admin' %}
                                 <th>الوفر / الزيادة</th>
                                 {% endif %}
-                                {# --- END: التعديل الرئيسي هنا --- #}
+                                <th>إجمالي المدفوعات</th> {# <-- NEW COLUMN HEADER #}
                                 <th>الحالة</th>
                                 <th class="text-center">الإجراءات</th>
                             </tr>
@@ -106,7 +105,6 @@
                                 <td>{{ "{:,.2f}".format(item.contract_total_cost) }}</td>
                                 {% endif %}
                                 <td>{{ "{:,.2f}".format(item.actual_total_cost) }}</td>
-                                {# --- START: التعديل الرئيسي هنا --- #}
                                 {% if current_user.role == 'admin' %}
                                 <td>
                                     <span class="{{ 'text-success' if item.cost_variance >= 0 else 'text-danger' }}">
@@ -114,7 +112,10 @@
                                     </span>
                                 </td>
                                 {% endif %}
-                                {# --- END: التعديل الرئيسي هنا --- #}
+                                {# <-- NEW COLUMN CELL --> #}
+                                <td>
+                                    <span class="text-info">{{ "{:,.2f}".format(item.paid_amount) }}</span>
+                                </td>
                                 <td>
                                     <span class="badge {{ "bg-warning" if item.status == "نشط" else "bg-success" if item.status == "مكتمل" else "bg-info" }}">
                                         {{ item.status }}
