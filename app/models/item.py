@@ -28,8 +28,7 @@ class Item(db.Model):
         db.Index('idx_item_project_id', 'project_id'),
         db.Index('idx_item_contractor_id', 'contractor_id'),
     )
-
-    # --- START: تعديل منطق عرض الدفعات ---
+    
     @property
     def all_payments(self):
         """
@@ -37,16 +36,13 @@ class Item(db.Model):
         It includes payments linked directly to the invoice_item and
         payments linked to the parent invoice in general.
         """
-        # 1. Find all invoices where this item appears
         invoice_ids_subquery = db.session.query(InvoiceItem.invoice_id).filter(InvoiceItem.item_id == self.id).distinct()
         
-        # 2. Find all payments linked to those invoices
         payments = Payment.query.filter(
             Payment.invoice_id.in_(invoice_ids_subquery)
         ).order_by(Payment.payment_date.desc()).all()
         
         return payments
-    # --- END: تعديل منطق عرض الدفعات ---
 
     @property
     def paid_amount(self):
@@ -82,24 +78,20 @@ class Item(db.Model):
             return self.contract_quantity * self.contract_unit_cost
         return 0.0
 
+    # --- START: التعديل الرئيسي حسب طلبك ---
     @property
     def actual_total_cost(self):
         """
-        Calculates the actual total cost. 
-        Priority 1: Sum of all associated cost_details.
-        Priority 2: Manually entered actual_quantity * actual_unit_cost if no details exist.
+        Calculates the actual total cost ONLY from the manually entered
+        actual_quantity and actual_unit_cost fields.
         """
-        total_from_details = db.session.query(
-            func.sum(CostDetail.quantity * CostDetail.unit_cost)
-        ).filter(CostDetail.item_id == self.id).scalar()
-
-        if total_from_details is not None and total_from_details > 0:
-            return total_from_details
-
+        # المنطق الآن يعتمد فقط على الإدخال اليدوي
         if self.actual_quantity is not None and self.actual_unit_cost is not None:
             return self.actual_quantity * self.actual_unit_cost
 
+        # إذا لم يتم إدخال القيم يدوياً، فالتكلفة هي صفر
         return 0.0
+    # --- END: التعديل الرئيسي ---
     
     @property
     def remaining_amount(self):
@@ -111,6 +103,7 @@ class Item(db.Model):
         
     @property
     def short_description(self):
+        """Returns a truncated version of the description for display purposes."""
         if len(self.description) > 50:
             return self.description[:50] + '...'
         return self.description
