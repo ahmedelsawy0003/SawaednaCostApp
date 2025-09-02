@@ -22,7 +22,6 @@ def get_invoices_by_project(project_id):
     invoices = project.invoices.order_by(Invoice.invoice_date.desc()).all()
     return render_template("invoices/index.html", project=project, invoices=invoices)
 
-# --- تم إصلاح الرابط هنا ---
 @invoice_bp.route("/new/project/<int:project_id>", methods=["GET", "POST"])
 @login_required
 def new_invoice(project_id):
@@ -217,3 +216,60 @@ def edit_payment(payment_id):
         except (ValueError, TypeError):
             flash("البيانات المدخلة للمبلغ أو التاريخ غير صالحة.", "danger")
     return render_template("invoices/edit_payment.html", payment=payment)
+
+@invoice_bp.route("/payments/<int:payment_id>/delete", methods=["POST"])
+@login_required
+def delete_payment_from_invoice(payment_id):
+    payment = Payment.query.get_or_404(payment_id)
+    invoice = payment.invoice
+    check_project_permission(invoice.project)
+    invoice_id = invoice.id
+    db.session.delete(payment)
+    db.session.commit()
+    flash("تم حذف الدفعة بنجاح.", "success")
+    return redirect(url_for('invoice.show_invoice', invoice_id=invoice_id))
+
+@invoice_bp.route("/items/<int:invoice_item_id>/delete", methods=["POST"])
+@login_required
+def delete_item_from_invoice(invoice_item_id):
+    invoice_item = InvoiceItem.query.get_or_404(invoice_item_id)
+    invoice = invoice_item.invoice
+    check_project_permission(invoice.project)
+    if invoice.payments:
+        flash("لا يمكن حذف بنود من مستخلص تم تسجيل دفعات له. يجب حذف الدفعات أولاً.", "danger")
+        return redirect(url_for('invoice.show_invoice', invoice_id=invoice.id))
+    invoice_id = invoice.id
+    db.session.delete(invoice_item)
+    db.session.commit()
+    flash("تم حذف البند من المستخلص بنجاح.", "success")
+    return redirect(url_for('invoice.show_invoice', invoice_id=invoice_id))
+
+@invoice_bp.route("/items/<int:invoice_item_id>/edit", methods=["GET", "POST"])
+@login_required
+def edit_item_from_invoice(invoice_item_id):
+    invoice_item = InvoiceItem.query.get_or_404(invoice_item_id)
+    invoice = invoice_item.invoice
+    check_project_permission(invoice.project)
+
+    if invoice.payments:
+        flash("لا يمكن تعديل بنود مستخلص تم تسجيل دفعات له.", "danger")
+        return redirect(url_for('invoice.show_invoice', invoice_id=invoice.id))
+
+    if request.method == "POST":
+        quantity_str = request.form.get("quantity")
+        try:
+            quantity = float(quantity_str)
+            if quantity <= 0:
+                flash("يجب أن تكون الكمية أكبر من صفر.", "danger")
+                return redirect(url_for('invoice.edit_item_from_invoice', invoice_item_id=invoice_item.id))
+            
+            invoice_item.quantity = quantity
+            invoice_item.total_price = quantity * invoice_item.unit_price
+            
+            db.session.commit()
+            flash("تم تحديث كمية البند بنجاح.", "success")
+            return redirect(url_for('invoice.show_invoice', invoice_id=invoice.id))
+        except (ValueError, TypeError):
+            flash("الكمية المدخلة غير صالحة.", "danger")
+    
+    return render_template("invoices/edit_invoice_item.html", invoice_item=invoice_item)
