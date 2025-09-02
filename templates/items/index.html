@@ -90,7 +90,8 @@
                                 {% if current_user.role == 'admin' %}
                                 <th>الوفر / الزيادة</th>
                                 {% endif %}
-                                <th>إجمالي المدفوعات</th> {# <-- NEW COLUMN HEADER #}
+                                <th>إجمالي المدفوعات</th>
+                                <th>المبلغ المتبقي</th> {# <-- NEW COLUMN HEADER #}
                                 <th>الحالة</th>
                                 <th class="text-center">الإجراءات</th>
                             </tr>
@@ -112,9 +113,12 @@
                                     </span>
                                 </td>
                                 {% endif %}
-                                {# <-- NEW COLUMN CELL --> #}
                                 <td>
                                     <span class="text-info">{{ "{:,.2f}".format(item.paid_amount) }}</span>
+                                </td>
+                                {# <-- NEW COLUMN CELL --> #}
+                                <td>
+                                    <span class="text-danger">{{ "{:,.2f}".format(item.remaining_amount) }}</span>
                                 </td>
                                 <td>
                                     <span class="badge {{ "bg-warning" if item.status == "نشط" else "bg-success" if item.status == "مكتمل" else "bg-info" }}">
@@ -236,3 +240,4 @@
 </div>
 
 {% endblock %}
+
