@@ -3,6 +3,7 @@ from wtforms import StringField, PasswordField, SubmitField, TextAreaField, Sele
 from wtforms.fields import DateField
 from wtforms.validators import DataRequired, Email, EqualTo, Length, ValidationError, Optional
 from app.models.user import User
+from app.models.contractor import Contractor # <-- إضافة جديدة
 
 # ... LoginForm and RegisterForm remain the same ...
 class LoginForm(FlaskForm):
@@ -26,7 +27,6 @@ class RegisterForm(FlaskForm):
             raise ValidationError('البريد الإلكتروني هذا مسجل بالفعل. الرجاء استخدام بريد آخر.')
 
 
-# --- START: تعديل نموذج المشروع ---
 class ProjectForm(FlaskForm):
     name = StringField('اسم المشروع', validators=[DataRequired(message="اسم المشروع مطلوب.")])
     location = StringField('الموقع')
@@ -40,9 +40,20 @@ class ProjectForm(FlaskForm):
     ], validators=[DataRequired()])
     notes = TextAreaField('ملاحظات')
     spreadsheet_id = StringField('معرّف Google Sheets')
-    
-    # تم تغيير اسم الحقل وتحديد coerce=int لضمان أن القيمة رقمية
     manager_id = SelectField('مدير المشروع', coerce=int, validators=[Optional()])
-    
     submit = SubmitField('حفظ المشروع')
-# --- END: تعديل نموذج المشروع ---
+
+# --- START: النموذج الجديد للمقاول ---
+class ContractorForm(FlaskForm):
+    name = StringField('اسم المقاول', validators=[DataRequired(message="اسم المقاول مطلوب.")])
+    contact_person = StringField('شخص الاتصال (اختياري)')
+    phone = StringField('رقم الهاتف (اختياري)')
+    email = StringField('البريد الإلكتروني (اختياري)', validators=[Optional(), Email(message="البريد الإلكتروني غير صالح.")])
+    notes = TextAreaField('ملاحظات (اختياري)')
+    submit = SubmitField('حفظ المقاول')
+
+    def validate_name(self, name):
+        # التأكد من أن الاسم غير مكرر عند إنشاء مقاول جديد
+        if Contractor.query.filter_by(name=name.data).first():
+            raise ValidationError('مقاول بنفس هذا الاسم موجود بالفعل.')
+# --- END: النموذج الجديد للمقاول ---

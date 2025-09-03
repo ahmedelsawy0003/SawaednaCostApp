@@ -7,6 +7,7 @@ from app.extensions import db
 from flask_login import login_required, current_user
 from sqlalchemy import or_
 from app.utils import sanitize_input
+from app.forms import ContractorForm # <-- إضافة جديدة
 
 contractor_bp = Blueprint("contractor", __name__, url_prefix='/contractors')
 
@@ -27,41 +28,32 @@ def get_contractors():
     
     return render_template("contractors/index.html", contractors=contractors)
 
+# --- START: تحديث دالة new_contractor ---
 @contractor_bp.route("/new", methods=['GET', 'POST'])
 @login_required
 def new_contractor():
     if current_user.role != 'admin':
         abort(403)
-    if request.method == 'POST':
-        name = sanitize_input(request.form.get('name'))
-        contact_person = sanitize_input(request.form.get('contact_person'))
-        phone = sanitize_input(request.form.get('phone'))
-        email = sanitize_input(request.form.get('email'))
-        notes = sanitize_input(request.form.get('notes'))
-
-        if not name:
-            flash('اسم المقاول هو حقل مطلوب.', 'danger')
-            return redirect(url_for('contractor.new_contractor'))
-
-        if Contractor.query.filter_by(name=name).first():
-            flash('مقاول بنفس هذا الاسم موجود بالفعل.', 'danger')
-            return redirect(url_for('contractor.new_contractor'))
-
+    
+    form = ContractorForm() # استخدام النموذج الجديد
+    
+    if form.validate_on_submit():
         new_contractor = Contractor(
-            name=name,
-            contact_person=contact_person,
-            phone=phone,
-            email=email,
-            notes=notes
+            name=form.name.data,
+            contact_person=form.contact_person.data,
+            phone=form.phone.data,
+            email=form.email.data,
+            notes=form.notes.data
         )
         db.session.add(new_contractor)
         db.session.commit()
         flash('تمت إضافة المقاول بنجاح!', 'success')
         return redirect(url_for('contractor.get_contractors'))
     
-    return render_template("contractors/new.html")
+    return render_template("contractors/new.html", form=form) # تمرير النموذج إلى القالب
+# --- END: تحديث دالة new_contractor ---
 
-# --- START: New Edit Contractor Function ---
+
 @contractor_bp.route("/<int:contractor_id>/edit", methods=['GET', 'POST'])
 @login_required
 def edit_contractor(contractor_id):
@@ -73,7 +65,6 @@ def edit_contractor(contractor_id):
     if request.method == 'POST':
         new_name = sanitize_input(request.form.get('name'))
         
-        # Check if new name already exists for another contractor
         if new_name != contractor.name and Contractor.query.filter_by(name=new_name).first():
             flash('مقاول آخر بنفس هذا الاسم موجود بالفعل.', 'danger')
             return redirect(url_for('contractor.edit_contractor', contractor_id=contractor_id))
@@ -89,9 +80,7 @@ def edit_contractor(contractor_id):
         return redirect(url_for('contractor.get_contractors'))
 
     return render_template("contractors/edit.html", contractor=contractor)
-# --- END: New Edit Contractor Function ---
 
-# --- START: New Delete Contractor Function ---
 @contractor_bp.route("/<int:contractor_id>/delete", methods=['POST'])
 @login_required
 def delete_contractor(contractor_id):
@@ -100,7 +89,6 @@ def delete_contractor(contractor_id):
         
     contractor = Contractor.query.get_or_404(contractor_id)
     
-    # Safety check: Prevent deletion if contractor is linked to any invoices
     if contractor.invoices.first():
         flash('لا يمكن حذف هذا المقاول لوجود مستخلصات مرتبطة به. يجب حذف المستخلصات أولاً.', 'danger')
         return redirect(url_for('contractor.get_contractors'))
@@ -109,7 +97,6 @@ def delete_contractor(contractor_id):
     db.session.commit()
     flash(f"تم حذف المقاول '{contractor.name}' بنجاح.", "success")
     return redirect(url_for('contractor.get_contractors'))
-# --- END: New Delete Contractor Function ---
 
 @contractor_bp.route("/<int:contractor_id>")
 @login_required
