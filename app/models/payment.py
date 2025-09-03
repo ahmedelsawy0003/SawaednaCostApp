@@ -20,7 +20,7 @@ class Payment(db.Model):
     def __repr__(self):
         return f'<Payment {self.amount}>'
 
-# --- START: THE FIX ---
+# --- START: THE FINAL FIX ---
 @event.listens_for(Payment, 'after_insert')
 @event.listens_for(Payment, 'after_update')
 @event.listens_for(Payment, 'after_delete')
@@ -35,9 +35,9 @@ def receive_after_payment_change(mapper, connection, target):
     # Get the session from the target object
     session = inspect(target).session
 
-    # Check if the session is already in the process of flushing
-    if not session.is_flushing:
+    # Check if the session is already in the process of flushing using the correct attribute
+    if not session._flushing:
         target.invoice.update_status()
         session.flush()
-# --- END: THE FIX ---
+# --- END: THE FINAL FIX ---
 
