@@ -7,6 +7,9 @@ from app.models.invoice import Invoice
 from app.models.invoice_item import InvoiceItem
 from app.models.payment import Payment
 from app.models.cost_detail import CostDetail
+# --- START: NEW MODEL IMPORT ---
+from app.models.payment_distribution import PaymentDistribution
+# --- END: NEW MODEL IMPORT ---
 from app.extensions import db
 from flask_login import login_required, current_user
 from app.utils import check_project_permission, sanitize_input
@@ -14,10 +17,7 @@ import datetime
 
 invoice_bp = Blueprint("invoice", __name__, url_prefix='/invoices')
 
-@invoice_bp.route("/project/<int:project_id>")
-@login_required
-def get_invoices_by_project(project_id):
-    project = Project.query.get_or_404(project_id)
+# ... other functions (get_invoices_by_project, new_invoice, etc.) remain the same ...
     check_project_permission(project)
     invoices = project.invoices.order_by(Invoice.invoice_date.desc()).all()
     return render_template("invoices/index.html", project=project, invoices=invoices)
@@ -154,72 +154,86 @@ def add_item_to_invoice(invoice_id):
     flash(flash_message, "success")
     return redirect(url_for('invoice.show_invoice', invoice_id=invoice_id))
 
+# --- START: COMPLETE REWRITE OF THE add_payment_to_invoice FUNCTION ---
 @invoice_bp.route("/<int:invoice_id>/add_payment", methods=["POST"])
 @login_required
 def add_payment_to_invoice(invoice_id):
     invoice = Invoice.query.get_or_404(invoice_id)
     check_project_permission(invoice.project)
-    
-    amount_str = request.form.get("amount")
+
     payment_date_str = request.form.get("payment_date")
     description = sanitize_input(request.form.get("description"))
-    invoice_item_id_str = request.form.get("invoice_item_id") # <-- Get as string first
 
-    # --- START: MODIFICATION 1 - Check if an item was selected ---
-    if not invoice_item_id_str:
-        flash("الرجاء اختيار البند الذي سيتم صرف الدفعة له.", "danger")
+    if not payment_date_str:
+        flash("تاريخ الدفعة حقل مطلوب.", "danger")
         return redirect(url_for('invoice.show_invoice', invoice_id=invoice_id))
-    # --- END: MODIFICATION 1 ---
-
-    if not amount_str or not payment_date_str:
-        flash("المبلغ وتاريخ الدفعة حقول مطلوبة.", "danger")
-        return redirect(url_for('invoice.show_invoice', invoice_id=invoice_id))
-        
+    
     try:
-        amount = float(amount_str)
         payment_date = datetime.datetime.strptime(payment_date_str, "%Y-%m-%d").date()
-        invoice_item_id = int(invoice_item_id_str) # Convert to integer
-        if amount <= 0:
-            flash("يجب أن يكون مبلغ الدفعة أكبر من صفر.", "danger")
-            return redirect(url_for('invoice.show_invoice', invoice_id=invoice_id))
     except (ValueError, TypeError):
-        flash("البيانات المدخلة للمبلغ أو التاريخ غير صالحة.", "danger")
+        flash("صيغة التاريخ المدخلة غير صالحة.", "danger")
         return redirect(url_for('invoice.show_invoice', invoice_id=invoice_id))
 
-    # --- START: MODIFICATION 2 - New validation logic for item's limit ---
-    target_invoice_item = InvoiceItem.query.get(invoice_item_id)
-    if not target_invoice_item or target_invoice_item.invoice_id != invoice.id:
-        flash("البند المحدد غير صالح أو لا ينتمي لهذا المستخلص.", "danger")
+    distributions = []
+    total_payment_amount = 0.0
+
+    # 1. Collect and validate all distributions from the form
+    for key, value in request.form.items():
+        if key.startswith("dist_item_"):
+            try:
+                invoice_item_id = int(key.split("_")[-1])
+                amount = float(value) if value else 0.0
+
+                if amount > 0:
+                    invoice_item = InvoiceItem.query.get(invoice_item_id)
+                    if not invoice_item or invoice_item.invoice_id != invoice_id:
+                        flash(f"تم العثور على بند غير صالح في الدفعة (ID: {invoice_item_id}).", "danger")
+                        return redirect(url_for('invoice.show_invoice', invoice_id=invoice_id))
+
+                    # Check if the amount exceeds the remaining amount for the item
+                    if amount > round(invoice_item.remaining_amount, 2) + 0.001: # Add tolerance for float issues
+                        flash(f"المبلغ المدفوع للبند '{invoice_item.description[:30]}...' يتجاوز المبلغ المتبقي.", "danger")
+                        return redirect(url_for('invoice.show_invoice', invoice_id=invoice_id))
+
+                    distributions.append({'invoice_item': invoice_item, 'amount': amount})
+                    total_payment_amount += amount
+            
+            except (ValueError, TypeError):
+                flash("تم إدخال قيمة غير صالحة لأحد البنود.", "danger")
+                return redirect(url_for('invoice.show_invoice', invoice_id=invoice_id))
+
+    if not distributions:
+        flash("الرجاء إدخال مبلغ لدفعه لبند واحد على الأقل.", "warning")
         return redirect(url_for('invoice.show_invoice', invoice_id=invoice_id))
 
-    previously_paid_for_item = db.session.query(func.sum(Payment.amount)).filter(
-        Payment.invoice_item_id == invoice_item_id
-    ).scalar() or 0.0
+    # 2. Create the main Payment record and its distributions
+    try:
+        new_payment = Payment(
+            invoice_id=invoice.id,
+            amount=total_payment_amount,
+            payment_date=payment_date,
+            description=description
+        )
+        db.session.add(new_payment)
+        db.session.flush() # Flush to get the ID of the new_payment
 
-    if (previously_paid_for_item + amount) > target_invoice_item.total_price:
-        remaining_for_item = target_invoice_item.total_price - previously_paid_for_item
-        flash(f"لا يمكن إضافة هذه الدفعة. المبلغ يتجاوز القيمة المتبقية للبند المحدد. أقصى مبلغ يمكن دفعه لهذا البند هو {remaining_for_item:,.2f} ريال.", "danger")
-        return redirect(url_for('invoice.show_invoice', invoice_id=invoice_id))
-    # --- END: MODIFICATION 2 ---
+        for dist_data in distributions:
+            new_distribution = PaymentDistribution(
+                payment_id=new_payment.id,
+                invoice_item_id=dist_data['invoice_item'].id,
+                amount=dist_data['amount']
+            )
+            db.session.add(new_distribution)
 
-    total_invoice_amount = invoice.total_amount or 0.0
-    paid_amount = invoice.paid_amount or 0.0
-    if (paid_amount + amount) > total_invoice_amount:
-        remaining_to_pay = total_invoice_amount - paid_amount
-        flash(f"لا يمكن إضافة هذه الدفعة. المبلغ الإجمالي للمستخلص هو {total_invoice_amount:,.2f} ريال. تم دفع {paid_amount:,.2f} ريال بالفعل. أقصى مبلغ يمكن دفعه الآن هو {remaining_to_pay:,.2f} ريال.", "danger")
-        return redirect(url_for('invoice.show_invoice', invoice_id=invoice_id))
+        db.session.commit()
+        flash("تم تسجيل الدفعة وتوزيعها بنجاح.", "success")
 
-    new_payment = Payment(
-        invoice_id=invoice.id,
-        amount=amount,
-        payment_date=payment_date,
-        description=description,
-        invoice_item_id=invoice_item_id
-    )
-    db.session.add(new_payment)
-    db.session.commit()
-    flash("تم تسجيل الدفعة بنجاح.", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"حدث خطأ أثناء حفظ الدفعة: {e}", "danger")
+
     return redirect(url_for('invoice.show_invoice', invoice_id=invoice_id))
+# --- END: COMPLETE REWRITE OF THE add_payment_to_invoice FUNCTION ---
 
 @invoice_bp.route("/payments/<int:payment_id>/edit", methods=["GET", "POST"])
 @login_required
@@ -320,6 +334,7 @@ def edit_item_from_invoice(invoice_item_id):
             flash("الكمية المدخلة غير صالحة.", "danger")
     
     return render_template("invoices/edit_invoice_item.html", invoice_item=invoice_item)
+
 
 
 

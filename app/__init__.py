@@ -13,7 +13,7 @@ def create_app():
     
     commands.init_app(app)
 
-    # --- START: تعديل الاستيرادات ---
+    # Import models to ensure they are registered with SQLAlchemy
     from .models.user import User
     from .models.project import Project
     from .models.item import Item
@@ -22,24 +22,24 @@ def create_app():
     from .models.contractor import Contractor
     from .models.invoice import Invoice
     from .models.invoice_item import InvoiceItem
-    # --- إضافة استيراد الموديل الجديد ---
     from .models.cost_detail import CostDetail
-    # --- END: تعديل الاستيرادات ---
+    # --- START: NEW MODEL IMPORT ---
+    from .models.payment_distribution import PaymentDistribution
+    # --- END: NEW MODEL IMPORT ---
+
 
     @login_manager.user_loader
     def load_user(user_id):
         return User.query.get(int(user_id))
 
-    # --- START: تعديل استيراد المسارات (Blueprints) ---
+    # Import and register blueprints
     from .routes.project_routes import project_bp
     from .routes.item_routes import item_bp
     from .routes.google_sheets_routes import sheets_bp
     from .routes.auth_routes import auth_bp
     from .routes.contractor_routes import contractor_bp
     from .routes.invoice_routes import invoice_bp
-    # --- إضافة استيراد المسار الجديد ---
     from .routes.cost_detail_routes import cost_detail_bp
-    # --- END: تعديل استيراد المسارات ---
 
     app.register_blueprint(project_bp)
     app.register_blueprint(item_bp)
@@ -47,9 +47,7 @@ def create_app():
     app.register_blueprint(auth_bp)
     app.register_blueprint(contractor_bp)
     app.register_blueprint(invoice_bp)
-    # --- START: تسجيل المسار الجديد ---
     app.register_blueprint(cost_detail_bp)
-    # --- END: تسجيل المسار الجديد ---
     
     @app.route('/')
     def index():

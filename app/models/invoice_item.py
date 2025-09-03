@@ -1,4 +1,6 @@
 from app.extensions import db
+from sqlalchemy import func
+from .payment_distribution import PaymentDistribution
 
 class InvoiceItem(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -8,39 +10,52 @@ class InvoiceItem(db.Model):
     total_price = db.Column(db.Float, nullable=False)
 
     invoice_id = db.Column(db.Integer, db.ForeignKey('invoice.id'), nullable=False)
-    # This always links to the main project item for overall tracking
-    item_id = db.Column(db.Integer, db.ForeignKey('item.id'), nullable=False) 
-    
-    # --- START: الحقل الجديد لربط المستخلص بتفصيل تكلفة معين ---
-    # This is optional and is used only when invoicing for a specific cost detail (subcontractor work)
+    item_id = db.Column(db.Integer, db.ForeignKey('item.id'), nullable=False)
     cost_detail_id = db.Column(db.Integer, db.ForeignKey('cost_detail.id'), nullable=True)
-    # --- END: الحقل الجديد ---
 
     # Relationships
     invoice = db.relationship('Invoice', back_populates='items')
     item = db.relationship('Item', backref=db.backref('invoice_items', lazy=True))
-    payments = db.relationship('Payment', back_populates='invoice_item', cascade="all, delete-orphan")
-    
-    # --- START: علاقة جديدة مع تفصيل التكلفة ---
     cost_detail = db.relationship('CostDetail', backref=db.backref('invoice_items', lazy=True))
-    # --- END: علاقة جديدة ---
+    
+    # --- START: REMOVED OLD RELATIONSHIP ---
+    # The direct link from a payment is no longer needed.
+    # payments = db.relationship('Payment', back_populates='invoice_item', cascade="all, delete-orphan")
+    # --- END: REMOVED OLD RELATIONSHIP ---
+
+    # --- START: NEW RELATIONSHIP ---
+    # An invoice item can have many payment distributions
+    distributions = db.relationship('PaymentDistribution', back_populates='invoice_item', cascade="all, delete-orphan")
+    # --- END: NEW RELATIONSHIP ---
+
+    @property
+    def paid_amount(self):
+        """Calculates the total amount paid specifically for this invoice item."""
+        if not self.id:
+            return 0.0
+        return db.session.query(
+            func.sum(PaymentDistribution.amount)
+        ).filter(
+            PaymentDistribution.invoice_item_id == self.id
+        ).scalar() or 0.0
+
+    @property
+    def remaining_amount(self):
+        """Calculates the remaining amount for this invoice item."""
+        return self.total_price - self.paid_amount
 
     def __init__(self, quantity, item=None, cost_detail=None):
         if item:
-            # Case 1: This is for a main project item
             self.item = item
             self.description = f"{item.item_number} - {item.description}"
             actual_cost = item.actual_unit_cost
             contract_cost = item.contract_unit_cost
             self.unit_price = actual_cost if actual_cost is not None and actual_cost > 0 else (contract_cost or 0.0)
-
         elif cost_detail:
-            # Case 2: This is for a subcontracted cost detail
             self.cost_detail = cost_detail
-            self.item = cost_detail.item # Still link to the parent item
+            self.item = cost_detail.item
             self.description = f"تفصيل: {cost_detail.description}"
             self.unit_price = cost_detail.unit_cost or 0.0
-        
         else:
             raise ValueError("InvoiceItem must be initialized with either an 'item' or a 'cost_detail'.")
 

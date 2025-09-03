@@ -61,7 +61,7 @@
     </div>
 </div>
 
-{% if not invoice.payments %}
+{% if not invoice.is_fully_paid %}
 <div class="card mb-4">
     <div class="card-header bg-success text-white">
         <h3 class="mb-0">إضافة بنود للمستخلص</h3>
@@ -73,7 +73,6 @@
                     <label for="selected_item_id" class="form-label">اختر البند أو أمر العمل</label>
                     <select name="selected_item_id" id="selected_item_id" class="form-select" required>
                         <option value="">-- اختر من القائمة --</option>
-                        
                         {% if available_items %}
                         <optgroup label="بنود المشروع الرئيسية">
                             {% for item in available_items %}
@@ -81,11 +80,10 @@
                             {% endfor %}
                         </optgroup>
                         {% endif %}
-
                         {% if available_cost_details %}
                         <optgroup label="أوامر العمل المسندة (تفاصيل التكاليف)">
                             {% for detail in available_cost_details %}
-                                <option value="detail_{{ detail.id }}">{{ detail.description | truncate(60) }} (بند: {{ detail.item.item_number }})</option>
+                                <option value="detail_{{ detail.id }}">{{ detail.description | truncate(80) }} (البند الرئيسي: {{ detail.item.item_number }})</option>
                             {% endfor %}
                         </optgroup>
                         {% endif %}
@@ -107,7 +105,7 @@
 {% else %}
 <div class="alert alert-warning text-center">
     <i class="fas fa-lock me-2"></i>
-    لا يمكن إضافة أو تعديل البنود بعد تسجيل أول دفعة على المستخلص لضمان دقة الحسابات.
+    لا يمكن إضافة أو تعديل البنود بعد تسجيل دفعات على المستخلص لضمان دقة الحسابات.
 </div>
 {% endif %}
 
@@ -126,6 +124,8 @@
                             <th class="text-center">الكمية</th>
                             <th class="text-end">سعر الوحدة</th>
                             <th class="text-end">الإجمالي</th>
+                            <th class="text-end">المدفوع</th>
+                            <th class="text-end">المتبقي</th>
                             <th class="text-center">الإجراءات</th>
                         </tr>
                     </thead>
@@ -136,17 +136,19 @@
                             <td class="text-center">{{ inv_item.quantity }}</td>
                             <td class="text-end">{{ "{:,.2f}".format(inv_item.unit_price) }}</td>
                             <td class="text-end fw-bold">{{ "{:,.2f}".format(inv_item.total_price) }}</td>
+                            <td class="text-end text-success">{{ "{:,.2f}".format(inv_item.paid_amount) }}</td>
+                            <td class="text-end text-danger">{{ "{:,.2f}".format(inv_item.remaining_amount) }}</td>
                             <td class="text-center">
                                 <div class="btn-group btn-group-sm">
                                     <a href="{{ url_for('invoice.edit_item_from_invoice', invoice_item_id=inv_item.id) }}" 
-                                       class="btn btn-warning {% if inv_item.payments %}disabled{% endif %}" 
+                                       class="btn btn-warning {% if invoice.is_fully_paid %}disabled{% endif %}" 
                                        title="تعديل كمية البند">
                                         <i class="fas fa-edit"></i>
                                     </a>
                                     <button type="button" class="btn btn-danger" 
                                             data-bs-toggle="modal" 
                                             data-bs-target="#deleteItemModal-{{ inv_item.id }}"
-                                            {% if inv_item.payments %}disabled{% endif %}
+                                            {% if invoice.is_fully_paid %}disabled{% endif %}
                                             title="حذف البند من المستخلص">
                                         <i class="fas fa-trash"></i>
                                     </button>
@@ -165,12 +167,10 @@
     </div>
 </div>
 
-
-{# The rest of the file (payments section and modals) remains the same #}
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
         <h3 class="mb-0">سجل الدفعات</h3>
-        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addPaymentModal">
+        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addPaymentModal" {% if not invoice.items or invoice.is_fully_paid %}disabled{% endif %}>
             <i class="fas fa-plus me-1"></i> تسجيل دفعة جديدة
         </button>
     </div>
@@ -181,9 +181,9 @@
                     <thead>
                         <tr>
                             <th>تاريخ الدفعة</th>
-                            <th>البند المرتبط</th> {# <-- NEW HEADER #}
-                            <th class="text-end">المبلغ</th>
                             <th>الوصف/البيان</th>
+                            <th>البنود المرتبطة</th>
+                            <th class="text-end">المبلغ</th>
                             <th class="text-center">الإجراءات</th>
                         </tr>
                     </thead>
@@ -191,16 +191,15 @@
                         {% for payment in invoice.payments %}
                         <tr>
                             <td>{{ payment.payment_date.strftime('%Y-%m-%d') }}</td>
-                            {# <-- NEW CELL --> #}
+                            <td>{{ payment.description or '-' }}</td>
                             <td>
-                                {% if payment.invoice_item %}
-                                    <span title="{{ payment.invoice_item.description }}">{{ payment.invoice_item.description | truncate(40) }}</span>
-                                {% else %}
-                                    <span class="text-muted">-</span>
-                                {% endif %}
+                                <ul class="list-unstyled mb-0 small">
+                                {% for dist in payment.distributions %}
+                                    <li>{{ dist.invoice_item.description | truncate(50) }}: <span class="text-success">{{ "{:,.2f}".format(dist.amount) }}</span></li>
+                                {% endfor %}
+                                </ul>
                             </td>
                             <td class="text-end text-success fw-bold">{{ "{:,.2f}".format(payment.amount) }}</td>
-                            <td>{{ payment.description or '-' }}</td>
                             <td class="text-center">
                                 <div class="btn-group btn-group-sm">
                                     <a href="{{ url_for('invoice.edit_payment', payment_id=payment.id) }}" class="btn btn-warning" title="تعديل الدفعة">
@@ -224,91 +223,162 @@
     </div>
 </div>
 
-<!-- Add Payment Modal -->
-<div class="modal fade" id="addPaymentModal" tabindex="-1">
+<!-- Add/Edit Item Modals -->
+{% for inv_item in invoice.items %}
+<div class="modal fade" id="deleteItemModal-{{ inv_item.id }}" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">تسجيل دفعة جديدة</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
+            <div class="modal-header"><h5 class="modal-title">تأكيد الحذف</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
             <div class="modal-body">
-                <form id="add-payment-form" method="POST" action="{{ url_for('invoice.add_payment_to_invoice', invoice_id=invoice.id) }}">
-                    <div class="mb-3">
-                        <label for="amount" class="form-label">المبلغ</label>
-                        <input type="number" step="0.01" class="form-control" id="amount" name="amount" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="payment_date" class="form-label">تاريخ الدفعة</label>
-                        <input type="date" class="form-control" id="payment_date" name="payment_date" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="invoice_item_id" class="form-label">ربط الدفعة ببند</label>
-                        <select class="form-select" id="invoice_item_id" name="invoice_item_id" required>
-                            <option value="" disabled selected>-- اختر البند --</option>
-                            {% for inv_item in invoice.items %}
-                                <option value="{{ inv_item.id }}">{{ inv_item.description | truncate(80) }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="description" class="form-label">الوصف (اختياري)</label>
-                        <textarea class="form-control" id="description" name="description" rows="3"></textarea>
-                    </div>
-                </form>
+                <p>هل أنت متأكد أنك تريد حذف البند <strong>{{ inv_item.description }}</strong> من المستخلص؟</p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                <button type="submit" form="add-payment-form" class="btn btn-primary">حفظ الدفعة</button>
+                <form action="{{ url_for('invoice.delete_item_from_invoice', invoice_item_id=inv_item.id) }}" method="POST">
+                    <button type="submit" class="btn btn-danger">تأكيد الحذف</button>
+                </form>
             </div>
         </div>
     </div>
 </div>
-
-{% for inv_item in invoice.items %}
-    <!-- Delete Invoice Item Modal -->
-    <div class="modal fade" id="deleteItemModal-{{ inv_item.id }}" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">تأكيد الحذف</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <p>هل أنت متأكد أنك تريد حذف البند <strong>"{{ inv_item.description }}"</strong> من المستخلص؟</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                    <form action="{{ url_for('invoice.delete_item_from_invoice', invoice_item_id=inv_item.id) }}" method="POST">
-                        <button type="submit" class="btn btn-danger">تأكيد الحذف</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
 {% endfor %}
 
+<!-- Payment Modals -->
 {% for payment in invoice.payments %}
-    <!-- Delete Payment Modal -->
-    <div class="modal fade" id="deletePaymentModal-{{ payment.id }}" tabindex="-1">
-         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">تأكيد الحذف</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <p>هل أنت متأكد أنك تريد حذف الدفعة بمبلغ <strong>{{ "{:,.2f}".format(payment.amount) }}</strong>؟</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                    <form action="{{ url_for('invoice.delete_payment_from_invoice', payment_id=payment.id) }}" method="POST">
-                        <button type="submit" class="btn btn-danger">تأكيد الحذف</button>
-                    </form>
-                </div>
+<div class="modal fade" id="deletePaymentModal-{{ payment.id }}" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header"><h5 class="modal-title">تأكيد حذف الدفعة</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body">
+                <p>هل أنت متأكد أنك تريد حذف الدفعة بمبلغ <strong>{{ "{:,.2f}".format(payment.amount) }}</strong>؟</p>
+                <p class="text-danger">لا يمكن التراجع عن هذا الإجراء.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <form action="{{ url_for('invoice.delete_payment_from_invoice', payment_id=payment.id) }}" method="POST">
+                    <button type="submit" class="btn btn-danger">تأكيد الحذف</button>
+                </form>
             </div>
         </div>
     </div>
+</div>
 {% endfor %}
+
+<!-- START: New Add Payment Modal -->
+<div class="modal fade" id="addPaymentModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <form id="paymentForm" method="POST" action="{{ url_for('invoice.add_payment_to_invoice', invoice_id=invoice.id) }}">
+                <div class="modal-header">
+                    <h5 class="modal-title">تسجيل دفعة جديدة</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="payment_date" class="form-label">تاريخ الدفعة</label>
+                            <input type="date" class="form-control" id="payment_date" name="payment_date" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="description" class="form-label">الوصف (اختياري)</label>
+                            <input type="text" class="form-control" id="description" name="description">
+                        </div>
+                    </div>
+                    
+                    <h6 class="mt-4">توزيع مبلغ الدفعة على البنود</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>البند</th>
+                                    <th class="text-end">المتبقي</th>
+                                    <th style="width: 150px;">المبلغ المدفوع</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for inv_item in invoice.items %}
+                                    {% if inv_item.remaining_amount > 0 %}
+                                    <tr>
+                                        <td>{{ inv_item.description | truncate(70) }}</td>
+                                        <td class="text-end">{{ "{:,.2f}".format(inv_item.remaining_amount) }}</td>
+                                        <td>
+                                            <input type="number" 
+                                                   class="form-control form-control-sm payment-dist-input"
+                                                   name="dist_item_{{ inv_item.id }}" 
+                                                   step="0.01" 
+                                                   min="0"
+                                                   max="{{ inv_item.remaining_amount }}"
+                                                   placeholder="0.00">
+                                        </td>
+                                    </tr>
+                                    {% endif %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer d-flex justify-content-between">
+                    <div>
+                        <strong>الإجمالي: </strong>
+                        <span id="totalPaymentAmount" class="fw-bold text-success fs-5">0.00</span> ريال
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                        <button type="submit" id="submitPaymentBtn" class="btn btn-success" disabled>حفظ الدفعة</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!-- END: New Add Payment Modal -->
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const paymentModal = document.getElementById('addPaymentModal');
+    if (paymentModal) {
+        const distInputs = paymentModal.querySelectorAll('.payment-dist-input');
+        const totalAmountDisplay = paymentModal.querySelector('#totalPaymentAmount');
+        const submitBtn = paymentModal.querySelector('#submitPaymentBtn');
+
+        function updateTotal() {
+            let total = 0;
+            distInputs.forEach(input => {
+                const value = parseFloat(input.value) || 0;
+                total += value;
+            });
+            totalAmountDisplay.textContent = total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            
+            // Enable/disable submit button
+            submitBtn.disabled = total <= 0;
+        }
+
+        distInputs.forEach(input => {
+            input.addEventListener('input', () => {
+                const value = parseFloat(input.value) || 0;
+                const max = parseFloat(input.max);
+                if (value > max) {
+                    input.value = max;
+                }
+                if (value < 0) {
+                    input.value = 0;
+                }
+                updateTotal();
+            });
+        });
+
+        // Set today's date on modal show
+        paymentModal.addEventListener('shown.bs.modal', () => {
+            const dateInput = paymentModal.querySelector('#payment_date');
+            dateInput.value = new Date().toISOString().slice(0, 10);
+            // Reset form on show
+            paymentModal.querySelector('#paymentForm').reset();
+            updateTotal();
+        });
+    }
+});
+</script>
 {% endblock %}
 
