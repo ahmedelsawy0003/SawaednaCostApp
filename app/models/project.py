@@ -2,6 +2,7 @@ from app.extensions import db
 from .user import user_project_association
 from .invoice import Invoice
 from .payment import Payment
+from app import constants # <-- إضافة جديدة
 
 class Project(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -9,7 +10,7 @@ class Project(db.Model):
     location = db.Column(db.String(255))
     start_date = db.Column(db.String(10))
     end_date = db.Column(db.String(10))
-    status = db.Column(db.String(50), default='قيد التنفيذ')
+    status = db.Column(db.String(50), default=constants.PROJECT_STATUS_IN_PROGRESS) # <-- استخدام الثوابت
     notes = db.Column(db.Text)
     spreadsheet_id = db.Column(db.String(255))
     
@@ -25,13 +26,8 @@ class Project(db.Model):
     
     manager = db.relationship('User', foreign_keys=[manager_id])
 
-    # --- START: THE FIX ---
-    # We define the relationship here and specify the back_populates
     items = db.relationship('Item', back_populates='project', cascade="all, delete-orphan")
-    # --- END: THE FIX ---
-
     invoices = db.relationship('Invoice', back_populates='project', lazy='dynamic', cascade="all, delete-orphan")
 
     def __repr__(self):
         return f'<Project {self.name}>'
-
