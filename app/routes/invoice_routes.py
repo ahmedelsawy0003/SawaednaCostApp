@@ -12,6 +12,7 @@ from app.extensions import db
 from flask_login import login_required, current_user
 from app.utils import check_project_permission, sanitize_input
 import datetime
+from app.forms import InvoiceForm # <-- إضافة جديدة
 
 invoice_bp = Blueprint("invoice", __name__, url_prefix='/invoices')
 
@@ -23,33 +24,25 @@ def get_invoices_by_project(project_id):
     invoices = project.invoices.order_by(Invoice.invoice_date.desc()).all()
     return render_template("invoices/index.html", project=project, invoices=invoices)
 
+# --- START: تحديث دالة new_invoice ---
 @invoice_bp.route("/new/project/<int:project_id>", methods=["GET", "POST"])
 @login_required
 def new_invoice(project_id):
     project = Project.query.get_or_404(project_id)
     check_project_permission(project)
-    if request.method == "POST":
-        invoice_number = sanitize_input(request.form.get("invoice_number"))
-        invoice_date_str = request.form.get("invoice_date")
-        contractor_id = request.form.get("contractor_id")
-        notes = sanitize_input(request.form.get("notes"))
-        if not all([invoice_number, invoice_date_str, contractor_id]):
-            flash("رقم المستخلص، التاريخ، والمقاول هي حقول مطلوبة.", "danger")
-            return redirect(url_for("invoice.new_invoice", project_id=project_id))
-        if Invoice.query.filter_by(invoice_number=invoice_number).first():
-            flash("رقم المستخلص هذا موجود بالفعل. الرجاء إدخال رقم فريد.", "danger")
-            return redirect(url_for("invoice.new_invoice", project_id=project_id))
-        try:
-            invoice_date = datetime.datetime.strptime(invoice_date_str, "%Y-%m-%d").date()
-        except ValueError:
-            flash("صيغة التاريخ غير صالحة.", "danger")
-            return redirect(url_for("invoice.new_invoice", project_id=project_id))
+    
+    form = InvoiceForm()
+    # ملء قائمة المقاولين
+    form.contractor_id.choices = [(c.id, c.name) for c in Contractor.query.order_by(Contractor.name).all()]
+    form.contractor_id.choices.insert(0, (0, '-- اختر المقاول --'))
+
+    if form.validate_on_submit():
         new_invoice = Invoice(
             project_id=project.id,
-            invoice_number=invoice_number,
-            invoice_date=invoice_date,
-            contractor_id=int(contractor_id),
-            notes=notes,
+            invoice_number=form.invoice_number.data,
+            invoice_date=form.invoice_date.data,
+            contractor_id=form.contractor_id.data,
+            notes=form.notes.data,
             status='جديد'
         )
         db.session.add(new_invoice)
@@ -57,8 +50,9 @@ def new_invoice(project_id):
         flash("تم إنشاء المستخلص بنجاح. يمكنك الآن إضافة البنود إليه.", "success")
         return redirect(url_for("invoice.show_invoice", invoice_id=new_invoice.id))
     
-    contractors = Contractor.query.order_by(Contractor.name).all()
-    return render_template("invoices/new.html", project=project, contractors=contractors)
+    return render_template("invoices/new.html", project=project, form=form)
+# --- END: تحديث دالة new_invoice ---
+
 
 @invoice_bp.route("/<int:invoice_id>/delete", methods=["POST"])
 @login_required
@@ -231,7 +225,6 @@ def add_payment_to_invoice(invoice_id):
 
     return redirect(url_for('invoice.show_invoice', invoice_id=invoice_id))
 
-# --- START: COMPLETE REWRITE OF THE edit_payment FUNCTION ---
 @invoice_bp.route("/payments/<int:payment_id>/edit", methods=["GET", "POST"])
 @login_required
 def edit_payment(payment_id):
@@ -295,7 +288,6 @@ def edit_payment(payment_id):
     
     dists_dict = {dist.invoice_item_id: dist.amount for dist in payment.distributions}
     return render_template("invoices/edit_payment.html", payment=payment, invoice=invoice, dists=dists_dict)
-# --- END: COMPLETE REWRITE OF THE edit_payment FUNCTION ---
 
 @invoice_bp.route("/payments/<int:payment_id>/delete", methods=["POST"])
 @login_required
@@ -309,7 +301,6 @@ def delete_payment_from_invoice(payment_id):
     flash("تم حذف الدفعة بنجاح.", "success")
     return redirect(url_for('invoice.show_invoice', invoice_id=invoice_id))
 
-# --- START: UPDATED DELETE/EDIT ITEM FUNCTIONS ---
 @invoice_bp.route("/items/<int:invoice_item_id>/delete", methods=["POST"])
 @login_required
 def delete_item_from_invoice(invoice_item_id):
@@ -356,5 +347,3 @@ def edit_item_from_invoice(invoice_item_id):
             flash("الكمية المدخلة غير صالحة.", "danger")
     
     return render_template("invoices/edit_invoice_item.html", invoice_item=invoice_item)
-# --- END: UPDATED DELETE/EDIT ITEM FUNCTIONS ---
-

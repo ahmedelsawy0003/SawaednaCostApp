@@ -4,6 +4,7 @@ from wtforms.fields import DateField
 from wtforms.validators import DataRequired, Email, EqualTo, Length, ValidationError, Optional
 from app.models.user import User
 from app.models.contractor import Contractor
+from app.models.invoice import Invoice # <-- إضافة جديدة
 
 # ... LoginForm and RegisterForm remain the same ...
 class LoginForm(FlaskForm):
@@ -43,24 +44,33 @@ class ProjectForm(FlaskForm):
     manager_id = SelectField('مدير المشروع', coerce=int, validators=[Optional()])
     submit = SubmitField('حفظ المشروع')
 
-# --- START: تحديث نموذج المقاول ---
 class ContractorForm(FlaskForm):
     name = StringField('اسم المقاول', validators=[DataRequired(message="اسم المقاول مطلوب.")])
     contact_person = StringField('شخص الاتصال (اختياري)')
     phone = StringField('رقم الهاتف (اختياري)')
     email = StringField('البريد الإلكتروني (اختياري)', validators=[Optional(), Email(message="البريد الإلكتروني غير صالح.")])
     notes = TextAreaField('ملاحظات (اختياري)')
-    submit = SubmitField('حفظ التعديلات') # <-- تغيير نص الزر
+    submit = SubmitField('حفظ التعديلات')
 
     def __init__(self, original_name=None, *args, **kwargs):
         super(ContractorForm, self).__init__(*args, **kwargs)
         self.original_name = original_name
 
     def validate_name(self, name):
-        # إذا كان الاسم لم يتغير، فلا داعي للتحقق
         if self.original_name and self.original_name.lower() == name.data.lower():
             return
-        # إذا تغير الاسم، تحقق من أنه غير مستخدم من قبل مقاول آخر
         if Contractor.query.filter(Contractor.name.ilike(name.data)).first():
             raise ValidationError('مقاول بنفس هذا الاسم موجود بالفعل.')
-# --- END: تحديث نموذج المقاول ---
+
+# --- START: النموذج الجديد للمستخلص ---
+class InvoiceForm(FlaskForm):
+    invoice_number = StringField('رقم المستخلص/الفاتورة', validators=[DataRequired(message="هذا الحقل مطلوب.")])
+    invoice_date = DateField('تاريخ المستخلص', validators=[DataRequired(message="هذا الحقل مطلوب.")])
+    contractor_id = SelectField('المقاول', coerce=int, validators=[DataRequired(message="يجب اختيار مقاول.")])
+    notes = TextAreaField('ملاحظات (اختياري)')
+    submit = SubmitField('إنشاء المستخلص والانتقال لإضافة البنود')
+
+    def validate_invoice_number(self, invoice_number):
+        if Invoice.query.filter_by(invoice_number=invoice_number.data).first():
+            raise ValidationError('رقم المستخلص هذا موجود بالفعل. الرجاء إدخال رقم فريد.')
+# --- END: النموذج الجديد للمستخلص ---
