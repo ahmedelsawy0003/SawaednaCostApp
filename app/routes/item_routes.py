@@ -4,22 +4,27 @@ from app.models.item import Item
 from app.models.project import Project
 from app.models.audit_log import AuditLog
 from app.models.contractor import Contractor
-# --- START: إضافة استيراد الموديل الجديد ---
 from app.models.cost_detail import CostDetail 
-# --- END: إضافة استيراد الموديل الجديد ---
 from app.extensions import db
 from flask_login import login_required, current_user
 from app.utils import check_project_permission, sanitize_input
 
 item_bp = Blueprint("item", __name__)
 
-def log_item_change(item, action):
-    details = []
+def log_item_change(item, action, changes_details=""):
+    """
+    Logs changes made to an item.
+    For 'update' action, changes_details should be a string describing the changes.
+    """
+    details = ""
     if action == 'create':
-        details.append("تم إنشاء البند.")
+        details = f"تم إنشاء البند '{item.item_number}'."
     elif action == 'update':
-        pass
-    
+        if changes_details:
+            details = f"تم تحديث البند '{item.item_number}':\n{changes_details}"
+        else:
+            return # Don't log if there are no details to log
+
     if not details:
         return
 
@@ -27,7 +32,7 @@ def log_item_change(item, action):
         item_id=item.id,
         user_id=current_user.id,
         action=action,
-        details="\n".join(details)
+        details=details
     )
     db.session.add(log_entry)
 
@@ -138,7 +143,8 @@ def new_item(project_id):
                         notes=notes,
                         contractor_id=int(contractor_id) if contractor_id else None)
         db.session.add(new_item)
-        db.session.flush()
+        db.session.flush() # Flush to get the new_item.id
+        log_item_change(new_item, 'create')
         db.session.commit()
         flash("تم إضافة البند بنجاح!", "success")
         return redirect(url_for("item.get_items_by_project", project_id=project_id))
@@ -152,36 +158,74 @@ def edit_item(item_id):
     item = Item.query.get_or_404(item_id)
     check_project_permission(item.project)
     project = item.project
+    
     if request.method == "POST":
+        old_values = {
+            "رقم البند": item.item_number, "الوصف": item.description, "الوحدة": item.unit,
+            "الحالة": item.status, "الملاحظات": item.notes or "",
+            "الكمية الفعلية": item.actual_quantity, "التكلفة الفعلية للوحدة": item.actual_unit_cost,
+            "المقاول": item.contractor.name if item.contractor else ""
+        }
+        if current_user.role == 'admin':
+            old_values.update({
+                "الكمية التعاقدية": item.contract_quantity,
+                "التكلفة التعاقدية للوحدة": item.contract_unit_cost
+            })
+
+        # Update item object from form
+        item.item_number = request.form["item_number"]
         item.description = sanitize_input(request.form["description"])
         item.unit = sanitize_input(request.form["unit"])
+        item.status = request.form["status"]
         item.notes = sanitize_input(request.form.get("notes"))
-        if current_user.role == 'admin':
-            item.contract_unit_cost = float(request.form.get("contract_unit_cost", 0.0))
-        item.item_number = request.form["item_number"]
-        item.contract_quantity = float(request.form.get("contract_quantity", 0.0))
-        # Handle cases where the value might be empty
+        
         actual_quantity_str = request.form.get("actual_quantity")
         item.actual_quantity = float(actual_quantity_str) if actual_quantity_str else None
+        
         actual_unit_cost_str = request.form.get("actual_unit_cost")
         item.actual_unit_cost = float(actual_unit_cost_str) if actual_unit_cost_str else None
-        item.status = request.form["status"]
+        
         contractor_id = request.form.get("contractor_id")
         item.contractor_id = int(contractor_id) if contractor_id else None
+        
+        if current_user.role == 'admin':
+            item.contract_quantity = float(request.form.get("contract_quantity", 0.0))
+            item.contract_unit_cost = float(request.form.get("contract_unit_cost", 0.0))
+
+        # Check for changes to log
+        new_values = {
+            "رقم البند": item.item_number, "الوصف": item.description, "الوحدة": item.unit,
+            "الحالة": item.status, "الملاحظات": item.notes or "",
+            "الكمية الفعلية": item.actual_quantity, "التكلفة الفعلية للوحدة": item.actual_unit_cost,
+            "المقاول": item.contractor.name if item.contractor else ""
+        }
+        if current_user.role == 'admin':
+            new_values.update({
+                "الكمية التعاقدية": item.contract_quantity,
+                "التكلفة التعاقدية للوحدة": item.contract_unit_cost
+            })
+
+        changes_list = []
+        for key, old_val in old_values.items():
+            new_val = new_values.get(key)
+            # Compare values, handling None and float conversion
+            if str(old_val or "") != str(new_val or ""):
+                changes_list.append(f"- {key}: من '{old_val or 'لا شيء'}' إلى '{new_val or 'لا شيء'}'")
+        
+        if changes_list:
+            log_item_change(item, 'update', "\n".join(changes_list))
+
         db.session.commit()
         flash("تم تحديث البند بنجاح!", "success")
-        return redirect(url_for("item.get_items_by_project", project_id=item.project_id))
+        return redirect(url_for("item.edit_item", item_id=item.id))
     
     contractors = Contractor.query.order_by(Contractor.name).all()
-    
-    # --- START: التعديل الرئيسي هنا ---
     return render_template("items/edit.html", 
                            item=item, 
                            project=project, 
                            AuditLog=AuditLog,
                            contractors=contractors,
-                           CostDetail=CostDetail) # <<< هذا هو السطر المضاف
-    # --- END: التعديل الرئيسي ---
+                           CostDetail=CostDetail)
 
 @item_bp.route("/items/<int:item_id>/delete", methods=["POST"])
 @login_required
@@ -195,26 +239,3 @@ def delete_item(item_id):
     db.session.commit()
     flash("تم حذف البند بنجاح!", "success")
     return redirect(url_for("item.get_items_by_project", project_id=project_id))
-
-@item_bp.route("/items/<int:item_id>/details")
-@login_required
-def get_item_details(item_id):
-    # This function seems unused in the new system, but we'll keep it for now.
-    item = Item.query.get_or_404(item_id)
-    check_project_permission(item.project)
-    return jsonify({
-        "item_number": item.item_number,
-        "description": item.description,
-        "unit": item.unit,
-        "contract_quantity": item.contract_quantity,
-        "contract_unit_cost": item.contract_unit_cost,
-        "contract_total_cost": item.contract_total_cost,
-        "actual_quantity": item.actual_quantity,
-        "actual_unit_cost": item.actual_unit_cost,
-        "actual_total_cost": item.actual_total_cost,
-        "cost_variance": item.cost_variance,
-        "quantity_variance": item.quantity_variance,
-        "status": item.status,
-        "contractor": item.contractor.name if item.contractor else None,
-        "notes": item.notes
-    })
