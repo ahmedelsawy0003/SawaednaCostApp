@@ -2,11 +2,25 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from app.models.item import Item
 from app.models.cost_detail import CostDetail
 from app.models.contractor import Contractor
+from app.models.audit_log import AuditLog
 from app.extensions import db
 from flask_login import login_required, current_user
 from app.utils import check_project_permission, sanitize_input
 
 cost_detail_bp = Blueprint("cost_detail", __name__, url_prefix='/cost_details')
+
+def log_cost_detail_change(item_id, action, details):
+    """Logs changes related to a cost detail to the parent item's audit log."""
+    if not details:
+        return
+        
+    log_entry = AuditLog(
+        item_id=item_id,
+        user_id=current_user.id,
+        action='update', # We use 'update' as the main action for the parent item
+        details=details
+    )
+    db.session.add(log_entry)
 
 @cost_detail_bp.route("/item/<int:item_id>/add", methods=["POST"])
 @login_required
@@ -39,6 +53,12 @@ def add_cost_detail(item_id):
             contractor_id=contractor_id
         )
         db.session.add(new_detail)
+        
+        # --- LOGGING ---
+        log_details = f"تمت إضافة تفصيل تكلفة جديد: '{description}' (الكمية: {quantity}, التكلفة: {unit_cost})"
+        log_cost_detail_change(item_id, 'create', log_details)
+        # --- END LOGGING ---
+
         db.session.commit()
         flash("تمت إضافة تفصيل التكلفة بنجاح!", "success")
 
@@ -56,6 +76,12 @@ def edit_cost_detail(detail_id):
 
     if request.method == "POST":
         try:
+            # --- LOGGING: Store old values ---
+            old_desc = detail.description
+            old_qty = detail.quantity
+            old_cost = detail.unit_cost
+            # --- END LOGGING ---
+
             detail.description = sanitize_input(request.form.get("description"))
             detail.unit = sanitize_input(request.form.get("unit"))
             detail.quantity = float(request.form.get("quantity"))
@@ -63,6 +89,19 @@ def edit_cost_detail(detail_id):
             contractor_id_str = request.form.get("contractor_id")
             detail.contractor_id = int(contractor_id_str) if contractor_id_str else None
             
+            # --- LOGGING: Compare and log changes ---
+            changes = []
+            if old_desc != detail.description:
+                changes.append(f"وصف التفصيل تغير من '{old_desc}' إلى '{detail.description}'")
+            if old_qty != detail.quantity:
+                changes.append(f"كمية التفصيل '{detail.description}' تغيرت من {old_qty} إلى {detail.quantity}")
+            if old_cost != detail.unit_cost:
+                changes.append(f"تكلفة التفصيل '{detail.description}' تغيرت من {old_cost} إلى {detail.unit_cost}")
+            
+            if changes:
+                log_cost_detail_change(detail.item_id, 'update', "\n".join(changes))
+            # --- END LOGGING ---
+
             db.session.commit()
             flash("تم تحديث تفصيل التكلفة بنجاح.", "success")
             return redirect(url_for("item.edit_item", item_id=detail.item_id))
@@ -81,6 +120,11 @@ def delete_cost_detail(detail_id):
     detail = CostDetail.query.get_or_404(detail_id)
     item_id = detail.item_id
     check_project_permission(detail.item.project)
+
+    # --- LOGGING ---
+    log_details = f"تم حذف تفصيل التكلفة: '{detail.description}'"
+    log_cost_detail_change(item_id, 'delete', log_details)
+    # --- END LOGGING ---
 
     db.session.delete(detail)
     db.session.commit()
