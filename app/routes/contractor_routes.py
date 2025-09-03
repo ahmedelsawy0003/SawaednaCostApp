@@ -7,7 +7,7 @@ from app.extensions import db
 from flask_login import login_required, current_user
 from sqlalchemy import or_
 from app.utils import sanitize_input
-from app.forms import ContractorForm # <-- إضافة جديدة
+from app.forms import ContractorForm 
 
 contractor_bp = Blueprint("contractor", __name__, url_prefix='/contractors')
 
@@ -28,14 +28,13 @@ def get_contractors():
     
     return render_template("contractors/index.html", contractors=contractors)
 
-# --- START: تحديث دالة new_contractor ---
 @contractor_bp.route("/new", methods=['GET', 'POST'])
 @login_required
 def new_contractor():
     if current_user.role != 'admin':
         abort(403)
     
-    form = ContractorForm() # استخدام النموذج الجديد
+    form = ContractorForm() 
     
     if form.validate_on_submit():
         new_contractor = Contractor(
@@ -50,10 +49,9 @@ def new_contractor():
         flash('تمت إضافة المقاول بنجاح!', 'success')
         return redirect(url_for('contractor.get_contractors'))
     
-    return render_template("contractors/new.html", form=form) # تمرير النموذج إلى القالب
-# --- END: تحديث دالة new_contractor ---
+    return render_template("contractors/new.html", form=form)
 
-
+# --- START: تحديث دالة edit_contractor ---
 @contractor_bp.route("/<int:contractor_id>/edit", methods=['GET', 'POST'])
 @login_required
 def edit_contractor(contractor_id):
@@ -61,25 +59,19 @@ def edit_contractor(contractor_id):
         abort(403)
     
     contractor = Contractor.query.get_or_404(contractor_id)
+    # نمرر الاسم الأصلي للتحقق من الصحة
+    form = ContractorForm(obj=contractor, original_name=contractor.name)
     
-    if request.method == 'POST':
-        new_name = sanitize_input(request.form.get('name'))
-        
-        if new_name != contractor.name and Contractor.query.filter_by(name=new_name).first():
-            flash('مقاول آخر بنفس هذا الاسم موجود بالفعل.', 'danger')
-            return redirect(url_for('contractor.edit_contractor', contractor_id=contractor_id))
-
-        contractor.name = new_name
-        contractor.contact_person = sanitize_input(request.form.get('contact_person'))
-        contractor.phone = sanitize_input(request.form.get('phone'))
-        contractor.email = sanitize_input(request.form.get('email'))
-        contractor.notes = sanitize_input(request.form.get('notes'))
-        
+    if form.validate_on_submit():
+        # طريقة سهلة لتحديث بيانات الموديل من النموذج
+        form.populate_obj(contractor)
         db.session.commit()
         flash('تم تحديث بيانات المقاول بنجاح!', 'success')
         return redirect(url_for('contractor.get_contractors'))
 
-    return render_template("contractors/edit.html", contractor=contractor)
+    return render_template("contractors/edit.html", form=form, contractor=contractor)
+# --- END: تحديث دالة edit_contractor ---
+
 
 @contractor_bp.route("/<int:contractor_id>/delete", methods=['POST'])
 @login_required

@@ -15,38 +15,43 @@
         <h3 class="mb-0">بيانات المقاول</h3>
     </div>
     <div class="card-body">
-        <form method="POST" action="{{ url_for('contractor.edit_contractor', contractor_id=contractor.id) }}">
+        <form method="POST" action="{{ url_for('contractor.edit_contractor', contractor_id=contractor.id) }}" novalidate>
+            {{ form.hidden_tag() }}
             <div class="mb-3">
-                <label for="name" class="form-label">اسم المقاول</label>
-                <input type="text" class="form-control" id="name" name="name" value="{{ contractor.name }}" required>
+                {{ form.name.label(class="form-label") }}
+                {{ form.name(class="form-control") }}
+                {% for error in form.name.errors %}
+                    <div class="text-danger small mt-1">{{ error }}</div>
+                {% endfor %}
             </div>
             <div class="row">
                 <div class="col-md-4">
                     <div class="mb-3">
-                        <label for="contact_person" class="form-label">شخص الاتصال (اختياري)</label>
-                        <input type="text" class="form-control" id="contact_person" name="contact_person" value="{{ contractor.contact_person or '' }}">
+                        {{ form.contact_person.label(class="form-label") }}
+                        {{ form.contact_person(class="form-control") }}
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="mb-3">
-                        <label for="phone" class="form-label">رقم الهاتف (اختياري)</label>
-                        <input type="tel" class="form-control" id="phone" name="phone" value="{{ contractor.phone or '' }}">
+                        {{ form.phone.label(class="form-label") }}
+                        {{ form.phone(class="form-control") }}
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="mb-3">
-                        <label for="email" class="form-label">البريد الإلكتروني (اختياري)</label>
-                        <input type="email" class="form-control" id="email" name="email" value="{{ contractor.email or '' }}">
+                        {{ form.email.label(class="form-label") }}
+                        {{ form.email(class="form-control") }}
+                         {% for error in form.email.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
                     </div>
                 </div>
             </div>
             <div class="mb-3">
-                <label for="notes" class="form-label">ملاحظات (اختياري)</label>
-                <textarea class="form-control" id="notes" name="notes" rows="4">{{ contractor.notes or '' }}</textarea>
+                {{ form.notes.label(class="form-label") }}
+                {{ form.notes(class="form-control", rows="4") }}
             </div>
-            <button type="submit" class="btn btn-primary">
-                <i class="fas fa-save me-1"></i> حفظ التعديلات
-            </button>
+            {{ form.submit(class="btn btn-primary") }}
         </form>
     </div>
 </div>

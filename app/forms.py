@@ -3,7 +3,7 @@ from wtforms import StringField, PasswordField, SubmitField, TextAreaField, Sele
 from wtforms.fields import DateField
 from wtforms.validators import DataRequired, Email, EqualTo, Length, ValidationError, Optional
 from app.models.user import User
-from app.models.contractor import Contractor # <-- إضافة جديدة
+from app.models.contractor import Contractor
 
 # ... LoginForm and RegisterForm remain the same ...
 class LoginForm(FlaskForm):
@@ -43,17 +43,24 @@ class ProjectForm(FlaskForm):
     manager_id = SelectField('مدير المشروع', coerce=int, validators=[Optional()])
     submit = SubmitField('حفظ المشروع')
 
-# --- START: النموذج الجديد للمقاول ---
+# --- START: تحديث نموذج المقاول ---
 class ContractorForm(FlaskForm):
     name = StringField('اسم المقاول', validators=[DataRequired(message="اسم المقاول مطلوب.")])
     contact_person = StringField('شخص الاتصال (اختياري)')
     phone = StringField('رقم الهاتف (اختياري)')
     email = StringField('البريد الإلكتروني (اختياري)', validators=[Optional(), Email(message="البريد الإلكتروني غير صالح.")])
     notes = TextAreaField('ملاحظات (اختياري)')
-    submit = SubmitField('حفظ المقاول')
+    submit = SubmitField('حفظ التعديلات') # <-- تغيير نص الزر
+
+    def __init__(self, original_name=None, *args, **kwargs):
+        super(ContractorForm, self).__init__(*args, **kwargs)
+        self.original_name = original_name
 
     def validate_name(self, name):
-        # التأكد من أن الاسم غير مكرر عند إنشاء مقاول جديد
-        if Contractor.query.filter_by(name=name.data).first():
+        # إذا كان الاسم لم يتغير، فلا داعي للتحقق
+        if self.original_name and self.original_name.lower() == name.data.lower():
+            return
+        # إذا تغير الاسم، تحقق من أنه غير مستخدم من قبل مقاول آخر
+        if Contractor.query.filter(Contractor.name.ilike(name.data)).first():
             raise ValidationError('مقاول بنفس هذا الاسم موجود بالفعل.')
-# --- END: النموذج الجديد للمقاول ---
+# --- END: تحديث نموذج المقاول ---
