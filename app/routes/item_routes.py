@@ -8,6 +8,7 @@ from app.models.cost_detail import CostDetail
 from app.extensions import db
 from flask_login import login_required, current_user
 from app.utils import check_project_permission, sanitize_input
+from app.forms import ItemForm # <-- إضافة جديدة
 
 item_bp = Blueprint("item", __name__)
 
@@ -23,8 +24,7 @@ def log_item_change(item, action, changes_details=""):
         if changes_details:
             details = f"تم تحديث البند '{item.item_number}':\n{changes_details}"
         else:
-            return # Don't log if there are no details to log
-
+            return 
     if not details:
         return
 
@@ -35,7 +35,6 @@ def log_item_change(item, action, changes_details=""):
         details=details
     )
     db.session.add(log_entry)
-
 
 @item_bp.route("/projects/<int:project_id>/items")
 @login_required
@@ -121,35 +120,35 @@ def bulk_delete_items(project_id):
     return redirect(url_for('item.get_items_by_project', project_id=project_id))
 
 
+# --- START: تحديث دالة new_item ---
 @item_bp.route("/projects/<int:project_id>/items/new", methods=["GET", "POST"])
 @login_required
 def new_item(project_id):
     project = Project.query.get_or_404(project_id)
     check_project_permission(project)
-    if request.method == "POST":
-        description = sanitize_input(request.form["description"])
-        unit = sanitize_input(request.form["unit"])
-        notes = sanitize_input(request.form.get("notes"))
-        contract_quantity = float(request.form.get("contract_quantity", 0.0))
-        contract_unit_cost = float(request.form.get("contract_unit_cost", 0.0))
-        item_number = request.form["item_number"]
-        actual_quantity = float(request.form.get("actual_quantity") or 0.0)
-        actual_unit_cost = float(request.form.get("actual_unit_cost") or 0.0)
-        status = request.form["status"]
-        contractor_id = request.form.get("contractor_id")
-        new_item = Item(project_id=project_id, item_number=item_number, description=description,
-                        unit=unit, contract_quantity=contract_quantity, contract_unit_cost=contract_unit_cost,
-                        actual_quantity=actual_quantity, actual_unit_cost=actual_unit_cost, status=status,
-                        notes=notes,
-                        contractor_id=int(contractor_id) if contractor_id else None)
+    
+    form = ItemForm()
+    form.contractor_id.choices = [(c.id, c.name) for c in Contractor.query.order_by(Contractor.name).all()]
+    form.contractor_id.choices.insert(0, (0, '-- تنفيذ ذاتي / بدون مقاول --'))
+
+    if form.validate_on_submit():
+        new_item = Item()
+        form.populate_obj(new_item) # تعبئة البيانات تلقائياً
+        new_item.project_id = project_id
+        
+        # التأكد من أن القيمة الفارغة للمقاول هي None
+        if form.contractor_id.data == 0:
+            new_item.contractor_id = None
+
         db.session.add(new_item)
-        db.session.flush() # Flush to get the new_item.id
+        db.session.flush() 
         log_item_change(new_item, 'create')
         db.session.commit()
         flash("تم إضافة البند بنجاح!", "success")
         return redirect(url_for("item.get_items_by_project", project_id=project_id))
-    contractors = Contractor.query.order_by(Contractor.name).all()
-    return render_template("items/new.html", project=project, contractors=contractors)
+
+    return render_template("items/new.html", project=project, form=form)
+# --- END: تحديث دالة new_item ---
 
 
 @item_bp.route("/items/<int:item_id>/edit", methods=["GET", "POST"])
@@ -172,7 +171,6 @@ def edit_item(item_id):
                 "التكلفة التعاقدية للوحدة": item.contract_unit_cost
             })
 
-        # Update item object from form
         item.item_number = request.form["item_number"]
         item.description = sanitize_input(request.form["description"])
         item.unit = sanitize_input(request.form["unit"])
@@ -192,7 +190,6 @@ def edit_item(item_id):
             item.contract_quantity = float(request.form.get("contract_quantity", 0.0))
             item.contract_unit_cost = float(request.form.get("contract_unit_cost", 0.0))
 
-        # Check for changes to log
         new_values = {
             "رقم البند": item.item_number, "الوصف": item.description, "الوحدة": item.unit,
             "الحالة": item.status, "الملاحظات": item.notes or "",
@@ -208,7 +205,6 @@ def edit_item(item_id):
         changes_list = []
         for key, old_val in old_values.items():
             new_val = new_values.get(key)
-            # Compare values, handling None and float conversion
             if str(old_val or "") != str(new_val or ""):
                 changes_list.append(f"- {key}: من '{old_val or 'لا شيء'}' إلى '{new_val or 'لا شيء'}'")
         

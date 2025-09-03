@@ -1,12 +1,12 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, TextAreaField, SelectField
+from wtforms import StringField, PasswordField, SubmitField, TextAreaField, SelectField, FloatField
 from wtforms.fields import DateField
 from wtforms.validators import DataRequired, Email, EqualTo, Length, ValidationError, Optional
 from app.models.user import User
 from app.models.contractor import Contractor
-from app.models.invoice import Invoice # <-- إضافة جديدة
+from app.models.invoice import Invoice
 
-# ... LoginForm and RegisterForm remain the same ...
+# ... (Previous forms remain the same) ...
 class LoginForm(FlaskForm):
     username = StringField('اسم المستخدم', validators=[DataRequired(message="هذا الحقل مطلوب.")])
     password = PasswordField('كلمة المرور', validators=[DataRequired(message="هذا الحقل مطلوب.")])
@@ -62,7 +62,6 @@ class ContractorForm(FlaskForm):
         if Contractor.query.filter(Contractor.name.ilike(name.data)).first():
             raise ValidationError('مقاول بنفس هذا الاسم موجود بالفعل.')
 
-# --- START: النموذج الجديد للمستخلص ---
 class InvoiceForm(FlaskForm):
     invoice_number = StringField('رقم المستخلص/الفاتورة', validators=[DataRequired(message="هذا الحقل مطلوب.")])
     invoice_date = DateField('تاريخ المستخلص', validators=[DataRequired(message="هذا الحقل مطلوب.")])
@@ -73,4 +72,21 @@ class InvoiceForm(FlaskForm):
     def validate_invoice_number(self, invoice_number):
         if Invoice.query.filter_by(invoice_number=invoice_number.data).first():
             raise ValidationError('رقم المستخلص هذا موجود بالفعل. الرجاء إدخال رقم فريد.')
-# --- END: النموذج الجديد للمستخلص ---
+
+# --- START: النموذج الجديد للبنود ---
+class ItemForm(FlaskForm):
+    item_number = StringField('رقم البند', validators=[DataRequired(message="هذا الحقل مطلوب.")])
+    description = TextAreaField('الوصف', validators=[DataRequired(message="هذا الحقل مطلوب.")])
+    unit = StringField('الوحدة')
+    
+    contract_quantity = FloatField('الكمية التعاقدية', validators=[DataRequired(message="هذا الحقل مطلوب.")])
+    contract_unit_cost = FloatField('التكلفة الإفرادية التعاقدية', validators=[DataRequired(message="هذا الحقل مطلوب.")])
+    
+    actual_quantity = FloatField('الكمية الفعلية (اختياري)', validators=[Optional()])
+    actual_unit_cost = FloatField('التكلفة الإفرادية الفعلية (اختياري)', validators=[Optional()])
+    
+    status = SelectField('الحالة', choices=[('نشط', 'نشط'), ('مكتمل', 'مكتمل'), ('معلق', 'معلق')], validators=[DataRequired()])
+    contractor_id = SelectField('المقاول الرئيسي للبند (اختياري)', coerce=int, validators=[Optional()])
+    notes = TextAreaField('ملاحظات (اختياري)')
+    submit = SubmitField('إضافة البند')
+# --- END: النموذج الجديد للبنود ---
