@@ -12,6 +12,7 @@ from app.forms import ItemForm
 
 item_bp = Blueprint("item", __name__)
 
+# ... (log_item_change, get_items_by_project, and bulk functions remain the same) ...
 def log_item_change(item, action, changes_details=""):
     details = ""
     if action == 'create':
@@ -116,14 +117,12 @@ def bulk_delete_items(project_id):
     return redirect(url_for('item.get_items_by_project', project_id=project_id))
 
 
-# --- START: تحديث دالة new_item مرة أخرى ---
 @item_bp.route("/projects/<int:project_id>/items/new", methods=["GET", "POST"])
 @login_required
 def new_item(project_id):
     project = Project.query.get_or_404(project_id)
     check_project_permission(project)
     
-    # تمرير project_id إلى النموذج للتحقق من الصحة
     form = ItemForm(project_id=project_id)
     form.contractor_id.choices = [(c.id, c.name) for c in Contractor.query.order_by(Contractor.name).all()]
     form.contractor_id.choices.insert(0, (0, '-- تنفيذ ذاتي / بدون مقاول --'))
@@ -144,9 +143,9 @@ def new_item(project_id):
         return redirect(url_for("item.get_items_by_project", project_id=project_id))
 
     return render_template("items/new.html", project=project, form=form)
-# --- END: تحديث دالة new_item مرة أخرى ---
 
 
+# --- START: تحديث دالة edit_item ---
 @item_bp.route("/items/<int:item_id>/edit", methods=["GET", "POST"])
 @login_required
 def edit_item(item_id):
@@ -154,55 +153,30 @@ def edit_item(item_id):
     check_project_permission(item.project)
     project = item.project
     
-    if request.method == "POST":
-        old_values = {
-            "رقم البند": item.item_number, "الوصف": item.description, "الوحدة": item.unit,
-            "الحالة": item.status, "الملاحظات": item.notes or "",
-            "الكمية الفعلية": item.actual_quantity, "التكلفة الفعلية للوحدة": item.actual_unit_cost,
-            "المقاول": item.contractor.name if item.contractor else ""
-        }
-        if current_user.role == 'admin':
-            old_values.update({
-                "الكمية التعاقدية": item.contract_quantity,
-                "التكلفة التعاقدية للوحدة": item.contract_unit_cost
-            })
+    form = ItemForm(obj=item, project_id=project.id, original_item_number=item.item_number)
+    form.contractor_id.choices = [(c.id, c.name) for c in Contractor.query.order_by(Contractor.name).all()]
+    form.contractor_id.choices.insert(0, (0, '-- تنفيذ ذاتي / بدون مقاول رئيسي --'))
 
-        item.item_number = request.form["item_number"]
-        item.description = sanitize_input(request.form["description"])
-        item.unit = sanitize_input(request.form["unit"])
-        item.status = request.form["status"]
-        item.notes = sanitize_input(request.form.get("notes"))
-        
-        actual_quantity_str = request.form.get("actual_quantity")
-        item.actual_quantity = float(actual_quantity_str) if actual_quantity_str else None
-        
-        actual_unit_cost_str = request.form.get("actual_unit_cost")
-        item.actual_unit_cost = float(actual_unit_cost_str) if actual_unit_cost_str else None
-        
-        contractor_id = request.form.get("contractor_id")
-        item.contractor_id = int(contractor_id) if contractor_id else None
-        
-        if current_user.role == 'admin':
-            item.contract_quantity = float(request.form.get("contract_quantity", 0.0))
-            item.contract_unit_cost = float(request.form.get("contract_unit_cost", 0.0))
-
-        new_values = {
-            "رقم البند": item.item_number, "الوصف": item.description, "الوحدة": item.unit,
-            "الحالة": item.status, "الملاحظات": item.notes or "",
-            "الكمية الفعلية": item.actual_quantity, "التكلفة الفعلية للوحدة": item.actual_unit_cost,
-            "المقاول": item.contractor.name if item.contractor else ""
-        }
-        if current_user.role == 'admin':
-            new_values.update({
-                "الكمية التعاقدية": item.contract_quantity,
-                "التكلفة التعاقدية للوحدة": item.contract_unit_cost
-            })
-
+    if form.validate_on_submit():
+        # --- LOGGING: نقوم بتسجيل التغييرات قبل الحفظ ---
         changes_list = []
-        for key, old_val in old_values.items():
-            new_val = new_values.get(key)
-            if str(old_val or "") != str(new_val or ""):
-                changes_list.append(f"- {key}: من '{old_val or 'لا شيء'}' إلى '{new_val or 'لا شيء'}'")
+        # نقارن كل حقل في النموذج مع القيمة الحالية في قاعدة البيانات
+        for field in form:
+            if field.name in item.__table__.columns and field.name != 'submit' and field.name != 'csrf_token':
+                current_value = getattr(item, field.name)
+                new_value = field.data
+                # معالجة خاصة لحقل المقاول الفارغ
+                if field.name == 'contractor_id' and new_value == 0:
+                    new_value = None
+                
+                if str(current_value or '') != str(new_value or ''):
+                    changes_list.append(f"- {field.label.text}: من '{current_value or 'لا شيء'}' إلى '{new_value or 'لا شيء'}'")
+        
+        # --- نهاية التسجيل ---
+        
+        form.populate_obj(item) # تحديث البند بالبيانات الجديدة
+        if form.contractor_id.data == 0:
+            item.contractor_id = None
         
         if changes_list:
             log_item_change(item, 'update', "\n".join(changes_list))
@@ -210,14 +184,21 @@ def edit_item(item_id):
         db.session.commit()
         flash("تم تحديث البند بنجاح!", "success")
         return redirect(url_for("item.edit_item", item_id=item.id))
-    
+
+    # لإظهار القيمة الصحيحة في القائمة المنسدلة عند فتح الصفحة أول مرة
+    if request.method == 'GET' and item.contractor_id:
+        form.contractor_id.data = item.contractor_id
+        
     contractors = Contractor.query.order_by(Contractor.name).all()
     return render_template("items/edit.html", 
                            item=item, 
                            project=project, 
+                           form=form, # <-- تمرير النموذج الجديد
                            AuditLog=AuditLog,
                            contractors=contractors,
                            CostDetail=CostDetail)
+# --- END: تحديث دالة edit_item ---
+
 
 @item_bp.route("/items/<int:item_id>/delete", methods=["POST"])
 @login_required

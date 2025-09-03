@@ -5,7 +5,7 @@ from wtforms.validators import DataRequired, Email, EqualTo, Length, ValidationE
 from app.models.user import User
 from app.models.contractor import Contractor
 from app.models.invoice import Invoice
-from app.models.item import Item # <-- إضافة جديدة
+from app.models.item import Item
 
 # ... (Previous forms remain the same) ...
 class LoginForm(FlaskForm):
@@ -74,30 +74,32 @@ class InvoiceForm(FlaskForm):
         if Invoice.query.filter_by(invoice_number=invoice_number.data).first():
             raise ValidationError('رقم المستخلص هذا موجود بالفعل. الرجاء إدخال رقم فريد.')
 
-# --- START: تحديث نموذج البنود ---
+# --- START: تحديث نهائي لنموذج البنود ---
 class ItemForm(FlaskForm):
     item_number = StringField('رقم البند', validators=[DataRequired(message="هذا الحقل مطلوب.")])
     description = TextAreaField('الوصف', validators=[DataRequired(message="هذا الحقل مطلوب.")])
     unit = StringField('الوحدة')
     
-    contract_quantity = FloatField('الكمية التعاقدية', validators=[DataRequired(message="هذا الحقل مطلوب.")])
-    contract_unit_cost = FloatField('التكلفة الإفرادية التعاقدية', validators=[DataRequired(message="هذا الحقل مطلوب.")])
+    contract_quantity = FloatField('الكمية التعاقدية', validators=[Optional()])
+    contract_unit_cost = FloatField('التكلفة الإفرادية التعاقدية', validators=[Optional()])
     
-    actual_quantity = FloatField('الكمية الفعلية (اختياري)', validators=[Optional()])
-    actual_unit_cost = FloatField('التكلفة الإفرادية الفعلية (اختياري)', validators=[Optional()])
+    actual_quantity = FloatField('الكمية الفعلية (للتحكم بالمستخلصات)', validators=[Optional()])
+    actual_unit_cost = FloatField('التكلفة الإفرادية الفعلية (يدوي)', validators=[Optional()])
     
     status = SelectField('الحالة', choices=[('نشط', 'نشط'), ('مكتمل', 'مكتمل'), ('معلق', 'معلق')], validators=[DataRequired()])
-    contractor_id = SelectField('المقاول الرئيسي للبند (اختياري)', coerce=int, validators=[Optional()])
-    notes = TextAreaField('ملاحظات (اختياري)')
-    submit = SubmitField('إضافة البند')
+    contractor_id = SelectField('المقاول الرئيسي للبند', coerce=int, validators=[Optional()])
+    notes = TextAreaField('ملاحظات')
+    submit = SubmitField('حفظ التغييرات') # تغيير النص ليكون مناسباً للإضافة والتعديل
 
-    def __init__(self, project_id=None, *args, **kwargs):
+    def __init__(self, project_id=None, original_item_number=None, *args, **kwargs):
         super(ItemForm, self).__init__(*args, **kwargs)
         self.project_id = project_id
+        self.original_item_number = original_item_number
 
     def validate_item_number(self, item_number):
-        # التحقق من أن رقم البند فريد داخل المشروع المحدد فقط
+        if self.original_item_number and self.original_item_number.lower() == item_number.data.lower():
+            return
         existing_item = Item.query.filter_by(project_id=self.project_id, item_number=item_number.data).first()
         if existing_item:
             raise ValidationError('هذا الرقم مستخدم بالفعل في هذا المشروع.')
-# --- END: تحديث نموذج البنود ---
+# --- END: تحديث نهائي لنموذج البنود ---
