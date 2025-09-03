@@ -5,6 +5,7 @@ from wtforms.validators import DataRequired, Email, EqualTo, Length, ValidationE
 from app.models.user import User
 from app.models.contractor import Contractor
 from app.models.invoice import Invoice
+from app.models.item import Item # <-- إضافة جديدة
 
 # ... (Previous forms remain the same) ...
 class LoginForm(FlaskForm):
@@ -73,7 +74,7 @@ class InvoiceForm(FlaskForm):
         if Invoice.query.filter_by(invoice_number=invoice_number.data).first():
             raise ValidationError('رقم المستخلص هذا موجود بالفعل. الرجاء إدخال رقم فريد.')
 
-# --- START: النموذج الجديد للبنود ---
+# --- START: تحديث نموذج البنود ---
 class ItemForm(FlaskForm):
     item_number = StringField('رقم البند', validators=[DataRequired(message="هذا الحقل مطلوب.")])
     description = TextAreaField('الوصف', validators=[DataRequired(message="هذا الحقل مطلوب.")])
@@ -89,4 +90,14 @@ class ItemForm(FlaskForm):
     contractor_id = SelectField('المقاول الرئيسي للبند (اختياري)', coerce=int, validators=[Optional()])
     notes = TextAreaField('ملاحظات (اختياري)')
     submit = SubmitField('إضافة البند')
-# --- END: النموذج الجديد للبنود ---
+
+    def __init__(self, project_id=None, *args, **kwargs):
+        super(ItemForm, self).__init__(*args, **kwargs)
+        self.project_id = project_id
+
+    def validate_item_number(self, item_number):
+        # التحقق من أن رقم البند فريد داخل المشروع المحدد فقط
+        existing_item = Item.query.filter_by(project_id=self.project_id, item_number=item_number.data).first()
+        if existing_item:
+            raise ValidationError('هذا الرقم مستخدم بالفعل في هذا المشروع.')
+# --- END: تحديث نموذج البنود ---

@@ -8,15 +8,11 @@ from app.models.cost_detail import CostDetail
 from app.extensions import db
 from flask_login import login_required, current_user
 from app.utils import check_project_permission, sanitize_input
-from app.forms import ItemForm # <-- إضافة جديدة
+from app.forms import ItemForm
 
 item_bp = Blueprint("item", __name__)
 
 def log_item_change(item, action, changes_details=""):
-    """
-    Logs changes made to an item.
-    For 'update' action, changes_details should be a string describing the changes.
-    """
     details = ""
     if action == 'create':
         details = f"تم إنشاء البند '{item.item_number}'."
@@ -120,23 +116,23 @@ def bulk_delete_items(project_id):
     return redirect(url_for('item.get_items_by_project', project_id=project_id))
 
 
-# --- START: تحديث دالة new_item ---
+# --- START: تحديث دالة new_item مرة أخرى ---
 @item_bp.route("/projects/<int:project_id>/items/new", methods=["GET", "POST"])
 @login_required
 def new_item(project_id):
     project = Project.query.get_or_404(project_id)
     check_project_permission(project)
     
-    form = ItemForm()
+    # تمرير project_id إلى النموذج للتحقق من الصحة
+    form = ItemForm(project_id=project_id)
     form.contractor_id.choices = [(c.id, c.name) for c in Contractor.query.order_by(Contractor.name).all()]
     form.contractor_id.choices.insert(0, (0, '-- تنفيذ ذاتي / بدون مقاول --'))
 
     if form.validate_on_submit():
         new_item = Item()
-        form.populate_obj(new_item) # تعبئة البيانات تلقائياً
+        form.populate_obj(new_item)
         new_item.project_id = project_id
         
-        # التأكد من أن القيمة الفارغة للمقاول هي None
         if form.contractor_id.data == 0:
             new_item.contractor_id = None
 
@@ -148,7 +144,7 @@ def new_item(project_id):
         return redirect(url_for("item.get_items_by_project", project_id=project_id))
 
     return render_template("items/new.html", project=project, form=form)
-# --- END: تحديث دالة new_item ---
+# --- END: تحديث دالة new_item مرة أخرى ---
 
 
 @item_bp.route("/items/<int:item_id>/edit", methods=["GET", "POST"])
