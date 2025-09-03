@@ -159,44 +159,62 @@ def add_item_to_invoice(invoice_id):
 def add_payment_to_invoice(invoice_id):
     invoice = Invoice.query.get_or_404(invoice_id)
     check_project_permission(invoice.project)
+    
     amount_str = request.form.get("amount")
     payment_date_str = request.form.get("payment_date")
     description = sanitize_input(request.form.get("description"))
-    invoice_item_id_str = request.form.get("invoice_item_id")
+    invoice_item_id_str = request.form.get("invoice_item_id") # <-- Get as string first
 
-    # --- START: THE FIX - Making item selection mandatory ---
+    # --- START: MODIFICATION 1 - Check if an item was selected ---
     if not invoice_item_id_str:
-        flash("يجب ربط الدفعة بأحد بنود المستخلص. الرجاء اختيار بند.", "danger")
+        flash("الرجاء اختيار البند الذي سيتم صرف الدفعة له.", "danger")
         return redirect(url_for('invoice.show_invoice', invoice_id=invoice_id))
-    # --- END: THE FIX ---
+    # --- END: MODIFICATION 1 ---
 
     if not amount_str or not payment_date_str:
         flash("المبلغ وتاريخ الدفعة حقول مطلوبة.", "danger")
         return redirect(url_for('invoice.show_invoice', invoice_id=invoice_id))
-    
+        
     try:
         amount = float(amount_str)
         payment_date = datetime.datetime.strptime(payment_date_str, "%Y-%m-%d").date()
+        invoice_item_id = int(invoice_item_id_str) # Convert to integer
         if amount <= 0:
             flash("يجب أن يكون مبلغ الدفعة أكبر من صفر.", "danger")
             return redirect(url_for('invoice.show_invoice', invoice_id=invoice_id))
     except (ValueError, TypeError):
         flash("البيانات المدخلة للمبلغ أو التاريخ غير صالحة.", "danger")
         return redirect(url_for('invoice.show_invoice', invoice_id=invoice_id))
-    
+
+    # --- START: MODIFICATION 2 - New validation logic for item's limit ---
+    target_invoice_item = InvoiceItem.query.get(invoice_item_id)
+    if not target_invoice_item or target_invoice_item.invoice_id != invoice.id:
+        flash("البند المحدد غير صالح أو لا ينتمي لهذا المستخلص.", "danger")
+        return redirect(url_for('invoice.show_invoice', invoice_id=invoice_id))
+
+    previously_paid_for_item = db.session.query(func.sum(Payment.amount)).filter(
+        Payment.invoice_item_id == invoice_item_id
+    ).scalar() or 0.0
+
+    if (previously_paid_for_item + amount) > target_invoice_item.total_price:
+        remaining_for_item = target_invoice_item.total_price - previously_paid_for_item
+        flash(f"لا يمكن إضافة هذه الدفعة. المبلغ يتجاوز القيمة المتبقية للبند المحدد. أقصى مبلغ يمكن دفعه لهذا البند هو {remaining_for_item:,.2f} ريال.", "danger")
+        return redirect(url_for('invoice.show_invoice', invoice_id=invoice_id))
+    # --- END: MODIFICATION 2 ---
+
     total_invoice_amount = invoice.total_amount or 0.0
     paid_amount = invoice.paid_amount or 0.0
     if (paid_amount + amount) > total_invoice_amount:
         remaining_to_pay = total_invoice_amount - paid_amount
         flash(f"لا يمكن إضافة هذه الدفعة. المبلغ الإجمالي للمستخلص هو {total_invoice_amount:,.2f} ريال. تم دفع {paid_amount:,.2f} ريال بالفعل. أقصى مبلغ يمكن دفعه الآن هو {remaining_to_pay:,.2f} ريال.", "danger")
         return redirect(url_for('invoice.show_invoice', invoice_id=invoice_id))
-    
+
     new_payment = Payment(
         invoice_id=invoice.id,
         amount=amount,
         payment_date=payment_date,
         description=description,
-        invoice_item_id=int(invoice_item_id_str) # It's now guaranteed to be a valid string integer
+        invoice_item_id=invoice_item_id
     )
     db.session.add(new_payment)
     db.session.commit()
@@ -302,5 +320,6 @@ def edit_item_from_invoice(invoice_item_id):
             flash("الكمية المدخلة غير صالحة.", "danger")
     
     return render_template("invoices/edit_invoice_item.html", invoice_item=invoice_item)
+
 
 
