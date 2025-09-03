@@ -87,11 +87,11 @@
                                 <th>التكلفة التعاقدية</th>
                                 {% endif %}
                                 <th>التكلفة الفعلية</th>
+                                <th>إجمالي المدفوعات</th>
+                                <th>المبلغ المتبقي</th>
                                 {% if current_user.role == 'admin' %}
                                 <th>الوفر / الزيادة</th>
                                 {% endif %}
-                                <th>إجمالي المدفوعات</th>
-                                <th>المبلغ المتبقي</th>
                                 <th>الحالة</th>
                                 <th class="text-center">الإجراءات</th>
                             </tr>
@@ -106,6 +106,8 @@
                                 <td>{{ "{:,.2f}".format(item.contract_total_cost) }}</td>
                                 {% endif %}
                                 <td>{{ "{:,.2f}".format(item.actual_total_cost) }}</td>
+                                <td><span class="text-info">{{ "{:,.2f}".format(item.paid_amount) }}</span></td>
+                                <td><span class="text-danger">{{ "{:,.2f}".format(item.remaining_amount) }}</span></td>
                                 {% if current_user.role == 'admin' %}
                                 <td>
                                     <span class="{{ 'text-success' if item.cost_variance >= 0 else 'text-danger' }}">
@@ -113,12 +115,6 @@
                                     </span>
                                 </td>
                                 {% endif %}
-                                <td>
-                                    <span class="text-info">{{ "{:,.2f}".format(item.paid_amount) }}</span>
-                                </td>
-                                <td>
-                                    <span class="text-danger">{{ "{:,.2f}".format(item.remaining_amount) }}</span>
-                                </td>
                                 <td>
                                     <span class="badge {{ "bg-warning" if item.status == "نشط" else "bg-success" if item.status == "مكتمل" else "bg-info" }}">
                                         {{ item.status }}
@@ -184,27 +180,28 @@
                            <thead class="table-light">
                                 <tr>
                                     <th>تاريخ الدفعة</th>
-                                    <th class="text-end">المبلغ</th>
-                                    <th>الوصف</th>
                                     <th>رقم المستخلص</th>
-                                    <th>المقاول</th> {# <-- NEW COLUMN HEADER #}
+                                    <th>المقاول</th>
+                                    <th>الوصف</th>
+                                    <th class="text-end">المبلغ</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for payment in payments %}
+                                {# --- START: THE FIX --- #}
+                                {% for dist in payments %}
                                 <tr>
-                                    <td>{{ payment.payment_date.strftime('%Y-%m-%d') }}</td>
-                                    <td class="text-end text-success fw-bold">{{ "{:,.2f}".format(payment.amount) }} ريال</td>
-                                    <td>{{ payment.description or '-' }}</td>
+                                    <td>{{ dist.payment.payment_date.strftime('%Y-%m-%d') }}</td>
                                     <td>
-                                        <a href="{{ url_for('invoice.show_invoice', invoice_id=payment.invoice_id) }}">
-                                            {{ payment.invoice.invoice_number }}
+                                        <a href="{{ url_for('invoice.show_invoice', invoice_id=dist.payment.invoice_id) }}">
+                                            {{ dist.payment.invoice.invoice_number }}
                                         </a>
                                     </td>
-                                    {# <-- NEW COLUMN CELL --> #}
-                                    <td>{{ payment.invoice.contractor.name }}</td>
+                                    <td>{{ dist.payment.invoice.contractor.name }}</td>
+                                    <td>{{ dist.payment.description or '-' }}</td>
+                                    <td class="text-end text-success fw-bold">{{ "{:,.2f}".format(dist.amount) }} ريال</td>
                                 </tr>
                                 {% endfor %}
+                                {# --- END: THE FIX --- #}
                             </tbody>
                         </table>
                     </div>
