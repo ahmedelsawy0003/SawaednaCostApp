@@ -4,6 +4,9 @@ from .payment import Payment
 from .invoice_item import InvoiceItem
 from .invoice import Invoice
 from .cost_detail import CostDetail
+# --- START: Import the new PaymentDistribution model ---
+from .payment_distribution import PaymentDistribution
+# --- END: Import the new PaymentDistribution model ---
 
 class Item(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -29,76 +32,44 @@ class Item(db.Model):
         db.Index('idx_item_contractor_id', 'contractor_id'),
     )
     
+    # --- START: Updated all_payments property ---
     @property
     def all_payments(self):
         """
-        Fetches a list of all payments specifically linked to this item or its cost details.
+        Fetches a list of all payment distributions related to this item.
         """
-        # Get all invoice_item IDs related to this main item or its cost details
-        related_invoice_item_ids_query = db.session.query(InvoiceItem.id).filter(
-            or_(
-                InvoiceItem.item_id == self.id,
-                InvoiceItem.cost_detail.has(item_id=self.id)
-            )
-        )
+        # Subquery to get invoice_item_ids for the current main item
+        invoice_item_ids = db.session.query(InvoiceItem.id).filter(InvoiceItem.item_id == self.id)
         
-        related_invoice_item_ids = [item[0] for item in related_invoice_item_ids_query.all()]
-
-        if not related_invoice_item_ids:
-            return []
-
-        # Fetch only payments directly linked to those specific invoice_items
-        direct_payments = Payment.query.filter(
-            Payment.invoice_item_id.in_(related_invoice_item_ids)
-        ).order_by(Payment.payment_date.desc()).all()
+        # Query PaymentDistribution for distributions linked to those invoice_items
+        distributions = PaymentDistribution.query.filter(
+            PaymentDistribution.invoice_item_id.in_(invoice_item_ids)
+        ).all()
         
-        return direct_payments
-    
+        return distributions
+    # --- END: Updated all_payments property ---
+
+
+    # --- START: Updated paid_amount property ---
     @property
     def paid_amount(self):
         """
-        Calculates the total paid amount for this item by summing up payments
-        specifically linked to it, and its proportional share of general invoice payments.
+        Calculates the total paid amount for this item by summing up
+        all its related payment distributions.
         """
-        total_paid_for_item = 0.0
+        # Subquery to get all invoice_item IDs associated with this main item
+        invoice_item_ids_subquery = db.session.query(InvoiceItem.id).filter(InvoiceItem.item_id == self.id).subquery()
+
+        # Sum the amounts from PaymentDistribution where invoice_item_id is in our subquery
+        total_paid = db.session.query(
+            func.sum(PaymentDistribution.amount)
+        ).filter(
+            PaymentDistribution.invoice_item_id.in_(invoice_item_ids_subquery)
+        ).scalar()
         
-        related_invoice_items = InvoiceItem.query.filter(
-            or_(
-                InvoiceItem.item_id == self.id,
-                InvoiceItem.cost_detail.has(item_id=self.id)
-            )
-        ).all()
-        
-        invoice_map = {}
-        for ii in related_invoice_items:
-            if ii.invoice_id not in invoice_map:
-                invoice_map[ii.invoice_id] = []
-            invoice_map[ii.invoice_id].append(ii)
+        return total_paid or 0.0
+    # --- END: Updated paid_amount property ---
 
-        for invoice_id, items_on_invoice in invoice_map.items():
-            invoice = Invoice.query.get(invoice_id)
-            if not invoice or invoice.total_amount == 0:
-                continue
-
-            value_of_this_item_on_invoice = sum(ii.total_price for ii in items_on_invoice)
-            
-            general_payments_on_invoice = db.session.query(func.sum(Payment.amount)).filter(
-                Payment.invoice_id == invoice_id,
-                Payment.invoice_item_id.is_(None)
-            ).scalar() or 0.0
-
-            if general_payments_on_invoice > 0:
-                proportion = value_of_this_item_on_invoice / invoice.total_amount
-                total_paid_for_item += general_payments_on_invoice * proportion
-
-            related_invoice_item_ids = [ii.id for ii in items_on_invoice]
-            direct_payments_to_item = db.session.query(func.sum(Payment.amount)).filter(
-                Payment.invoice_item_id.in_(related_invoice_item_ids)
-            ).scalar() or 0.0
-            
-            total_paid_for_item += direct_payments_to_item
-            
-        return total_paid_for_item
 
     @property
     def contract_total_cost(self):
@@ -106,11 +77,13 @@ class Item(db.Model):
             return self.contract_quantity * self.contract_unit_cost
         return 0.0
 
+    # --- START: التعديل الرئيسي حسب طلبك ---
     @property
     def actual_total_cost(self):
         if self.actual_quantity is not None and self.actual_unit_cost is not None:
             return self.actual_quantity * self.actual_unit_cost
         return 0.0
+    # --- END: التعديل الرئيسي ---
     
     @property
     def remaining_amount(self):
