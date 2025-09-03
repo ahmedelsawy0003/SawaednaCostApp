@@ -91,7 +91,7 @@
                                 <th>الوفر / الزيادة</th>
                                 {% endif %}
                                 <th>إجمالي المدفوعات</th>
-                                <th>المبلغ المتبقي</th> {# <-- NEW COLUMN HEADER #}
+                                <th>المبلغ المتبقي</th>
                                 <th>الحالة</th>
                                 <th class="text-center">الإجراءات</th>
                             </tr>
@@ -116,7 +116,6 @@
                                 <td>
                                     <span class="text-info">{{ "{:,.2f}".format(item.paid_amount) }}</span>
                                 </td>
-                                {# <-- NEW COLUMN CELL --> #}
                                 <td>
                                     <span class="text-danger">{{ "{:,.2f}".format(item.remaining_amount) }}</span>
                                 </td>
@@ -188,6 +187,7 @@
                                     <th class="text-end">المبلغ</th>
                                     <th>الوصف</th>
                                     <th>رقم المستخلص</th>
+                                    <th>المقاول</th> {# <-- NEW COLUMN HEADER #}
                                 </tr>
                             </thead>
                             <tbody>
@@ -201,6 +201,8 @@
                                             {{ payment.invoice.invoice_number }}
                                         </a>
                                     </td>
+                                    {# <-- NEW COLUMN CELL --> #}
+                                    <td>{{ payment.invoice.contractor.name }}</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
