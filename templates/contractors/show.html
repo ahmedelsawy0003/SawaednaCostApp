@@ -61,7 +61,7 @@
                         <table class="table table-hover table-striped mb-0">
                             <thead class="table-dark">
                                 <tr>
-                                    <th style="width: 3%;"></th> {# <-- عمود جديد لزر التوسيع #}
+                                    <th style="width: 3%;"></th>
                                     <th>رقم المستخلص</th>
                                     <th>المشروع</th>
                                     <th>تاريخه</th>
@@ -74,7 +74,6 @@
                             <tbody>
                                 {% for invoice in invoices %}
                                 <tr class="align-middle">
-                                    {# --- START: زر التوسيع --- #}
                                     <td>
                                         {% if invoice.items %}
                                         <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#invoice-items-{{ invoice.id }}">
@@ -82,7 +81,6 @@
                                         </button>
                                         {% endif %}
                                     </td>
-                                    {# --- END: زر التوسيع --- #}
                                     <td>
                                         <a href="{{ url_for('invoice.show_invoice', invoice_id=invoice.id) }}" class="fw-bold">{{ invoice.invoice_number }}</a>
                                     </td>
@@ -106,25 +104,37 @@
                                         </a>
                                     </td>
                                 </tr>
-                                {# --- START: الصف المخفي الذي يحتوي على البنود --- #}
                                 {% if invoice.items %}
                                 <tr class="collapse" id="invoice-items-{{ invoice.id }}">
                                     <td colspan="8" class="p-3 bg-dark">
-                                        <h6 class="text-white mb-2">بنود المستخلص:</h6>
-                                        <ul class="list-group list-group-flush">
-                                            {% for inv_item in invoice.items %}
-                                                <li class="list-group-item d-flex justify-content-between align-items-center bg-transparent text-white-50 border-secondary">
-                                                    <span>{{ inv_item.description }}</span>
-                                                    <span>
-                                                        <small>الكمية: {{ inv_item.quantity }}</small> | <small>الإجمالي: <span class="fw-bold">{{ "{:,.2f}".format(inv_item.total_price) }}</span> ريال</small>
-                                                    </span>
-                                                </li>
-                                            {% endfor %}
-                                        </ul>
+                                        <h6 class="text-white mb-2">تفاصيل بنود المستخلص:</h6>
+                                        <div class="table-responsive">
+                                            <table class="table table-sm table-borderless">
+                                                <thead class="text-muted">
+                                                    <tr>
+                                                        <th>البند</th>
+                                                        <th class="text-end">الإجمالي</th>
+                                                        <th class="text-end">المدفوع</th>
+                                                        <th class="text-end">المتبقي</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="text-white-50">
+                                                    {# --- START: التعديل الرئيسي هنا --- #}
+                                                    {% for inv_item in invoice.items %}
+                                                    <tr>
+                                                        <td>{{ inv_item.description }}</td>
+                                                        <td class="text-end">{{ "{:,.2f}".format(inv_item.total_price) }}</td>
+                                                        <td class="text-end text-success">{{ "{:,.2f}".format(inv_item.paid_amount) }}</td>
+                                                        <td class="text-end text-danger">{{ "{:,.2f}".format(inv_item.remaining_amount) }}</td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                    {# --- END: التعديل الرئيسي --- #}
+                                                </tbody>
+                                            </table>
+                                        </div>
                                     </td>
                                 </tr>
                                 {% endif %}
-                                {# --- END: الصف المخفي --- #}
                                 {% endfor %}
                             </tbody>
                         </table>
@@ -136,7 +146,7 @@
                 {% endif %}
             </div>
 
-            {# --- Tab 2: Assigned Items (لا تغيير هنا) --- #}
+            {# --- Tab 2: Assigned Items (No changes here) --- #}
             <div class="tab-pane fade" id="items-content" role="tabpanel" aria-labelledby="items-tab">
                 {% if assigned_items %}
                     <div class="table-responsive">
