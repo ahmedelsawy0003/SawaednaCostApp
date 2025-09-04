@@ -56,7 +56,6 @@
             
             <div class="tab-pane fade show active" id="invoices-content" role="tabpanel" aria-labelledby="invoices-tab">
                 
-                {# --- START: تحديث شكل الأزرار --- #}
                 <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
                     <h5 class="mb-0 text-white-50">قائمة المستخلصات</h5>
                     <div class="btn-group btn-group-sm">
@@ -68,7 +67,6 @@
                         </button>
                     </div>
                 </div>
-                {# --- END: تحديث شكل الأزرار --- #}
 
                 {% if invoices %}
                     <div class="table-responsive">
@@ -192,31 +190,37 @@
 {% endblock %}
 
 {% block scripts %}
-{# --- START: تحديث كود JavaScript لحل مشكلة السرعة --- #}
+{# --- START: الكود النهائي المحسن للسرعة --- #}
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     const expandAllBtn = document.getElementById('expand-all-btn');
     const collapseAllBtn = document.getElementById('collapse-all-btn');
     const collapsibleItems = document.querySelectorAll('#invoices-tbody .collapse');
 
-    if (expandAllBtn && collapseAllBtn && collapsibleItems.length > 0) {
-        expandAllBtn.addEventListener('click', function() {
-            collapsibleItems.forEach(item => {
-                // نستخدم getOrCreateInstance لضمان أفضل أداء
-                const bsCollapse = bootstrap.Collapse.getOrCreateInstance(item);
+    // دالة لإيقاف الحركة مؤقتاً
+    function bulkToggle(action) {
+        collapsibleItems.forEach(item => {
+            // نضيف كلاس يوقف الحركة
+            item.classList.add('no-transition');
+            const bsCollapse = bootstrap.Collapse.getOrCreateInstance(item);
+            if (action === 'show') {
                 bsCollapse.show();
-            });
-        });
-
-        collapseAllBtn.addEventListener('click', function() {
-            collapsibleItems.forEach(item => {
-                // نستخدم getOrCreateInstance لضمان أفضل أداء
-                const bsCollapse = bootstrap.Collapse.getOrCreateInstance(item);
+            } else {
                 bsCollapse.hide();
-            });
+            }
+            // نزيل الكلاس بعد انتهاء العملية مباشرة
+            // نستخدم setTimeout بصفر لإعطاء المتصفح فرصة لتنفيذ الأمر ثم إزالة الكلاس
+            setTimeout(() => {
+                item.classList.remove('no-transition');
+            }, 0);
         });
+    }
+
+    if (expandAllBtn && collapseAllBtn && collapsibleItems.length > 0) {
+        expandAllBtn.addEventListener('click', () => bulkToggle('show'));
+        collapseAllBtn.addEventListener('click', () => bulkToggle('hide'));
     }
 });
 </script>
-{# --- END: تحديث كود JavaScript --- #}
+{# --- END: الكود النهائي --- #}
 {% endblock %}
