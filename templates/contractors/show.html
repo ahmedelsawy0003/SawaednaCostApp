@@ -56,6 +56,20 @@
             
             {# --- Tab 1: Invoices --- #}
             <div class="tab-pane fade show active" id="invoices-content" role="tabpanel" aria-labelledby="invoices-tab">
+                
+                {# --- START: أزرار التحكم الجديدة --- #}
+                <div class="p-3 border-bottom">
+                    <div class="btn-group btn-group-sm">
+                        <button class="btn btn-secondary" id="expand-all-btn">
+                            <i class="fas fa-plus-square me-1"></i> توسيع الكل
+                        </button>
+                        <button class="btn btn-secondary" id="collapse-all-btn">
+                            <i class="fas fa-minus-square me-1"></i> طي الكل
+                        </button>
+                    </div>
+                </div>
+                {# --- END: أزرار التحكم الجديدة --- #}
+
                 {% if invoices %}
                     <div class="table-responsive">
                         <table class="table table-hover table-striped mb-0">
@@ -71,7 +85,7 @@
                                     <th class="text-center">الإجراءات</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody id="invoices-tbody"> {# <-- إضافة ID هنا #}
                                 {% for invoice in invoices %}
                                 <tr class="align-middle">
                                     <td>
@@ -119,7 +133,6 @@
                                                     </tr>
                                                 </thead>
                                                 <tbody class="text-white-50">
-                                                    {# --- START: التعديل الرئيسي هنا --- #}
                                                     {% for inv_item in invoice.items %}
                                                     <tr>
                                                         <td>{{ inv_item.description }}</td>
@@ -128,7 +141,6 @@
                                                         <td class="text-end text-danger">{{ "{:,.2f}".format(inv_item.remaining_amount) }}</td>
                                                     </tr>
                                                     {% endfor %}
-                                                    {# --- END: التعديل الرئيسي --- #}
                                                 </tbody>
                                             </table>
                                         </div>
@@ -146,7 +158,7 @@
                 {% endif %}
             </div>
 
-            {# --- Tab 2: Assigned Items (No changes here) --- #}
+            {# --- Tab 2: Assigned Items --- #}
             <div class="tab-pane fade" id="items-content" role="tabpanel" aria-labelledby="items-tab">
                 {% if assigned_items %}
                     <div class="table-responsive">
@@ -193,5 +205,36 @@
         </div>
     </div>
 </div>
+{% endblock %}
 
+{% block scripts %}
+{# --- START: كود JavaScript للتحكم بالتوسيع والطي --- #}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const expandAllBtn = document.getElementById('expand-all-btn');
+    const collapseAllBtn = document.getElementById('collapse-all-btn');
+    const collapsibleItems = document.querySelectorAll('#invoices-tbody .collapse');
+
+    if (expandAllBtn && collapseAllBtn && collapsibleItems.length > 0) {
+        expandAllBtn.addEventListener('click', function() {
+            collapsibleItems.forEach(item => {
+                const bsCollapse = new bootstrap.Collapse(item, {
+                    toggle: false
+                });
+                bsCollapse.show();
+            });
+        });
+
+        collapseAllBtn.addEventListener('click', function() {
+            collapsibleItems.forEach(item => {
+                const bsCollapse = new bootstrap.Collapse(item, {
+                    toggle: false
+                });
+                bsCollapse.hide();
+            });
+        });
+    }
+});
+</script>
+{# --- END: كود JavaScript --- #}
 {% endblock %}
