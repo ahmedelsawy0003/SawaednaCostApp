@@ -3,6 +3,7 @@ from app.models.contractor import Contractor
 from app.models.project import Project
 from app.models.user import User 
 from app.models.invoice import Invoice
+from app.models.item import Item # <-- إضافة جديدة
 from app.extensions import db
 from flask_login import login_required, current_user
 from sqlalchemy import or_
@@ -51,7 +52,6 @@ def new_contractor():
     
     return render_template("contractors/new.html", form=form)
 
-# --- START: تحديث دالة edit_contractor ---
 @contractor_bp.route("/<int:contractor_id>/edit", methods=['GET', 'POST'])
 @login_required
 def edit_contractor(contractor_id):
@@ -59,18 +59,15 @@ def edit_contractor(contractor_id):
         abort(403)
     
     contractor = Contractor.query.get_or_404(contractor_id)
-    # نمرر الاسم الأصلي للتحقق من الصحة
     form = ContractorForm(obj=contractor, original_name=contractor.name)
     
     if form.validate_on_submit():
-        # طريقة سهلة لتحديث بيانات الموديل من النموذج
         form.populate_obj(contractor)
         db.session.commit()
         flash('تم تحديث بيانات المقاول بنجاح!', 'success')
         return redirect(url_for('contractor.get_contractors'))
 
     return render_template("contractors/edit.html", form=form, contractor=contractor)
-# --- END: تحديث دالة edit_contractor ---
 
 
 @contractor_bp.route("/<int:contractor_id>/delete", methods=['POST'])
@@ -90,41 +87,48 @@ def delete_contractor(contractor_id):
     flash(f"تم حذف المقاول '{contractor.name}' بنجاح.", "success")
     return redirect(url_for('contractor.get_contractors'))
 
+# --- START: التعديل الرئيسي هنا ---
 @contractor_bp.route("/<int:contractor_id>")
 @login_required
 def show_contractor(contractor_id):
     contractor = Contractor.query.get_or_404(contractor_id)
     
+    # جلب المستخلصات (لا تغيير هنا)
     invoices_query = Invoice.query.filter_by(contractor_id=contractor_id)
-
     project_filter = request.args.get('project_id', type=int)
     search_filter = request.args.get('search', '')
 
     if project_filter:
         invoices_query = invoices_query.filter(Invoice.project_id == project_filter)
-    
     if search_filter:
         search_term = f"%{search_filter}%"
         invoices_query = invoices_query.filter(Invoice.invoice_number.ilike(search_term))
     
     invoices = invoices_query.order_by(Invoice.invoice_date.desc()).all()
     
+    # حساب الإجماليات المالية (لا تغيير هنا)
     total_due = sum(inv.total_amount for inv in invoices if inv.status != 'ملغي')
     total_paid = sum(inv.paid_amount for inv in invoices if inv.status != 'ملغي')
     remaining = total_due - total_paid
 
+    # جلب المشاريع لفلتر المستخلصات (لا تغيير هنا)
     projects_query = Project.query.join(Invoice).filter(Invoice.contractor_id == contractor_id)
     if current_user.role != 'admin':
         projects_query = projects_query.join(Project.users).filter(User.id == current_user.id)
     projects = projects_query.distinct().order_by(Project.name).all()
+
+    # *** الإضافة الجديدة: جلب كل البنود المسندة للمقاول ***
+    assigned_items = Item.query.filter_by(contractor_id=contractor_id).order_by(Item.project_id, Item.item_number).all()
 
     return render_template(
         "contractors/show.html", 
         contractor=contractor, 
         invoices=invoices,
         projects=projects,
+        assigned_items=assigned_items, # <-- تمرير قائمة البنود الجديدة
         total_due=total_due,
         total_paid=total_paid,
         remaining=remaining,
         filters={'project_id': project_filter, 'search': search_filter}
     )
+# --- END: التعديل الرئيسي ---
