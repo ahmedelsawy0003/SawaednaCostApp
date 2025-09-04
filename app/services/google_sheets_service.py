@@ -30,6 +30,20 @@ class GoogleSheetsService:
         service = build("sheets", "v4", credentials=credentials)
         return service
 
+    # --- START: الدالة الجديدة لجلب أسماء الشيتات ---
+    def get_sheet_names(self):
+        """
+        يجلب قائمة بأسماء جميع الأوراق (الشيتات) في ملف Google Sheets المحدد.
+        """
+        try:
+            spreadsheet_metadata = self.service.spreadsheets().get(spreadsheetId=self.spreadsheet_id).execute()
+            sheets = spreadsheet_metadata.get('sheets', [])
+            sheet_names = [sheet.get('properties', {}).get('title', '') for sheet in sheets]
+            return sheet_names, None # Success
+        except Exception as e:
+            return None, str(e) # Failure
+    # --- END: الدالة الجديدة ---
+
     def read_data(self, range_name):
         """
         يقرأ البيانات من ورقة عمل محددة.
@@ -38,23 +52,20 @@ class GoogleSheetsService:
             spreadsheetId=self.spreadsheet_id, range=range_name).execute()
         return result.get("values", [])
 
-    # START: Modified write function to create a new sheet each time
     def write_data(self, base_sheet_name, values):
         """
         ينشئ ورقة عمل جديدة بتاريخ اليوم ويكتب البيانات فيها.
         """
-        # 1. Create a unique sheet name with the current date and time
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
         new_sheet_name = f"{base_sheet_name} - {timestamp}"
 
         try:
-            # 2. Create the new sheet using the batchUpdate API
             requests = {
                 'requests': [{
                     'addSheet': {
                         'properties': {
                             'title': new_sheet_name,
-                            'rightToLeft': True # Set sheet direction to RTL
+                            'rightToLeft': True
                         }
                     }
                 }]
@@ -62,21 +73,15 @@ class GoogleSheetsService:
             self.service.spreadsheets().batchUpdate(
                 spreadsheetId=self.spreadsheet_id, body=requests).execute()
 
-            # 3. Write the data to the newly created sheet
             body = {"values": values}
             self.service.spreadsheets().values().update(
                 spreadsheetId=self.spreadsheet_id, 
-                range=new_sheet_name,  # Use the new sheet name as the range
+                range=new_sheet_name,
                 valueInputOption="RAW", 
                 body=body
             ).execute()
             
-            return True, None # Success
+            return True, None
         
         except Exception as e:
-            # Check if the error is because the sheet already exists (highly unlikely but good practice)
-            if 'already exists' in str(e):
-                # Handle this case if needed, maybe by trying a different name
-                pass
-            return False, str(e) # Failure, return the error message
-    # END: Modified write function
+            return False, str(e)

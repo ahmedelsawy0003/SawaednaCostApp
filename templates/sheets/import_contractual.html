@@ -30,8 +30,19 @@
         <hr>
         <form method="POST" action="{{ url_for("sheets.import_items", project_id=project.id) }}">
             <div class="mb-3">
-                <label for="sheet_name" class="form-label">اسم الورقة في Google Sheets</label>
-                <input type="text" class="form-control" id="sheet_name" name="sheet_name" placeholder="مثال: Sheet1" required>
+                <label for="sheet_name" class="form-label">اختر ورقة العمل (الشيت) المراد استيرادها</label>
+                {# --- START: التعديل الرئيسي هنا --- #}
+                <select class="form-select" id="sheet_name" name="sheet_name" required>
+                    <option value="" selected disabled>-- اختر من القائمة --</option>
+                    {% if sheet_names %}
+                        {% for name in sheet_names %}
+                            <option value="{{ name }}">{{ name }}</option>
+                        {% endfor %}
+                    {% else %}
+                        <option value="" disabled>لا توجد أوراق عمل متاحة في هذا الملف.</option>
+                    {% endif %}
+                </select>
+                {# --- END: التعديل الرئيسي --- #}
             </div>
             <button type="submit" class="btn btn-primary">
                 <i class="fas fa-file-import me-1"></i> بدء عملية الاستيراد

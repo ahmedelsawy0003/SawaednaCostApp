@@ -91,7 +91,7 @@ def export_summary(project_id):
     return redirect(url_for("project.get_project", project_id=project_id))
 
 
-# --- START: التعديل الشامل لدالة الاستيراد ---
+# --- START: التعديل الشامل لدالة الاستيراد مع جلب أسماء الشيتات ---
 @sheets_bp.route("/projects/<int:project_id>/import_items", methods=["GET", "POST"])
 @login_required
 def import_items(project_id):
@@ -104,33 +104,43 @@ def import_items(project_id):
         flash("لا يوجد معرّف Google Sheets لهذا المشروع.", "danger")
         return redirect(url_for("project.get_project", project_id=project_id))
     
+    # جلب أسماء الشيتات في كل الأحوال (GET and POST) لعرضها في حال حدوث خطأ
+    try:
+        service = GoogleSheetsService(project.spreadsheet_id)
+        sheet_names, error = service.get_sheet_names()
+        if error:
+            flash(f"خطأ في الاتصال بـ Google Sheets: {error}", "danger")
+            return redirect(url_for('project.get_project', project_id=project_id))
+    except Exception as e:
+        flash(f"حدث خطأ غير متوقع: {str(e)}", "danger")
+        return redirect(url_for('project.get_project', project_id=project_id))
+    
     if request.method == "POST":
-        sheet_name = request.form["sheet_name"]
+        sheet_name = request.form.get("sheet_name") # استخدام .get لتجنب الخطأ إذا لم يتم اختيار شيء
+        if not sheet_name:
+            flash("الرجاء اختيار ورقة عمل (شيت) للاستيراد منها.", "warning")
+            return render_template("sheets/import_contractual.html", project=project, sheet_names=sheet_names)
+
         try:
-            service = GoogleSheetsService(project.spreadsheet_id)
             data = service.read_data(sheet_name)
             
             if not data or len(data) < 2:
-                flash("لا توجد بيانات كافية في الجدول المحدد.", "warning")
+                flash("لا توجد بيانات كافية في ورقة العمل المحددة.", "warning")
                 return redirect(url_for("sheets.import_items", project_id=project_id))
 
-            # تطبيع أسماء الأعمدة (إزالة المسافات الزائدة وتحويل الـ "ي" والـ "ه")
             headers = [h.strip().replace('ى', 'ي').replace('ه', 'ة') for h in data[0]]
             
-            # قاموس مرن لأسماء الأعمدة
             col_map = {
                 'item_number': ['رقم البند', 'الرقم التسلسلي', 'الرقم', 'رقم', 'مسلسل'],
-                'item_name': ['اسم البند'], # يبقى كما هو للمساعدة في الوصف
+                'item_name': ['اسم البند'],
                 'description': ['الوصف', 'وصف البند', 'البيان'],
                 'unit': ['الوحدة', 'وحدة القياس'],
                 'quantity': ['الكمية', 'الكمية التعاقدية'],
                 'unit_cost': ['السعر الافرادى التعاقدي', 'التكلفة الإفرادية التعاقدية', 'السعر', 'السعر التعاقدي', 'التكلفة', 'التكلفة التعاقدية', 'تكلفة', 'سعر', 'سعر افرادى']
             }
 
-            # البحث عن الأعمدة في الملف بناءً على القاموس المرن
             header_indices = {}
             for key, possible_names in col_map.items():
-                # تطبيع الأسماء المحتملة أيضاً
                 normalized_possible_names = [name.replace('ى', 'ي').replace('ه', 'ة') for name in possible_names]
                 for name in normalized_possible_names:
                     if name in headers:
@@ -146,33 +156,27 @@ def import_items(project_id):
 
             for row_idx, row in enumerate(data[1:], start=2):
                 if not any(row): continue
-
                 try:
-                    # جلب البيانات من الصفوف
                     item_number = row[header_indices['item_number']].strip()
                     item_desc = row[header_indices['description']].strip()
                     unit = row[header_indices['unit']].strip()
                     quantity_str = row[header_indices['quantity']].strip().replace(',', '')
                     unit_cost_str = row[header_indices['unit_cost']].strip().replace(',', '')
 
-                    # دمج "اسم البند" مع "الوصف" إذا وجد
                     if 'item_name' in header_indices and header_indices['item_name'] < len(row):
                         item_name = row[header_indices['item_name']].strip()
                         if item_name:
                             item_desc = f"{item_name} - {item_desc}"
 
-                    # تحويل القيم إلى أرقام
                     contract_quantity = float(quantity_str or 0)
                     contract_unit_cost = float(unit_cost_str or 0)
 
-                    # *** المنطق الجديد: حساب القيم الفعلية تلقائياً ***
-                    actual_quantity = contract_quantity  # الكمية الفعلية تساوي التعاقدية
-                    actual_unit_cost = contract_unit_cost * 0.70  # التكلفة الفعلي70% من التعاقدية
+                    actual_quantity = contract_quantity
+                    actual_unit_cost = contract_unit_cost * 0.70
 
                     if item_number:
                         existing_item = Item.query.filter_by(project_id=project.id, item_number=item_number).first()
                         if existing_item:
-                            # تحديث البند الموجود
                             existing_item.description = item_desc
                             existing_item.unit = unit
                             existing_item.contract_quantity = contract_quantity
@@ -180,7 +184,6 @@ def import_items(project_id):
                             existing_item.actual_quantity = actual_quantity
                             existing_item.actual_unit_cost = actual_unit_cost
                         else:
-                            # إنشاء بند جديد
                             new_item = Item(
                                 project_id=project.id, item_number=item_number, description=item_desc,
                                 unit=unit, contract_quantity=contract_quantity, contract_unit_cost=contract_unit_cost,
@@ -197,11 +200,5 @@ def import_items(project_id):
             db.session.rollback()
             flash(f"حدث خطأ أثناء استيراد البيانات: {str(e)}", "danger")
 
-    return render_template("sheets/import_contractual.html", project=project)
-
+    return render_template("sheets/import_contractual.html", project=project, sheet_names=sheet_names)
 # --- END: التعديل الشامل ---
-
-
-# --- START: حذف دالة استيراد البيانات الفعلية ---
-# تم حذف دالة import_actual_items بالكامل
-# --- END: حذف الدالة ---
