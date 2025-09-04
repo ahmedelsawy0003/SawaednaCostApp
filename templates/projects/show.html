@@ -8,21 +8,14 @@
         <span class="text-muted fw-normal">تفاصيل المشروع:</span> {{ project.name }}
     </h2>
     <div class="d-flex gap-2">
-        {# START: New Invoice Buttons #}
         <a href="{{ url_for("invoice.get_invoices_by_project", project_id=project.id) }}" class="btn btn-success">
             <i class="fas fa-file-invoice-dollar me-1"></i> عرض المستخلصات
         </a>
-        {# --- تم إصلاح الرابط هنا --- #}
         <a href="{{ url_for("invoice.new_invoice", project_id=project.id) }}" class="btn btn-outline-success">
             <i class="fas fa-plus me-1"></i> إضافة مستخلص
         </a>
-        {# --- نهاية الإصلاح --- #}
-        
         <a href="{{ url_for("item.get_items_by_project", project_id=project.id) }}" class="btn btn-primary">
             <i class="fas fa-list me-1"></i> عرض البنود
-        </a>
-        <a href="{{ url_for("project.project_dashboard", project_id=project.id) }}" class="btn btn-info text-white">
-            <i class="fas fa-chart-bar me-1"></i> لوحة التحكم
         </a>
         
         {% if current_user.role == 'admin' %}
@@ -74,20 +67,17 @@
             </div>
             <div class="card-body">
                 <div class="row g-3">
-                    <div class="col-md-4">
+                    <div class="col-md-6">
                         <form action="{{ url_for("sheets.export_project", project_id=project.id) }}" method="POST">
-                            <button type="submit" class="btn btn-secondary w-100">تصدير البنود</button>
+                            <button type="submit" class="btn btn-secondary w-100"><i class="fas fa-file-export me-1"></i> تصدير كل البنود</button>
                         </form>
                     </div>
-                    <div class="col-md-4">
-                        <a href="{{ url_for("sheets.import_contractual_items", project_id=project.id) }}" class="btn btn-secondary w-100">استيراد بنود تعاقدية</a>
-                    </div>
-                    <div class="col-md-4">
-                        <a href="{{ url_for("sheets.import_actual_items", project_id=project.id) }}" class="btn btn-secondary w-100">استيراد بنود فعلية</a>
-                    </div>
                     <div class="col-md-6">
+                        <a href="{{ url_for("sheets.import_items", project_id=project.id) }}" class="btn btn-secondary w-100"><i class="fas fa-file-import me-1"></i> استيراد بنود من ملف</a>
+                    </div>
+                    <div class="col-md-12">
                         <form action="{{ url_for("sheets.export_summary", project_id=project.id) }}" method="POST">
-                            <button type="submit" class="btn btn-secondary w-100">تصدير ملخص المشروع</button>
+                            <button type="submit" class="btn btn-secondary w-100"><i class="fas fa-file-export me-1"></i> تصدير ملخص المشروع</button>
                         </form>
                     </div>
                 </div>

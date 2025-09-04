@@ -1,10 +1,10 @@
 {% extends "layouts/base.html" %}
 
-{% block title %}استيراد بنود تعاقدية من Google Sheets{% endblock %}
+{% block title %}استيراد بنود من Google Sheets{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1>استيراد بنود تعاقدية للمشروع: {{ project.name }}</h1>
+    <h1>استيراد بنود للمشروع: {{ project.name }}</h1>
     <a href="{{ url_for("project.get_project", project_id=project.id) }}" class="btn btn-secondary">
         <i class="fas fa-arrow-right me-1"></i> العودة لتفاصيل المشروع
     </a>
@@ -12,26 +12,29 @@
 
 <div class="card">
     <div class="card-header bg-primary text-white">
-        <h3 class="mb-0">استيراد بنود تعاقدية</h3>
+        <h3 class="mb-0">استيراد بنود المشروع</h3>
     </div>
     <div class="card-body">
-        <p>يرجى التأكد من أن جدول بيانات Google Sheets الخاص بك يحتوي على الأعمدة الأساسية التالية:</p>
-        <ul>
-            <li><code>رقم البند</code></li>
-            <li><code>الوصف</code> (أو <code>وصف البند</code>)</li>
-            <li><code>الوحدة</code></li>
-            <li><code>الكمية</code> (أو <code>الكمية التعاقدية</code>)</li>
-            <li><code>السعر الافرادى التعاقدي</code> (أو <code>التكلفة الإفرادية التعاقدية</code>)</li>
-        </ul>
-        <p><b>ملاحظة:</b> إذا كان الملف يحتوي على عمود <code>اسم البند</code> بالإضافة إلى <code>الوصف</code>، سيقوم النظام بدمجهما معًا في حقل الوصف تلقائيًا.</p>
+        <p class="lead">هذه الصفحة تقوم باستيراد البنود التعاقدية وتقوم تلقائياً بحساب القيم الفعلية المبدئية.</p>
+        <div class="alert alert-info">
+            <h5 class="alert-heading"><i class="fas fa-info-circle me-2"></i>إرشادات هامة</h5>
+            <p>يرجى التأكد من أن ملف Google Sheets يحتوي على أعمدة بالأسماء التالية (أو ما يماثلها في المعنى):</p>
+            <ul>
+                <li><strong>لـ "رقم البند" (إلزامي):</strong> <code>رقم البند</code>, <code>الرقم التسلسلي</code>, <code>رقم</code>, <code>مسلسل</code></li>
+                <li><strong>لـ "الوصف" (إلزامي):</strong> <code>الوصف</code>, <code>وصف البند</code>, <code>البيان</code> (سيتم دمجه مع عمود <code>اسم البند</code> إن وجد)</li>
+                <li><strong>لـ "الوحدة" (إلزامي):</strong> <code>الوحدة</code>, <code>وحدة القياس</code></li>
+                <li><strong>لـ "الكمية" (إلزامي):</strong> <code>الكمية</code>, <code>الكمية التعاقدية</code></li>
+                <li><strong>لـ "السعر" (إلزامي):</strong> <code>السعر</code>, <code>التكلفة</code>, <code>سعر افرادى</code>, <code>السعر التعاقدي</code>, <code>التكلفة التعاقدية</code></li>
+            </ul>
+        </div>
         <hr>
-        <form method="POST" action="{{ url_for("sheets.import_contractual_items", project_id=project.id) }}">
+        <form method="POST" action="{{ url_for("sheets.import_items", project_id=project.id) }}">
             <div class="mb-3">
                 <label for="sheet_name" class="form-label">اسم الورقة في Google Sheets</label>
                 <input type="text" class="form-control" id="sheet_name" name="sheet_name" placeholder="مثال: Sheet1" required>
             </div>
             <button type="submit" class="btn btn-primary">
-                <i class="fas fa-file-import me-1"></i> استيراد البنود التعاقدية
+                <i class="fas fa-file-import me-1"></i> بدء عملية الاستيراد
             </button>
         </form>
     </div>
