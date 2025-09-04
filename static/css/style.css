@@ -239,3 +239,8 @@ a:hover {
     cursor: pointer;
     color: var(--text-muted);
 }
+
+/* Helper class to disable transitions for instant collapse/expand */
+.no-transition {
+    transition: none !important;
+}
