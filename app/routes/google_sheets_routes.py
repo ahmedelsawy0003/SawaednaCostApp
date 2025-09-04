@@ -167,7 +167,7 @@ def import_items(project_id):
 
                     # *** المنطق الجديد: حساب القيم الفعلية تلقائياً ***
                     actual_quantity = contract_quantity  # الكمية الفعلية تساوي التعاقدية
-                    actual_unit_cost = contract_unit_cost * 0.30  # التكلفة الفعلية 30% من التعاقدية
+                    actual_unit_cost = contract_unit_cost * 0.70  # التكلفة الفعلي70% من التعاقدية
 
                     if item_number:
                         existing_item = Item.query.filter_by(project_id=project.id, item_number=item_number).first()
