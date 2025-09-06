@@ -15,7 +15,6 @@
     </div>
 </div>
 
-{# --- START: قسم الفلاتر والبحث الجديد --- #}
 <div class="card mb-4">
     <div class="card-body">
         <form method="GET" action="{{ url_for('invoice.get_invoices_by_project', project_id=project.id) }}">
@@ -51,7 +50,6 @@
         </form>
     </div>
 </div>
-{# --- END: قسم الفلاتر والبحث الجديد --- #}
 
 <div class="card">
     <div class="card-header">
@@ -63,9 +61,8 @@
                 <table class="table table-dark table-hover table-striped mb-0">
                     <thead>
                         <tr>
-                            {# --- START: تحديث رؤوس الأعمدة لجعلها قابلة للترتيب --- #}
                             <th>
-                                <a href="{{ url_for('invoice.get_invoices_by_project', project_id=project.id, sort_by='invoice_number', sort_order='asc' if filters.sort_by == 'invoice_number' and filters.sort_order == 'desc' else 'desc', **request.args.to_dict()|rejectattr('sort_by', 'sort_order')) }}">
+                                <a href="{{ url_for('invoice.get_invoices_by_project', project_id=project.id, sort_by='invoice_number', sort_order='asc' if filters.sort_by == 'invoice_number' and filters.sort_order == 'desc' else 'desc', **(request.args.to_dict()|dict(sort_by=None, sort_order=None))) }}">
                                     رقم المستخلص
                                     {% if filters.sort_by == 'invoice_number' %}
                                         <i class="fas fa-sort-{{ 'up' if filters.sort_order == 'asc' else 'down' }}"></i>
@@ -74,7 +71,7 @@
                             </th>
                             <th>المقاول</th>
                             <th>
-                                <a href="{{ url_for('invoice.get_invoices_by_project', project_id=project.id, sort_by='invoice_date', sort_order='asc' if filters.sort_by == 'invoice_date' and filters.sort_order == 'desc' else 'desc', **request.args.to_dict()|rejectattr('sort_by', 'sort_order')) }}">
+                                <a href="{{ url_for('invoice.get_invoices_by_project', project_id=project.id, sort_by='invoice_date', sort_order='asc' if filters.sort_by == 'invoice_date' and filters.sort_order == 'desc' else 'desc', **(request.args.to_dict()|dict(sort_by=None, sort_order=None))) }}">
                                     تاريخه
                                     {% if filters.sort_by == 'invoice_date' %}
                                         <i class="fas fa-sort-{{ 'up' if filters.sort_order == 'asc' else 'down' }}"></i>
@@ -86,7 +83,6 @@
                             <th class="text-end">المبلغ المتبقي</th>
                             <th class="text-center">الحالة</th>
                             <th class="text-center">الإجراءات</th>
-                            {# --- END: تحديث رؤوس الأعمدة --- #}
                         </tr>
                     </thead>
                     <tbody>
@@ -136,7 +132,6 @@
     </div>
 </div>
 
-{# --- Modals remain the same --- #}
 {% for invoice in invoices %}
 <div class="modal fade" id="deleteInvoiceModal-{{ invoice.id }}" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
