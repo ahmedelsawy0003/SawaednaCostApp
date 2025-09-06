@@ -35,6 +35,7 @@
                         </a>
                     </li>
 
+                    <!-- Projects Menu -->
                     <li class="sidebar-item">
                         <a href="#projects-submenu" data-bs-toggle="collapse" class="sidebar-link collapsed">
                             <i class="fas fa-project-diagram fa-fw me-2"></i> المشاريع
@@ -47,6 +48,23 @@
                         </ul>
                     </li>
 
+                    <!-- Invoices Menu -->
+                    <li class="sidebar-item">
+                        <a href="#invoices-submenu" data-bs-toggle="collapse" class="sidebar-link collapsed">
+                            <i class="fas fa-file-invoice-dollar fa-fw me-2"></i> المستخلصات
+                        </a>
+                        <ul id="invoices-submenu" class="list-unstyled collapse sidebar-submenu">
+                             <li><a href="#" class="sidebar-submenu-link text-muted">اختر مشروعاً لعرض مستخلصاته:</a></li>
+                             <hr class="sidebar-divider">
+                             {% for project in sidebar_projects %}
+                                <li><a href="{{ url_for('invoice.get_invoices_by_project', project_id=project.id) }}" class="sidebar-submenu-link" title="{{ project.name }}">{{ project.name | truncate(20) }}</a></li>
+                             {% else %}
+                                <li><span class="sidebar-submenu-link text-muted">لا توجد مشاريع.</span></li>
+                             {% endfor %}
+                        </ul>
+                    </li>
+
+                    <!-- Contractors Menu -->
                     <li class="sidebar-item">
                         <a href="#contractors-submenu" data-bs-toggle="collapse" class="sidebar-link collapsed">
                             <i class="fas fa-hard-hat fa-fw me-2"></i> المقاولون
@@ -132,3 +150,4 @@
     {% block scripts %}{% endblock %}
 </body>
 </html>
+

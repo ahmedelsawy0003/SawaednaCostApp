@@ -1,4 +1,5 @@
 from flask import Flask, redirect, url_for
+from flask_login import current_user
 from .extensions import db, migrate, login_manager
 from . import commands
 
@@ -23,14 +24,31 @@ def create_app():
     from .models.invoice import Invoice
     from .models.invoice_item import InvoiceItem
     from .models.cost_detail import CostDetail
-    # --- START: NEW MODEL IMPORT ---
     from .models.payment_distribution import PaymentDistribution
-    # --- END: NEW MODEL IMPORT ---
 
 
     @login_manager.user_loader
     def load_user(user_id):
         return User.query.get(int(user_id))
+
+    # START: NEW CONTEXT PROCESSOR FOR SIDEBAR
+    @app.context_processor
+    def inject_sidebar_data():
+        """
+        Injects data into all templates for the sidebar.
+        """
+        sidebar_projects = []
+        if current_user.is_authenticated:
+            if current_user.role == 'admin':
+                # Admins see all non-archived projects
+                sidebar_projects = Project.query.filter_by(is_archived=False).order_by(Project.name).all()
+            else:
+                # Regular users see their associated non-archived projects
+                sidebar_projects = sorted([p for p in current_user.projects if not p.is_archived], key=lambda x: x.name)
+        
+        return dict(sidebar_projects=sidebar_projects)
+    # END: NEW CONTEXT PROCESSOR
+
 
     # Import and register blueprints
     from .routes.project_routes import project_bp
