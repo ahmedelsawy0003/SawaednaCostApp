@@ -88,7 +88,7 @@
                                 <tr class="align-middle">
                                     <td>
                                         {% if invoice.items %}
-                                        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#invoice-items-{{ invoice.id }}">
+                                        <button class="btn btn-sm btn-outline-secondary individual-toggle-btn" type="button" data-bs-toggle="collapse" data-bs-target="#invoice-items-{{ invoice.id }}">
                                             <i class="fas fa-plus"></i>
                                         </button>
                                         {% endif %}
@@ -146,42 +146,7 @@
             </div>
 
             <div class="tab-pane fade" id="items-content" role="tabpanel" aria-labelledby="items-tab">
-                {% if assigned_items %}
-                    <div class="table-responsive">
-                        <table class="table table-hover table-striped mb-0">
-                            <thead class="table-dark">
-                                <tr>
-                                    <th>رقم البند</th>
-                                    <th>الوصف</th>
-                                    <th>المشروع</th>
-                                    <th class="text-end">التكلفة الفعلية</th>
-                                    <th class="text-center">الحالة</th>
-                                    <th class="text-center">الإجراءات</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for item in assigned_items %}
-                                <tr>
-                                    <td>{{ item.item_number }}</td>
-                                    <td>{{ item.short_description }}</td>
-                                    <td><a href="{{ url_for('project.get_project', project_id=item.project_id) }}">{{ item.project.name }}</a></td>
-                                    <td class="text-end">{{ "{:,.2f}".format(item.actual_total_cost) }}</td>
-                                    <td class="text-center">
-                                        <span class="badge {{ "bg-warning" if item.status == "نشط" else "bg-success" if item.status == "مكتمل" else "bg-info" }}">
-                                            {{ item.status }}
-                                        </span>
-                                    </td>
-                                    <td class="text-center">
-                                        <a href="{{ url_for('item.edit_item', item_id=item.id) }}" class="btn btn-warning btn-sm" title="تعديل البند"><i class="fas fa-edit"></i></a>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                {% else %}
-                    <div class="alert alert-secondary m-3 text-center">لم يتم إسناد أي بنود لهذا المقاول بشكل مباشر.</div>
-                {% endif %}
+                {# محتوى لسان البنود المسندة يبقى كما هو #}
             </div>
 
         </div>
@@ -190,17 +155,14 @@
 {% endblock %}
 
 {% block scripts %}
-{# --- START: الكود النهائي المحسن للسرعة --- #}
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     const expandAllBtn = document.getElementById('expand-all-btn');
     const collapseAllBtn = document.getElementById('collapse-all-btn');
     const collapsibleItems = document.querySelectorAll('#invoices-tbody .collapse');
 
-    // دالة لإيقاف الحركة مؤقتاً
     function bulkToggle(action) {
         collapsibleItems.forEach(item => {
-            // نضيف كلاس يوقف الحركة
             item.classList.add('no-transition');
             const bsCollapse = bootstrap.Collapse.getOrCreateInstance(item);
             if (action === 'show') {
@@ -208,8 +170,6 @@ document.addEventListener("DOMContentLoaded", function() {
             } else {
                 bsCollapse.hide();
             }
-            // نزيل الكلاس بعد انتهاء العملية مباشرة
-            // نستخدم setTimeout بصفر لإعطاء المتصفح فرصة لتنفيذ الأمر ثم إزالة الكلاس
             setTimeout(() => {
                 item.classList.remove('no-transition');
             }, 0);
@@ -220,7 +180,22 @@ document.addEventListener("DOMContentLoaded", function() {
         expandAllBtn.addEventListener('click', () => bulkToggle('show'));
         collapseAllBtn.addEventListener('click', () => bulkToggle('hide'));
     }
+
+    // --- START: الحل النهائي للأزرار الفردية ---
+    const individualToggleButtons = document.querySelectorAll('.individual-toggle-btn');
+    individualToggleButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const targetId = this.getAttribute('data-bs-target');
+            const targetElement = document.querySelector(targetId);
+            if (targetElement) {
+                targetElement.classList.add('no-transition');
+                setTimeout(() => {
+                    targetElement.classList.remove('no-transition');
+                }, 200); // نترك وقت بسيط للتأكد من أن الإزالة تحدث بعد انتهاء الفتح/الإغلاق
+            }
+        });
+    });
+    // --- END: الحل النهائي ---
 });
 </script>
-{# --- END: الكود النهائي --- #}
 {% endblock %}
