@@ -113,4 +113,3 @@ class ItemForm(FlaskForm):
         existing_item = Item.query.filter_by(project_id=self.project_id, item_number=item_number.data).first()
         if existing_item:
             raise ValidationError('هذا الرقم مستخدم بالفعل في هذا المشروع.')
-

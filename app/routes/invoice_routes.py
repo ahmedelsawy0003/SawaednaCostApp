@@ -88,27 +88,23 @@ def new_invoice(project_id):
     project = Project.query.get_or_404(project_id)
     check_project_permission(project)
     
-    # Pass project_id to the form for validation purposes
     form = InvoiceForm(project_id=project.id)
+    next_invoice_number = "001" 
 
     if request.method == "GET":
-        # Suggest the next invoice number
-        last_invoice_number_tuple = db.session.query(Invoice.invoice_number).filter_by(project_id=project_id).order_by(desc(Invoice.id)).first()
+        last_invoice_tuple = db.session.query(Invoice.invoice_number).filter_by(project_id=project_id).order_by(func.cast(func.regexp_replace(Invoice.invoice_number, '[^0-9]', '', 'g'), db.Integer).desc()).first()
         
-        next_invoice_number = "001"
-        if last_invoice_number_tuple and last_invoice_number_tuple[0]:
-            last_invoice_number = last_invoice_number_tuple[0]
-            # Use regex to find all numbers in the string
+        if last_invoice_tuple and last_invoice_tuple[0]:
+            last_invoice_number = last_invoice_tuple[0]
             numbers = re.findall(r'(\d+)', last_invoice_number)
             if numbers:
-                # Get the last number found
                 last_num_str = numbers[-1]
                 next_num = int(last_num_str) + 1
-                # Replace the old number with the new one, preserving padding and prefix
+                
                 prefix = last_invoice_number.rsplit(last_num_str, 1)[0]
+                
                 next_invoice_number = prefix + str(next_num).zfill(len(last_num_str))
             else:
-                 # If no number is found, append '-1'
                  next_invoice_number = last_invoice_number + "-1"
         
         form.invoice_number.data = next_invoice_number
@@ -117,17 +113,18 @@ def new_invoice(project_id):
     form.contractor_id.choices.insert(0, (0, '-- اختر المقاول أو المورد --'))
 
     if form.validate_on_submit():
-        new_invoice = Invoice()
-        form.populate_obj(new_invoice)
-        new_invoice.project_id = project.id
-        new_invoice.status = constants.INVOICE_STATUS_NEW
+        new_invoice_obj = Invoice()
+        form.populate_obj(new_invoice_obj)
+        new_invoice_obj.project_id = project.id
+        new_invoice_obj.status = constants.INVOICE_STATUS_NEW
         
-        db.session.add(new_invoice)
+        db.session.add(new_invoice_obj)
         db.session.commit()
         flash("تم إنشاء المستخلص بنجاح. يمكنك الآن إضافة البنود إليه.", "success")
-        return redirect(url_for("invoice.show_invoice", invoice_id=new_invoice.id))
+        return redirect(url_for("invoice.show_invoice", invoice_id=new_invoice_obj.id))
     
-    return render_template("invoices/new.html", project=project, form=form)
+    # Pass the suggested number to the template for pre-filling the field
+    return render_template("invoices/new.html", project=project, form=form, next_invoice_number=form.invoice_number.data)
 
 
 @invoice_bp.route("/<int:invoice_id>/delete", methods=["POST"])
