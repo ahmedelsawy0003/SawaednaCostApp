@@ -22,19 +22,34 @@ def upgrade():
         batch_op.add_column(sa.Column('purchase_order_number', sa.String(length=100), nullable=True))
         batch_op.add_column(sa.Column('disbursement_order_number', sa.String(length=100), nullable=True))
 
+    # --- START: MODIFICATION FOR INVOICE TABLE ---
     with op.batch_alter_table('invoice', schema=None) as batch_op:
-        batch_op.add_column(sa.Column('invoice_type', sa.String(length=50), nullable=False))
+        batch_op.add_column(sa.Column('invoice_type', sa.String(length=50), nullable=True))
         batch_op.add_column(sa.Column('purchase_order_number', sa.String(length=100), nullable=True))
         batch_op.add_column(sa.Column('disbursement_order_number', sa.String(length=100), nullable=True))
+
+    op.execute("UPDATE invoice SET invoice_type = 'مستخلص مقاول' WHERE invoice_type IS NULL")
+
+    with op.batch_alter_table('invoice', schema=None) as batch_op:
+        batch_op.alter_column('invoice_type',
+               existing_type=sa.String(length=50),
+               nullable=False)
+    # --- END: MODIFICATION FOR INVOICE TABLE ---
 
     with op.batch_alter_table('item', schema=None) as batch_op:
         batch_op.add_column(sa.Column('purchase_order_number', sa.String(length=100), nullable=True))
         batch_op.add_column(sa.Column('disbursement_order_number', sa.String(length=100), nullable=True))
 
+    # --- START: MODIFICATION FOR PAYMENT TABLE ---
+    # Step 1: Delete any payments that are not linked to an invoice
+    op.execute("DELETE FROM payment WHERE invoice_id IS NULL")
+
+    # Step 2: Now, safely alter the column to be non-nullable
     with op.batch_alter_table('payment', schema=None) as batch_op:
         batch_op.alter_column('invoice_id',
                existing_type=sa.INTEGER(),
                nullable=False)
+    # --- END: MODIFICATION FOR PAYMENT TABLE ---
 
     # ### end Alembic commands ###
 

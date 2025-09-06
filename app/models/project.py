@@ -2,15 +2,15 @@ from app.extensions import db
 from .user import user_project_association
 from .invoice import Invoice
 from .payment import Payment
-from app import constants # <-- إضافة جديدة
+from app import constants
 
 class Project(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), nullable=False)
     location = db.Column(db.String(255))
-    start_date = db.Column(db.String(10))
-    end_date = db.Column(db.String(10))
-    status = db.Column(db.String(50), default=constants.PROJECT_STATUS_IN_PROGRESS) # <-- استخدام الثوابت
+    start_date = db.Column(db.Date)
+    end_date = db.Column(db.Date)
+    status = db.Column(db.String(50), default=constants.PROJECT_STATUS_IN_PROGRESS)
     notes = db.Column(db.Text)
     spreadsheet_id = db.Column(db.String(255))
     
