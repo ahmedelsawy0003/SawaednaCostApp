@@ -1,5 +1,21 @@
 document.addEventListener("DOMContentLoaded", function() {
     
+    // --- START: Sidebar Toggle Functionality ---
+    const sidebar = document.querySelector('.sidebar');
+    const openSidebarBtn = document.getElementById('open-sidebar-btn');
+    const closeSidebarBtn = document.getElementById('close-sidebar-btn');
+
+    if (sidebar && openSidebarBtn && closeSidebarBtn) {
+        openSidebarBtn.addEventListener('click', () => {
+            sidebar.classList.add('show');
+        });
+
+        closeSidebarBtn.addEventListener('click', () => {
+            sidebar.classList.remove('show');
+        });
+    }
+    // --- END: Sidebar Toggle Functionality ---
+    
     // Toast Functionality for Flash Messages
     const toastElList = document.querySelectorAll('.toast');
     [...toastElList].map(toastEl => {

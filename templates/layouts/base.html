@@ -17,67 +17,97 @@
 </head>
 <body data-bs-theme="dark">
 
-    <nav class="navbar navbar-expand-lg navbar-dark">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="{{ url_for('project.get_projects') }}">
-                <i class="fas fa-cogs me-2"></i>برنامج إدارة تكاليف المشاريع - سواعدنا للمقاولات
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center">
-                    {% if current_user.is_authenticated %}
-                        <li class="nav-item">
-                            <a class="nav-link {% if 'project' in request.endpoint %}active{% endif %}" href="{{ url_for('project.get_projects') }}">
-                                <i class="fas fa-project-diagram fa-fw me-1"></i>المشاريع
-                            </a>
-                        </li>
-                        
-                        <li class="nav-item">
-                            <a class="nav-link {% if 'contractor' in request.endpoint %}active{% endif %}" href="{{ url_for('contractor.get_contractors') }}">
-                                <i class="fas fa-hard-hat fa-fw me-1"></i>المقاولون
-                            </a>
-                        </li>
-                        
-                        {% if current_user.role == 'admin' %}
-                        <li class="nav-item">
-                            <a class="nav-link {% if 'admin_dashboard' in request.endpoint %}active{% endif %}" href="{{ url_for('auth.admin_dashboard') }}">
-                                <i class="fas fa-user-shield fa-fw me-1"></i>لوحة التحكم
-                            </a>
-                        </li>
-                        {% endif %}
-                        
-                        <li class="nav-item dropdown ms-2">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="fas fa-user-circle fa-fw me-1"></i>{{ current_user.username }}
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                <li><a class="dropdown-item" href="{{ url_for('auth.profile') }}">ملفي الشخصي</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}">تسجيل الخروج</a></li>
-                            </ul>
-                        </li>
-                    {% else %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('auth.login') }}">تسجيل الدخول</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link btn btn-primary btn-sm" href="{{ url_for('auth.register') }}">تسجيل جديد</a>
-                        </li>
+    <div class="page-wrapper">
+        <!-- START: Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <a class="sidebar-brand" href="{{ url_for('project.get_projects') }}">
+                    <i class="fas fa-cogs me-2"></i>
+                    <span>إدارة التكاليف</span>
+                </a>
+                <button class="btn-close d-lg-none" id="close-sidebar-btn"></button>
+            </div>
+            <nav class="sidebar-nav">
+                <ul class="list-unstyled">
+                    <li class="sidebar-item">
+                        <a href="{{ url_for('project.get_projects') }}" class="sidebar-link {% if 'project' in request.endpoint and 'get_projects' in request.endpoint %}active{% endif %}">
+                            <i class="fas fa-home fa-fw me-2"></i> الرئيسية
+                        </a>
+                    </li>
+
+                    <li class="sidebar-item">
+                        <a href="#projects-submenu" data-bs-toggle="collapse" class="sidebar-link collapsed">
+                            <i class="fas fa-project-diagram fa-fw me-2"></i> المشاريع
+                        </a>
+                        <ul id="projects-submenu" class="list-unstyled collapse sidebar-submenu">
+                            <li><a href="{{ url_for('project.get_projects') }}" class="sidebar-submenu-link"><i class="fas fa-list me-2"></i> كل المشاريع</a></li>
+                            {% if current_user.role == 'admin' %}
+                            <li><a href="{{ url_for('project.new_project') }}" class="sidebar-submenu-link"><i class="fas fa-plus me-2"></i> إضافة مشروع</a></li>
+                            {% endif %}
+                        </ul>
+                    </li>
+
+                    <li class="sidebar-item">
+                        <a href="#contractors-submenu" data-bs-toggle="collapse" class="sidebar-link collapsed">
+                            <i class="fas fa-hard-hat fa-fw me-2"></i> المقاولون
+                        </a>
+                        <ul id="contractors-submenu" class="list-unstyled collapse sidebar-submenu">
+                            <li><a href="{{ url_for('contractor.get_contractors') }}" class="sidebar-submenu-link"><i class="fas fa-list me-2"></i> كل المقاولين</a></li>
+                             {% if current_user.role == 'admin' %}
+                            <li><a href="{{ url_for('contractor.new_contractor') }}" class="sidebar-submenu-link"><i class="fas fa-plus me-2"></i> إضافة مقاول</a></li>
+                             {% endif %}
+                        </ul>
+                    </li>
+                    
+                    {% if current_user.role == 'admin' %}
+                    <li class="sidebar-item">
+                        <a href="{{ url_for('auth.admin_dashboard') }}" class="sidebar-link {% if 'admin_dashboard' in request.endpoint %}active{% endif %}">
+                            <i class="fas fa-user-shield fa-fw me-2"></i> لوحة التحكم
+                        </a>
+                    </li>
                     {% endif %}
                 </ul>
+            </nav>
+            <div class="sidebar-footer">
+                 {% if current_user.is_authenticated %}
+                    <div class="dropdown">
+                        <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user-circle fa-fw me-2 fs-4"></i>
+                            <strong>{{ current_user.username }}</strong>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-dark text-small shadow" aria-labelledby="dropdownUser1">
+                            <li><a class="dropdown-item" href="{{ url_for('auth.profile') }}">ملفي الشخصي</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}">تسجيل الخروج</a></li>
+                        </ul>
+                    </div>
+                {% endif %}
             </div>
-        </div>
-    </nav>
+        </aside>
+        <!-- END: Sidebar Navigation -->
 
-    <main class="main-content">
-        <div class="container-fluid">
-            {% block content %}{% endblock %}
+        <!-- START: Main Content -->
+        <div class="main-content-wrapper">
+            <!-- Top bar for mobile and user info -->
+            <header class="topbar">
+                <button class="btn btn-outline-secondary d-lg-none" id="open-sidebar-btn">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h5 class="topbar-title d-none d-md-block">برنامج إدارة تكاليف المشاريع - سواعدنا للمقاولات</h5>
+                 <a class="topbar-brand d-md-none" href="{{ url_for('project.get_projects') }}">
+                    <i class="fas fa-cogs me-2"></i>
+                    <span>إدارة التكاليف</span>
+                </a>
+            </header>
+
+            <main class="main-content">
+                <div class="container-fluid">
+                    {% block content %}{% endblock %}
+                </div>
+            </main>
         </div>
-    </main>
-    
-    {# تم حذف النافذة المنبثقة من هنا مؤقتاً لإعادة كل شيء لصورته الطبيعية #}
+        <!-- END: Main Content -->
+    </div>
 
     <div class="toast-container position-fixed bottom-0 end-0 p-3">
         {% with messages = get_flashed_messages(with_categories=true) %}

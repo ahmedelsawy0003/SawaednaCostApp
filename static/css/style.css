@@ -1,6 +1,6 @@
 /*
- * SawaednaCostApp - "Passion" Inspired Dark Theme
- * Version: 3.5 (UX Enhancement - Hover Effects)
+ * SawaednaCostApp - Sidebar Theme
+ * Version: 4.1 (Restored transition helper)
  * Author: Gemini AI
 */
 
@@ -9,25 +9,23 @@
 @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap');
 
 :root {
-    /* Color Palette */
-    --primary: #10b981; /* Vibrant Green Accent */
+    --primary: #10b981;
     --primary-hover: #059669;
     --danger: #ef4444;
     --warning: #f59e0b;
     --info: #3b82f6;
 
-    --bg-dark: #111827; /* Main Background */
-    --bg-surface: #1f2937; /* Card & Modal Background */
-    --border-color: #374151; /* Borders and Dividers */
+    --bg-dark: #111827;
+    --bg-surface: #1f2937;
+    --border-color: #374151;
     
-    /* Text Colors */
-    --text-light: #f9fafb; /* For headings */
-    --text-normal: #d1d5db; /* For body text */
-    --text-muted: #9ca3af; /* For subtitles and placeholders */
+    --text-light: #f9fafb;
+    --text-normal: #d1d5db;
+    --text-muted: #9ca3af;
 
-    /* UI Elements */
-    --radius: 0.75rem; /* 12px */
-    --radius-sm: 0.5rem; /* 8px */
+    --sidebar-width: 260px;
+    --radius: 0.75rem;
+    --radius-sm: 0.5rem;
     --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
     --transition: 0.2s ease-in-out;
 }
@@ -40,6 +38,7 @@ body {
     direction: rtl;
     font-size: 16px;
     line-height: 1.7;
+    overflow-x: hidden;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -58,14 +57,136 @@ a:hover {
     color: var(--primary-hover);
 }
 
-/* 2. CORE COMPONENTS
+/* 2. LAYOUT: Sidebar & Main Content Wrapper
 /* ========================================================================== */
-
-.navbar {
-    background-color: var(--bg-surface) !important;
-    border-bottom: 1px solid var(--border-color);
+.page-wrapper {
+    display: flex;
+    min-height: 100vh;
 }
 
+.sidebar {
+    width: var(--sidebar-width);
+    min-width: var(--sidebar-width);
+    background-color: var(--bg-surface);
+    border-left: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    transition: margin-right var(--transition);
+}
+
+.main-content-wrapper {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    width: calc(100% - var(--sidebar-width));
+}
+
+.topbar {
+    background-color: var(--bg-surface);
+    border-bottom: 1px solid var(--border-color);
+    padding: 0.75rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 65px;
+    position: sticky;
+    top: 0;
+    z-index: 1020;
+}
+.topbar-title { color: var(--text-muted); }
+.topbar-brand {
+    color: var(--text-light);
+    font-weight: 700;
+    font-size: 1.2rem;
+}
+
+.main-content {
+    padding: 2.5rem;
+}
+
+/* 3. SIDEBAR COMPONENTS
+/* ========================================================================== */
+.sidebar-header {
+    padding: 0.75rem 1.25rem;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 65px;
+}
+.sidebar-brand {
+    color: var(--text-light);
+    font-weight: 700;
+    font-size: 1.2rem;
+}
+.sidebar-brand:hover { color: var(--text-light); }
+
+.sidebar-nav {
+    padding: 1rem 0;
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+.sidebar-link, .sidebar-submenu-link {
+    display: block;
+    padding: 0.75rem 1.5rem;
+    color: var(--text-normal);
+    position: relative;
+    white-space: nowrap;
+}
+.sidebar-link:hover {
+    background-color: var(--bg-dark);
+    color: var(--text-light);
+}
+.sidebar-link.active {
+    background-color: var(--primary);
+    color: #fff;
+    border-right: 3px solid var(--primary-hover);
+    padding-right: calc(1.5rem - 3px);
+}
+.sidebar-link[data-bs-toggle="collapse"]::after {
+    content: '\f078';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    position: absolute;
+    left: 1.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    transition: transform var(--transition);
+}
+.sidebar-link[data-bs-toggle="collapse"]:not(.collapsed)::after {
+    transform: translateY(-50%) rotate(180deg);
+}
+
+.sidebar-submenu {
+    background-color: var(--bg-dark);
+    padding: 0.5rem 0;
+}
+.sidebar-submenu-link {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    padding-right: 2.5rem;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+.sidebar-submenu-link:hover {
+    color: var(--text-light);
+    background: none;
+}
+.sidebar-divider {
+    margin: 0.5rem 1.5rem;
+    border-color: var(--border-color);
+}
+
+.sidebar-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+
+/* 4. OTHER COMPONENTS (Cards, Tables, etc.)
+/* ========================================================================== */
 .card {
     background-color: var(--bg-surface);
     border: 1px solid var(--border-color);
@@ -80,7 +201,6 @@ a:hover {
 .card-body {
     padding: 1.5rem;
 }
-
 .btn {
     border-radius: var(--radius-sm);
     padding: 0.75rem 1.5rem;
@@ -94,17 +214,12 @@ a:hover {
 .btn-primary { background-color: var(--primary); color: #fff; }
 .btn-primary:hover { background-color: var(--primary-hover); }
 
-/* ... (other core component styles) ... */
-
-/* --- Tables --- */
 .table { border-color: var(--border-color); }
 .table-dark {
     --bs-table-bg: var(--bg-surface);
     --bs-table-border-color: var(--border-color);
     --bs-table-striped-bg: #293548;
-    /* START: New, more prominent hover color */
     --bs-table-hover-bg: #374151;
-    /* END: New hover color */
     color: var(--text-normal);
 }
 .table thead th {
@@ -118,17 +233,9 @@ a:hover {
     top: 0;
     z-index: 10;
 }
-/* START: Explicitly define hover text color for better contrast */
 .table-hover > tbody > tr:hover > * {
     color: var(--text-light);
 }
-/* END: Hover text color */
-
-
-/* ... (other styles) ... */
-
-/* 3. PARTIALS & SPECIFIC STYLES
-/* ========================================================================== */
 
 .summary-item {
     display: flex;
@@ -142,89 +249,17 @@ a:hover {
     padding-bottom: 0;
 }
 
-/* 4. UTILITIES & FIXES
-/* ========================================================================== */
-.container-fluid {
-    width: min(1500px, 95%);
-    margin-inline: auto;
-}
-.main-content {
-    padding: 2.5rem 0;
-}
-
-/* 5. MOBILE & RESPONSIVE STYLES
-/* ========================================================================== */
-@media (max-width: 992px) {
-    .navbar-brand {
-        font-size: 1.1rem;
-    }
-    
-    .d-flex.justify-content-between.align-items-center {
-        flex-direction: column;
-        align-items: stretch !important;
-        gap: 1.5rem;
-    }
-    
-    .d-flex.gap-2 {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .d-flex.gap-2 .btn {
-        width: 100%;
-    }
-}
-
-@media (max-width: 768px) {
-    body {
-        font-size: 15px;
-    }
-
-    .main-content {
-        padding: 1.5rem 0;
-    }
-    
-    h1, .h1 { font-size: 1.75rem; }
-    h2, .h2 { font-size: 1.5rem; }
-    h3, .h3 { font-size: 1.25rem; }
-
-    .card-body { padding: 1rem; }
-    .card-header { padding: 0.75rem 1rem; }
-
-    .form-control, .form-select, .btn {
-        padding: 0.7rem 1rem;
-        font-size: 0.95rem;
-    }
-    
-    .table-responsive {
-        border-radius: var(--radius);
-        border: 1px solid var(--border-color);
-        background: var(--bg-surface);
-    }
-    
-    .filter-form .row > div {
-        flex-basis: 100%;
-    }
-    .filter-form .row .d-flex {
-        flex-direction: row !important;
-    }
-}
-
-
-/* 6. AUTHENTICATION PAGE STYLES
-/* ========================================================================== */
-
 .auth-container {
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 80vh; /* يجعل الحاوية تأخذ معظم ارتفاع الشاشة */
+    min-height: 80vh;
 }
 
 .auth-card {
     width: 100%;
-    max-width: 450px; /* يحدد أقصى عرض لصندوق الدخول */
-    border: none; /* إزالة الحدود لجعلها أكثر اندماجاً مع الخلفية */
+    max-width: 450px;
+    border: none;
 }
 
 .password-container {
@@ -234,13 +269,41 @@ a:hover {
 .password-toggle-icon {
     position: absolute;
     top: 50%;
-    left: 15px; /* يضع الأيقونة على اليسار لتناسب التصميم العربي */
+    left: 15px;
     transform: translateY(-50%);
     cursor: pointer;
     color: var(--text-muted);
 }
 
+
+/* 5. RESPONSIVE STYLES
+/* ========================================================================== */
+@media (max-width: 991.98px) {
+    .sidebar {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        right: 0;
+        margin-right: calc(-1 * var(--sidebar-width));
+        z-index: 1030;
+    }
+    .sidebar.show {
+        margin-right: 0;
+        box-shadow: 0 0 2rem rgba(0,0,0,0.5);
+    }
+    .main-content-wrapper {
+        width: 100%;
+    }
+    .main-content {
+        padding: 1.5rem;
+    }
+}
+
+
+/* 6. UTILITY CLASSES
+/* ========================================================================== */
 /* Helper class to disable transitions for instant collapse/expand */
 .no-transition {
     transition: none !important;
 }
+
