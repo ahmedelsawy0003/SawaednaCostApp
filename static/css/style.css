@@ -300,10 +300,19 @@ a:hover {
 }
 
 
-/* 6. UTILITY CLASSES
+/* 6. UTILITY & FIXES
 /* ========================================================================== */
-/* Helper class to disable transitions for instant collapse/expand */
 .no-transition {
     transition: none !important;
 }
 
+/* START: Force Collapse Behavior */
+.sidebar-submenu.collapse:not(.show) {
+  display: none !important;
+}
+.sidebar-submenu.collapsing {
+  height: 0 !important;
+  overflow: hidden !important;
+  transition: height 0.3s ease !important;
+}
+/* END: Force Collapse Behavior */

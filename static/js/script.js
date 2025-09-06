@@ -1,6 +1,26 @@
 document.addEventListener("DOMContentLoaded", function() {
     
-    // --- START: Sidebar Toggle Functionality ---
+    // --- START: NEW - Force Sidebar Collapse Initialization ---
+    // This code finds all sidebar links that should act as a collapse trigger.
+    const sidebarCollapses = document.querySelectorAll('.sidebar-link[data-bs-toggle="collapse"]');
+    
+    // It then manually initializes the Bootstrap Collapse functionality for each one.
+    // This ensures that the click-to-open/close feature works even if the default
+    // Bootstrap initialization fails for some reason.
+    sidebarCollapses.forEach(function (element) {
+        // We find the target of the collapse (the <ul> menu) using the href attribute.
+        let target = document.querySelector(element.getAttribute('href'));
+        if (target) {
+            // We create a new Collapse instance but prevent it from toggling on its own
+            // during initialization. This respects the 'show' class we added in base.html.
+            new bootstrap.Collapse(target, {
+                toggle: false
+            });
+        }
+    });
+    // --- END: NEW - Force Sidebar Collapse Initialization ---
+
+    // --- Sidebar Toggle Functionality for mobile ---
     const sidebar = document.querySelector('.sidebar');
     const openSidebarBtn = document.getElementById('open-sidebar-btn');
     const closeSidebarBtn = document.getElementById('close-sidebar-btn');
@@ -14,7 +34,6 @@ document.addEventListener("DOMContentLoaded", function() {
             sidebar.classList.remove('show');
         });
     }
-    // --- END: Sidebar Toggle Functionality ---
     
     // Toast Functionality for Flash Messages
     const toastElList = document.querySelectorAll('.toast');
@@ -41,20 +60,15 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 
-    // Auto-calculation functionality (remains the same)
-    // ...
-
-    // --- START: تعديل وتطوير قسم الإجراءات الجماعية ---
+    // --- Bulk actions section ---
     const selectAllCheckbox = document.getElementById('select-all');
     const itemCheckboxes = document.querySelectorAll('.item-checkbox');
     const bulkEditForm = document.getElementById('bulk-edit-form');
     
-    // الأزرار
     const selectedCountDisplay = document.getElementById('selected-count-display'); 
     const bulkUpdateBtn = document.getElementById('bulk-update-btn');
     const bulkDeleteBtn = document.getElementById('bulk-delete-btn');
 
-    // عناصر نافذة تأكيد الحذف
     const bulkDeleteCount = document.getElementById('bulk-delete-count');
     const confirmBulkDeleteBtn = document.getElementById('confirm-bulk-delete-btn');
 
@@ -63,7 +77,6 @@ document.addEventListener("DOMContentLoaded", function() {
         function updateSelectedState() {
             const count = document.querySelectorAll('.item-checkbox:checked').length;
             
-            // تحديث عدد العناصر المحددة
             if (selectedCountDisplay) {
                 selectedCountDisplay.textContent = count;
             }
@@ -71,7 +84,6 @@ document.addEventListener("DOMContentLoaded", function() {
                 bulkDeleteCount.textContent = count;
             }
 
-            // تفعيل أو تعطيل الأزرار
             const hasSelection = count > 0;
             if (bulkUpdateBtn) {
                 bulkUpdateBtn.disabled = !hasSelection;
@@ -99,19 +111,12 @@ document.addEventListener("DOMContentLoaded", function() {
             });
         });
         
-        // عند الضغط على زر تأكيد الحذف الجماعي
         if (confirmBulkDeleteBtn) {
             confirmBulkDeleteBtn.addEventListener('click', function() {
-                // 1. تغيير مسار الإرسال للنموذج
                 bulkEditForm.action = bulkEditForm.action.replace('bulk_update', 'bulk_delete');
-                // 2. إرسال النموذج
                 bulkEditForm.submit();
             });
         }
-
-        // استدعاء الدالة عند تحميل الصفحة لضبط الحالة الأولية للأزرار
         updateSelectedState();
     }
-    // --- END: تعديل وتطوير قسم الإجراءات الجماعية ---
 });
-
