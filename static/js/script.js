@@ -1,24 +1,54 @@
 document.addEventListener("DOMContentLoaded", function() {
     
-    // --- START: NEW - Force Sidebar Collapse Initialization ---
-    // This code finds all sidebar links that should act as a collapse trigger.
-    const sidebarCollapses = document.querySelectorAll('.sidebar-link[data-bs-toggle="collapse"]');
-    
-    // It then manually initializes the Bootstrap Collapse functionality for each one.
-    // This ensures that the click-to-open/close feature works even if the default
-    // Bootstrap initialization fails for some reason.
-    sidebarCollapses.forEach(function (element) {
-        // We find the target of the collapse (the <ul> menu) using the href attribute.
-        let target = document.querySelector(element.getAttribute('href'));
-        if (target) {
-            // We create a new Collapse instance but prevent it from toggling on its own
-            // during initialization. This respects the 'show' class we added in base.html.
-            new bootstrap.Collapse(target, {
-                toggle: false
-            });
+    // --- START: NEW Sidebar Auto-Open Logic ---
+    function activateSidebarMenu() {
+        const currentPath = window.location.pathname;
+        let activeSection = null;
+
+        if (currentPath.includes('/projects/') || currentPath.includes('/items/') || currentPath.includes('/sheets/')) {
+            activeSection = 'project';
+        } else if (currentPath.startsWith('/projects')) {
+            activeSection = 'project';
+        } else if (currentPath.includes('/invoices/')) {
+            activeSection = 'invoice';
+        } else if (currentPath.includes('/contractors/')) {
+            activeSection = 'contractor';
+        } else if (currentPath.includes('/admin/')) {
+            activeSection = 'admin';
         }
-    });
-    // --- END: NEW - Force Sidebar Collapse Initialization ---
+
+        // Deactivate all active links first
+        document.querySelectorAll('.sidebar-link.active').forEach(link => link.classList.remove('active'));
+        document.querySelectorAll('.sidebar-submenu.show').forEach(menu => menu.classList.remove('show'));
+        document.querySelectorAll('.sidebar-link:not(.collapsed)').forEach(link => link.classList.add('collapsed'));
+
+        if (activeSection) {
+            const activeLink = document.querySelector(`.sidebar-link[data-section="${activeSection}"]`);
+            if (activeLink) {
+                // If it's a main link, make it active
+                if (!activeLink.hasAttribute('data-bs-toggle')) {
+                     activeLink.classList.add('active');
+                }
+                
+                // If it's a dropdown, open it
+                const submenuId = activeLink.getAttribute('href');
+                if (submenuId) {
+                    const submenu = document.querySelector(submenuId);
+                    if (submenu) {
+                        activeLink.classList.remove('collapsed');
+                        submenu.classList.add('show');
+                    }
+                }
+            }
+        } else if (currentPath === '/' || currentPath.startsWith('/projects')) {
+             const homeLink = document.querySelector('.sidebar-link[data-section="home"]');
+             if(homeLink) homeLink.classList.add('active');
+        }
+    }
+    
+    // Run the function to set the correct menu state on page load
+    activateSidebarMenu();
+    // --- END: NEW Sidebar Auto-Open Logic ---
 
     // --- Sidebar Toggle Functionality for mobile ---
     const sidebar = document.querySelector('.sidebar');
