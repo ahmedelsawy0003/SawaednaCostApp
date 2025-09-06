@@ -34,11 +34,12 @@
                         </a>
                     </li>
 
+                    {% set is_project_section = 'project' in request.endpoint or 'item' in request.endpoint or 'sheets' in request.endpoint %}
                     <li class="sidebar-item">
-                        <a href="#projects-submenu" data-bs-toggle="collapse" class="sidebar-link collapsed">
+                        <a href="#projects-submenu" data-bs-toggle="collapse" class="sidebar-link {{ '' if is_project_section else 'collapsed' }}">
                             <i class="fas fa-project-diagram fa-fw me-2"></i> المشاريع
                         </a>
-                        <ul id="projects-submenu" class="list-unstyled collapse sidebar-submenu">
+                        <ul id="projects-submenu" class="list-unstyled collapse sidebar-submenu {{ 'show' if is_project_section }}">
                             <li><a href="{{ url_for('project.get_projects') }}" class="sidebar-submenu-link"><i class="fas fa-eye me-2"></i> عرض المشاريع</a></li>
                             {% if current_user.role == 'admin' %}
                             <li><a href="{{ url_for('project.new_project') }}" class="sidebar-submenu-link"><i class="fas fa-plus me-2"></i> إضافة مشروع</a></li>
@@ -52,11 +53,12 @@
                         </ul>
                     </li>
 
+                    {% set is_invoice_section = 'invoice' in request.endpoint %}
                     <li class="sidebar-item">
-                        <a href="#invoices-submenu" data-bs-toggle="collapse" class="sidebar-link collapsed">
+                        <a href="#invoices-submenu" data-bs-toggle="collapse" class="sidebar-link {{ '' if is_invoice_section else 'collapsed' }}">
                             <i class="fas fa-file-invoice-dollar fa-fw me-2"></i> المستخلصات
                         </a>
-                        <ul id="invoices-submenu" class="list-unstyled collapse sidebar-submenu">
+                        <ul id="invoices-submenu" class="list-unstyled collapse sidebar-submenu {{ 'show' if is_invoice_section }}">
                              <li><a href="#" class="sidebar-submenu-link text-muted"><i class="fas fa-eye me-2"></i>اختر مشروعاً للعرض:</a></li>
                              <hr class="sidebar-divider">
                              {% for project in sidebar_projects %}
@@ -75,11 +77,12 @@
                         </ul>
                     </li>
 
+                    {% set is_contractor_section = 'contractor' in request.endpoint %}
                     <li class="sidebar-item">
-                        <a href="#contractors-submenu" data-bs-toggle="collapse" class="sidebar-link collapsed">
+                        <a href="#contractors-submenu" data-bs-toggle="collapse" class="sidebar-link {{ '' if is_contractor_section else 'collapsed' }}">
                             <i class="fas fa-hard-hat fa-fw me-2"></i> المقاولون
                         </a>
-                        <ul id="contractors-submenu" class="list-unstyled collapse sidebar-submenu">
+                        <ul id="contractors-submenu" class="list-unstyled collapse sidebar-submenu {{ 'show' if is_contractor_section }}">
                             <li><a href="{{ url_for('contractor.get_contractors') }}" class="sidebar-submenu-link"><i class="fas fa-eye me-2"></i> عرض المقاولين</a></li>
                              {% if current_user.role == 'admin' %}
                             <li><a href="{{ url_for('contractor.new_contractor') }}" class="sidebar-submenu-link"><i class="fas fa-plus me-2"></i> إضافة مقاول</a></li>
