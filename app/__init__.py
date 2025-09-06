@@ -3,6 +3,18 @@ from flask_login import current_user
 from .extensions import db, migrate, login_manager
 from . import commands
 
+# Import models to ensure they are registered with SQLAlchemy
+from .models.user import User
+from .models.project import Project
+from .models.item import Item
+from .models.payment import Payment
+from .models.audit_log import AuditLog
+from .models.contractor import Contractor
+from .models.invoice import Invoice
+from .models.invoice_item import InvoiceItem
+from .models.cost_detail import CostDetail
+from .models.payment_distribution import PaymentDistribution
+
 def create_app():
     app = Flask(__name__, template_folder='../templates', static_folder='../static')
     app.config.from_object('config.Config')
@@ -14,39 +26,27 @@ def create_app():
     
     commands.init_app(app)
 
-    # Import models to ensure they are registered with SQLAlchemy
-    from .models.user import User
-    from .models.project import Project
-    from .models.item import Item
-    from .models.payment import Payment
-    from .models.audit_log import AuditLog
-    from .models.contractor import Contractor
-    from .models.invoice import Invoice
-    from .models.invoice_item import InvoiceItem
-    from .models.cost_detail import CostDetail
-    from .models.payment_distribution import PaymentDistribution
-
-
     @login_manager.user_loader
     def load_user(user_id):
         return User.query.get(int(user_id))
 
-    # START: UPDATED CONTEXT PROCESSOR FOR SIDEBAR
+    # START: NEW CONTEXT PROCESSOR FOR SIDEBAR DATA
     @app.context_processor
     def inject_sidebar_data():
         """
-        Injects data into all templates for the sidebar.
+        Injects data needed for the sidebar into all templates.
+        Fetches projects and contractors based on user role.
         """
         sidebar_projects = []
-        sidebar_contractors = [] # New list for contractors
+        sidebar_contractors = []
+
         if current_user.is_authenticated:
             if current_user.role == 'admin':
-                # Admins see all non-archived projects and all contractors
                 sidebar_projects = Project.query.filter_by(is_archived=False).order_by(Project.name).all()
                 sidebar_contractors = Contractor.query.order_by(Contractor.name).all()
             else:
-                # Regular users see their associated non-archived projects
-                sidebar_projects = sorted([p for p in current_user.projects if not p.is_archived], key=lambda x: x.name)
+                # Regular user sees only their assigned projects
+                sidebar_projects = Project.query.join(User.projects).filter(User.id == current_user.id, Project.is_archived==False).order_by(Project.name).all()
                 # And contractors related to those projects
                 if sidebar_projects:
                     project_ids = [p.id for p in sidebar_projects]
@@ -54,10 +54,9 @@ def create_app():
 
         return dict(
             sidebar_projects=sidebar_projects,
-            sidebar_contractors=sidebar_contractors # Pass contractors to the template
+            sidebar_contractors=sidebar_contractors
         )
-    # END: UPDATED CONTEXT PROCESSOR
-
+    # END: NEW CONTEXT PROCESSOR
 
     # Import and register blueprints
     from .routes.project_routes import project_bp

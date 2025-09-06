@@ -8,7 +8,6 @@ from app.models.invoice import Invoice
 from app.models.item import Item
 from app import constants
 
-# ... (LoginForm, RegisterForm, ProjectForm, ContractorForm remain the same) ...
 class LoginForm(FlaskForm):
     username = StringField('اسم المستخدم', validators=[DataRequired(message="هذا الحقل مطلوب.")])
     password = PasswordField('كلمة المرور', validators=[DataRequired(message="هذا الحقل مطلوب.")])
@@ -70,12 +69,20 @@ class InvoiceForm(FlaskForm):
     notes = TextAreaField('ملاحظات (اختياري)')
     submit = SubmitField('إنشاء المستخلص والانتقال لإضافة البنود')
 
+    def __init__(self, project_id=None, *args, **kwargs):
+        super(InvoiceForm, self).__init__(*args, **kwargs)
+        self.project_id = project_id
+
     def validate_invoice_number(self, invoice_number):
-        if Invoice.query.filter_by(invoice_number=invoice_number.data).first():
-            raise ValidationError('رقم المستخلص هذا موجود بالفعل. الرجاء إدخال رقم فريد.')
+        if self.project_id:
+            existing_invoice = Invoice.query.filter_by(
+                project_id=self.project_id, 
+                invoice_number=invoice_number.data
+            ).first()
+            if existing_invoice:
+                raise ValidationError('رقم المستخلص هذا موجود بالفعل في هذا المشروع. الرجاء إدخال رقم فريد.')
 # --- END: تحديث نموذج المستخلص ---
 
-# --- START: تحديث نموذج البند ---
 class ItemForm(FlaskForm):
     item_number = StringField('رقم البند', validators=[DataRequired(message="هذا الحقل مطلوب.")])
     description = TextAreaField('الوصف', validators=[DataRequired(message="هذا الحقل مطلوب.")])
@@ -106,4 +113,4 @@ class ItemForm(FlaskForm):
         existing_item = Item.query.filter_by(project_id=self.project_id, item_number=item_number.data).first()
         if existing_item:
             raise ValidationError('هذا الرقم مستخدم بالفعل في هذا المشروع.')
-# --- END: تحديث نموذج البند ---
+

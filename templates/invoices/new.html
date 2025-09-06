@@ -21,7 +21,10 @@
                 <div class="col-md-6">
                     <div class="mb-3">
                         {{ form.invoice_number.label(class="form-label") }}
-                        {{ form.invoice_number(class="form-control") }}
+                        {# START: This line is modified to pre-fill the suggested number #}
+                        {{ form.invoice_number(class="form-control", value=next_invoice_number) }}
+                        <div class="form-text">هذا رقم مقترح، يمكنك تعديله إذا لزم الأمر.</div>
+                        {# END: Modification #}
                         {% for error in form.invoice_number.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
                     </div>
                 </div>

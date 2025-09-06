@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, abort
-from sqlalchemy import func, or_ # <-- إضافة or_
+from sqlalchemy import func, or_, desc
 import datetime
+import re
 from app.models.project import Project
 from app.models.contractor import Contractor
 from app.models.item import Item
@@ -13,29 +14,26 @@ from app.extensions import db
 from flask_login import login_required, current_user
 from app.utils import check_project_permission, sanitize_input
 from app.forms import InvoiceForm
-from app import constants # <-- إضافة constants
+from app import constants
 
 invoice_bp = Blueprint("invoice", __name__, url_prefix='/invoices')
 
-# --- START: إعادة بناء دالة عرض المستخلصات بالكامل ---
+# --- START: THE FIX ---
 @invoice_bp.route("/project/<int:project_id>")
 @login_required
 def get_invoices_by_project(project_id):
     project = Project.query.get_or_404(project_id)
     check_project_permission(project)
 
-    # جلب قيم الفلاتر والترتيب من الرابط
     search_term = request.args.get('search', '')
     invoice_type_filter = request.args.get('type', '')
     start_date_str = request.args.get('start_date', '')
     end_date_str = request.args.get('end_date', '')
-    sort_by = request.args.get('sort_by', 'invoice_date') # الترتيب الافتراضي بالتاريخ
-    sort_order = request.args.get('sort_order', 'desc')   # الترتيب الافتراضي تنازلي
+    sort_by = request.args.get('sort_by', 'invoice_date')
+    sort_order = request.args.get('sort_order', 'desc')
 
-    # بناء الاستعلام الأساسي
     query = Invoice.query.filter_by(project_id=project.id)
 
-    # تطبيق الفلاتر
     if search_term:
         query = query.join(Contractor).filter(
             or_(
@@ -55,10 +53,9 @@ def get_invoices_by_project(project_id):
         except ValueError:
             flash("صيغة التاريخ غير صالحة.", "warning")
             
-    # تطبيق الترتيب
     if sort_by == 'invoice_number':
         order_column = Invoice.invoice_number
-    else: # الافتراضي هو التاريخ
+    else:
         order_column = Invoice.invoice_date
 
     if sort_order == 'asc':
@@ -68,7 +65,6 @@ def get_invoices_by_project(project_id):
 
     invoices = query.all()
 
-    # إنشاء قاموس لحفظ قيم الفلاتر الحالية لإعادة عرضها في الواجهة
     filters = {
         'search': search_term,
         'type': invoice_type_filter,
@@ -83,17 +79,40 @@ def get_invoices_by_project(project_id):
                            invoices=invoices, 
                            filters=filters,
                            invoice_types=constants.INVOICE_TYPE_CHOICES)
-# --- END: إعادة بناء الدالة ---
+# --- END: THE FIX ---
 
 
 @invoice_bp.route("/new/project/<int:project_id>", methods=["GET", "POST"])
 @login_required
 def new_invoice(project_id):
-    # ... (الكود هنا يبقى كما هو) ...
     project = Project.query.get_or_404(project_id)
     check_project_permission(project)
     
-    form = InvoiceForm()
+    # Pass project_id to the form for validation purposes
+    form = InvoiceForm(project_id=project.id)
+
+    if request.method == "GET":
+        # Suggest the next invoice number
+        last_invoice_number_tuple = db.session.query(Invoice.invoice_number).filter_by(project_id=project_id).order_by(desc(Invoice.id)).first()
+        
+        next_invoice_number = "001"
+        if last_invoice_number_tuple and last_invoice_number_tuple[0]:
+            last_invoice_number = last_invoice_number_tuple[0]
+            # Use regex to find all numbers in the string
+            numbers = re.findall(r'(\d+)', last_invoice_number)
+            if numbers:
+                # Get the last number found
+                last_num_str = numbers[-1]
+                next_num = int(last_num_str) + 1
+                # Replace the old number with the new one, preserving padding and prefix
+                prefix = last_invoice_number.rsplit(last_num_str, 1)[0]
+                next_invoice_number = prefix + str(next_num).zfill(len(last_num_str))
+            else:
+                 # If no number is found, append '-1'
+                 next_invoice_number = last_invoice_number + "-1"
+        
+        form.invoice_number.data = next_invoice_number
+        
     form.contractor_id.choices = [(c.id, c.name) for c in Contractor.query.order_by(Contractor.name).all()]
     form.contractor_id.choices.insert(0, (0, '-- اختر المقاول أو المورد --'))
 
@@ -101,7 +120,7 @@ def new_invoice(project_id):
         new_invoice = Invoice()
         form.populate_obj(new_invoice)
         new_invoice.project_id = project.id
-        new_invoice.status = 'جديد'
+        new_invoice.status = constants.INVOICE_STATUS_NEW
         
         db.session.add(new_invoice)
         db.session.commit()
@@ -110,7 +129,7 @@ def new_invoice(project_id):
     
     return render_template("invoices/new.html", project=project, form=form)
 
-# ... (باقي دوال المستخلصات تبقى كما هي) ...
+
 @invoice_bp.route("/<int:invoice_id>/delete", methods=["POST"])
 @login_required
 def delete_invoice(invoice_id):
