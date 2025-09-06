@@ -10,7 +10,6 @@
     </a>
 </div>
 
-{# --- START: النموذج الجديد المعتمد على Flask-WTF --- #}
 <div class="card mb-4">
     <div class="card-header bg-primary text-white">
         <h3 class="mb-0">بيانات البند الرئيسية</h3>
@@ -48,6 +47,12 @@
                             {% for error in form.contract_unit_cost.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
                         </div>
                     </div>
+                     {# --- START: إعادة حقل الإجمالي التعاقدي --- #}
+                    <div class="mb-3">
+                        <label for="contract_total_cost" class="form-label">الإجمالي التعاقدي (تلقائي)</label>
+                        <input type="text" class="form-control" id="contract_total_cost" value="{{ "{:,.2f}".format(item.contract_total_cost) }}" disabled>
+                    </div>
+                    {# --- END: إعادة حقل الإجمالي التعاقدي --- #}
                     {% endif %}
                 </div>
                 <div class="col-md-6">
@@ -63,6 +68,12 @@
                              {% for error in form.actual_unit_cost.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
                         </div>
                     </div>
+                    {# --- START: إعادة حقل الإجمالي الفعلي --- #}
+                    <div class="mb-3">
+                        <label for="actual_total_cost" class="form-label">الإجمالي الفعلي (تلقائي)</label>
+                        <input type="text" class="form-control" id="actual_total_cost" value="{{ "{:,.2f}".format(item.actual_total_cost) }}" disabled>
+                    </div>
+                    {# --- END: إعادة حقل الإجمالي الفعلي --- #}
 
                     <div class="mb-3">
                         {{ form.status.label(class="form-label") }}
@@ -83,13 +94,12 @@
         </form>
     </div>
 </div>
-{# --- END: النموذج الجديد --- #}
 
 <div class="card mb-4">
     <div class="card-header bg-success text-white">
-        <h3 class="mb-0">شجرة تفاصيل التكاليف الفعلية</h3>
+        <h3 class="mb-0">التكاليف المباشرة وأوامر العمل</h3>
     </div>
-    <div class="card-body">
+     <div class="card-body">
         <ul class="list-group">
             <li class="list-group-item list-group-item-dark">
                 <strong><i class="fas fa-cube me-2"></i>البند الرئيسي:</strong> {{ item.description }}
@@ -102,7 +112,7 @@
                     <div>
                         <i class="fas fa-level-up-alt fa-rotate-90 text-muted me-2"></i>
                         <strong>تفصيل:</strong> {{ detail.description }}
-                        <small class="text-muted ms-2">({{ detail.contractor.name if detail.contractor else 'غير محدد' }})</small>
+                        <small class="text-muted ms-2">({{ detail.contractor.name if detail.contractor else 'شراء مباشر' }})</small>
                     </div>
                     <div>
                         <span class="badge bg-secondary me-3">{{ "{:,.2f}".format(detail.total_cost) }} ريال</span>
@@ -115,7 +125,7 @@
                 {% endfor %}
             {% else %}
                 <li class="list-group-item text-center text-muted" style="padding-right: 3rem;">
-                    <i class="fas fa-info-circle me-2"></i>لا توجد تفاصيل تكاليف مضافة لهذا البند.
+                    <i class="fas fa-info-circle me-2"></i>لا توجد تكاليف مباشرة أو أوامر عمل مضافة لهذا البند.
                 </li>
             {% endif %}
             <li class="list-group-item" style="padding-right: 3rem;">
@@ -140,7 +150,7 @@
                         <div class="col-md-2">
                             <label class="form-label small">المورد</label>
                              <select name="contractor_id" class="form-select form-select-sm">
-                                <option value="">-- لا يوجد --</option>
+                                <option value="">-- شراء مباشر (تنفيذ ذاتي) --</option>
                                 {% for contractor in contractors %}
                                     <option value="{{ contractor.id }}">{{ contractor.name }}</option>
                                 {% endfor %}
@@ -179,47 +189,78 @@
 {% endfor %}
 
 <div class="card">
-    <div class="card-header bg-secondary text-white">
-        <h3 class="mb-0">سجل التغييرات</h3>
-    </div>
-    <div class="card-body">
-        {% set logs = item.history_logs.order_by(AuditLog.timestamp.desc()).all() %}
-        {% if logs %}
-            <div class="table-responsive">
-                <table class="table table-sm table-bordered">
-                    <thead class="table-light">
-                        <tr>
-                            <th style="width: 15%;">الوقت</th>
-                            <th style="width: 15%;">المستخدم</th>
-                            <th style="width: 10%;">الإجراء</th>
-                            <th>التفاصيل</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for log in logs %}
-                        <tr>
-                            <td>{{ log.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
-                            <td>{{ log.user.username }}</td>
-                            <td>
-                                {% if log.action == 'create' %}
-                                    <span class="badge bg-success">إنشاء</span>
-                                {% elif log.action == 'update' %}
-                                    <span class="badge bg-warning text-dark">تحديث</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                <pre style="white-space: pre-wrap; margin: 0;">{{ log.details }}</pre>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        {% else %}
-            <div class="alert alert-light">
-                لا توجد تغييرات مسجلة لهذا البند.
-            </div>
-        {% endif %}
-    </div>
+    {# ... content ... #}
 </div>
+
+{% endblock %}
+
+{% block scripts %}
+{# --- START: الكود الجديد الكامل لـ JavaScript --- #}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // تحديد جميع عناصر الإدخال
+    const contractQtyInput = document.getElementById('contract_quantity');
+    const contractUnitCostInput = document.getElementById('contract_unit_cost');
+    const contractTotalInput = document.getElementById('contract_total_cost');
+    
+    const actualQtyInput = document.getElementById('actual_quantity');
+    const actualUnitCostInput = document.getElementById('actual_unit_cost');
+    const actualTotalInput = document.getElementById('actual_total_cost');
+
+    // دالة لتنسيق الأرقام
+    function formatNumber(num) {
+        return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    // دالة لحساب الإجمالي التعاقدي
+    function calculateContractTotal() {
+        if (!contractQtyInput || !contractUnitCostInput || !contractTotalInput) return;
+        const qty = parseFloat(contractQtyInput.value) || 0;
+        const cost = parseFloat(contractUnitCostInput.value) || 0;
+        contractTotalInput.value = formatNumber(qty * cost);
+    }
+
+    // دالة لحساب الإجمالي الفعلي
+    function calculateActualTotal() {
+        if (!actualQtyInput || !actualUnitCostInput || !actualTotalInput) return;
+        const qty = parseFloat(actualQtyInput.value) || 0;
+        const cost = parseFloat(actualUnitCostInput.value) || 0;
+        actualTotalInput.value = formatNumber(qty * cost);
+    }
+
+    // ربط الأحداث
+    if (contractQtyInput) {
+        contractQtyInput.addEventListener('input', calculateContractTotal);
+    }
+
+    if (contractUnitCostInput) {
+        contractUnitCostInput.addEventListener('input', function() {
+            // 1. حساب الإجمالي التعاقدي
+            calculateContractTotal();
+            
+            // 2. تطبيق قاعدة الـ 70% على التكلفة الفعلية
+            const contractCost = parseFloat(this.value) || 0;
+            if (actualUnitCostInput) {
+                actualUnitCostInput.value = (contractCost * 0.70).toFixed(2);
+            }
+            
+            // 3. تحديث الإجمالي الفعلي بناءً على القيمة الجديدة
+            calculateActualTotal();
+        });
+    }
+
+    if (actualQtyInput) {
+        actualQtyInput.addEventListener('input', calculateActualTotal);
+    }
+    
+    if (actualUnitCostInput) {
+        actualUnitCostInput.addEventListener('input', calculateActualTotal);
+    }
+
+    // تشغيل الحسابات عند تحميل الصفحة لأول مرة
+    calculateContractTotal();
+    calculateActualTotal();
+});
+</script>
+{# --- END: الكود الجديد الكامل لـ JavaScript --- #}
 {% endblock %}
