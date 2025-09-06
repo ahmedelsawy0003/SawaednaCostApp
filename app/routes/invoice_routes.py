@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, abort
-from sqlalchemy import func
+from sqlalchemy import func, or_ # <-- إضافة or_
+import datetime
 from app.models.project import Project
 from app.models.contractor import Contractor
 from app.models.item import Item
@@ -11,49 +12,105 @@ from app.models.payment_distribution import PaymentDistribution
 from app.extensions import db
 from flask_login import login_required, current_user
 from app.utils import check_project_permission, sanitize_input
-import datetime
-from app.forms import InvoiceForm # <-- إضافة جديدة
+from app.forms import InvoiceForm
+from app import constants # <-- إضافة constants
 
 invoice_bp = Blueprint("invoice", __name__, url_prefix='/invoices')
 
+# --- START: إعادة بناء دالة عرض المستخلصات بالكامل ---
 @invoice_bp.route("/project/<int:project_id>")
 @login_required
 def get_invoices_by_project(project_id):
     project = Project.query.get_or_404(project_id)
     check_project_permission(project)
-    invoices = project.invoices.order_by(Invoice.invoice_date.desc()).all()
-    return render_template("invoices/index.html", project=project, invoices=invoices)
 
-# --- START: تحديث دالة new_invoice ---
+    # جلب قيم الفلاتر والترتيب من الرابط
+    search_term = request.args.get('search', '')
+    invoice_type_filter = request.args.get('type', '')
+    start_date_str = request.args.get('start_date', '')
+    end_date_str = request.args.get('end_date', '')
+    sort_by = request.args.get('sort_by', 'invoice_date') # الترتيب الافتراضي بالتاريخ
+    sort_order = request.args.get('sort_order', 'desc')   # الترتيب الافتراضي تنازلي
+
+    # بناء الاستعلام الأساسي
+    query = Invoice.query.filter_by(project_id=project.id)
+
+    # تطبيق الفلاتر
+    if search_term:
+        query = query.join(Contractor).filter(
+            or_(
+                Invoice.invoice_number.ilike(f"%{search_term}%"),
+                Invoice.purchase_order_number.ilike(f"%{search_term}%"),
+                Invoice.disbursement_order_number.ilike(f"%{search_term}%"),
+                Contractor.name.ilike(f"%{search_term}%")
+            )
+        )
+    if invoice_type_filter:
+        query = query.filter(Invoice.invoice_type == invoice_type_filter)
+    if start_date_str and end_date_str:
+        try:
+            start_date = datetime.datetime.strptime(start_date_str, "%Y-%m-%d").date()
+            end_date = datetime.datetime.strptime(end_date_str, "%Y-%m-%d").date()
+            query = query.filter(Invoice.invoice_date.between(start_date, end_date))
+        except ValueError:
+            flash("صيغة التاريخ غير صالحة.", "warning")
+            
+    # تطبيق الترتيب
+    if sort_by == 'invoice_number':
+        order_column = Invoice.invoice_number
+    else: # الافتراضي هو التاريخ
+        order_column = Invoice.invoice_date
+
+    if sort_order == 'asc':
+        query = query.order_by(order_column.asc())
+    else:
+        query = query.order_by(order_column.desc())
+
+    invoices = query.all()
+
+    # إنشاء قاموس لحفظ قيم الفلاتر الحالية لإعادة عرضها في الواجهة
+    filters = {
+        'search': search_term,
+        'type': invoice_type_filter,
+        'start_date': start_date_str,
+        'end_date': end_date_str,
+        'sort_by': sort_by,
+        'sort_order': sort_order
+    }
+
+    return render_template("invoices/index.html", 
+                           project=project, 
+                           invoices=invoices, 
+                           filters=filters,
+                           invoice_types=constants.INVOICE_TYPE_CHOICES)
+# --- END: إعادة بناء الدالة ---
+
+
 @invoice_bp.route("/new/project/<int:project_id>", methods=["GET", "POST"])
 @login_required
 def new_invoice(project_id):
+    # ... (الكود هنا يبقى كما هو) ...
     project = Project.query.get_or_404(project_id)
     check_project_permission(project)
     
     form = InvoiceForm()
-    # ملء قائمة المقاولين
     form.contractor_id.choices = [(c.id, c.name) for c in Contractor.query.order_by(Contractor.name).all()]
-    form.contractor_id.choices.insert(0, (0, '-- اختر المقاول --'))
+    form.contractor_id.choices.insert(0, (0, '-- اختر المقاول أو المورد --'))
 
     if form.validate_on_submit():
-        new_invoice = Invoice(
-            project_id=project.id,
-            invoice_number=form.invoice_number.data,
-            invoice_date=form.invoice_date.data,
-            contractor_id=form.contractor_id.data,
-            notes=form.notes.data,
-            status='جديد'
-        )
+        new_invoice = Invoice()
+        form.populate_obj(new_invoice)
+        new_invoice.project_id = project.id
+        new_invoice.status = 'جديد'
+        
         db.session.add(new_invoice)
         db.session.commit()
         flash("تم إنشاء المستخلص بنجاح. يمكنك الآن إضافة البنود إليه.", "success")
         return redirect(url_for("invoice.show_invoice", invoice_id=new_invoice.id))
     
     return render_template("invoices/new.html", project=project, form=form)
-# --- END: تحديث دالة new_invoice ---
 
-
+# ... (باقي دوال المستخلصات تبقى كما هي) ...
 @invoice_bp.route("/<int:invoice_id>/delete", methods=["POST"])
 @login_required
 def delete_invoice(invoice_id):
@@ -148,7 +205,7 @@ def add_item_to_invoice(invoice_id):
     db.session.commit()
     flash(flash_message, "success")
     return redirect(url_for('invoice.show_invoice', invoice_id=invoice_id))
-
+    
 @invoice_bp.route("/<int:invoice_id>/add_payment", methods=["POST"])
 @login_required
 def add_payment_to_invoice(invoice_id):

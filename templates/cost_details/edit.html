@@ -36,7 +36,7 @@
                 <div class="col-md-3">
                     <label for="contractor_id" class="form-label">المورد / المقاول (اختياري)</label>
                     <select class="form-select" id="contractor_id" name="contractor_id">
-                        <option value="">-- لا يوجد --</option>
+                        <option value="">-- شراء مباشر --</option>
                         {% for contractor in contractors %}
                             <option value="{{ contractor.id }}" {% if detail.contractor_id == contractor.id %}selected{% endif %}>
                                 {{ contractor.name }}
@@ -45,6 +45,18 @@
                     </select>
                 </div>
             </div>
+            {# --- START: إضافة الحقول الجديدة --- #}
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <label for="purchase_order_number" class="form-label">رقم أمر الشراء (اختياري)</label>
+                    <input type="text" class="form-control" id="purchase_order_number" name="purchase_order_number" value="{{ detail.purchase_order_number or '' }}">
+                </div>
+                <div class="col-md-6">
+                    <label for="disbursement_order_number" class="form-label">رقم أمر الصرف (اختياري)</label>
+                    <input type="text" class="form-control" id="disbursement_order_number" name="disbursement_order_number" value="{{ detail.disbursement_order_number or '' }}">
+                </div>
+            </div>
+            {# --- END: إضافة الحقول الجديدة --- #}
             <button type="submit" class="btn btn-primary mt-4">
                 <i class="fas fa-save me-1"></i> حفظ التعديلات
             </button>

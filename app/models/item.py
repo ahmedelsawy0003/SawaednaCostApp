@@ -5,7 +5,7 @@ from .invoice_item import InvoiceItem
 from .invoice import Invoice
 from .cost_detail import CostDetail
 from .payment_distribution import PaymentDistribution
-from app import constants # <-- إضافة جديدة
+from app import constants
 
 class Item(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -17,11 +17,17 @@ class Item(db.Model):
     contract_unit_cost = db.Column(db.Float)
     actual_quantity = db.Column(db.Float)
     actual_unit_cost = db.Column(db.Float)
-    status = db.Column(db.String(50), default=constants.ITEM_STATUS_ACTIVE) # <-- استخدام الثوابت
+    status = db.Column(db.String(50), default=constants.ITEM_STATUS_ACTIVE)
     notes = db.Column(db.Text)
     
+    # --- START: الحقول الجديدة ---
+    purchase_order_number = db.Column(db.String(100), nullable=True)
+    disbursement_order_number = db.Column(db.String(100), nullable=True)
+    # --- END: الحقول الجديدة ---
+
     contractor_id = db.Column(db.Integer, db.ForeignKey('contractor.id'), nullable=True)
 
+    # ... باقي الكود يبقى كما هو ...
     project = db.relationship('Project', back_populates='items')
     contractor = db.relationship('Contractor', back_populates='items')
     cost_details = db.relationship('CostDetail', back_populates='item', lazy='dynamic', cascade="all, delete-orphan")
@@ -33,9 +39,6 @@ class Item(db.Model):
     
     @property
     def all_payments(self):
-        """
-        Fetches a list of all payment distributions related to this item.
-        """
         invoice_item_ids = db.session.query(InvoiceItem.id).filter(InvoiceItem.item_id == self.id)
         distributions = PaymentDistribution.query.filter(
             PaymentDistribution.invoice_item_id.in_(invoice_item_ids)
@@ -44,10 +47,6 @@ class Item(db.Model):
 
     @property
     def paid_amount(self):
-        """
-        Calculates the total paid amount for this item by summing up
-        all its related payment distributions.
-        """
         invoice_item_ids_subquery = db.session.query(InvoiceItem.id).filter(InvoiceItem.item_id == self.id).subquery()
         total_paid = db.session.query(
             func.sum(PaymentDistribution.amount)
@@ -64,9 +63,15 @@ class Item(db.Model):
 
     @property
     def actual_total_cost(self):
+        # *** START: إصلاح منطق الحسابات الذي ناقشناه سابقاً ***
+        manual_cost = 0.0
         if self.actual_quantity is not None and self.actual_unit_cost is not None:
-            return self.actual_quantity * self.actual_unit_cost
-        return 0.0
+            manual_cost = self.actual_quantity * self.actual_unit_cost
+        
+        details_cost = db.session.query(func.sum(CostDetail.quantity * CostDetail.unit_cost)).filter(CostDetail.item_id == self.id).scalar() or 0.0
+        
+        return manual_cost + details_cost
+        # *** END: إصلاح منطق الحسابات ***
     
     @property
     def remaining_amount(self):

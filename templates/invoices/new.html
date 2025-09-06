@@ -18,31 +18,48 @@
         <form method="POST" action="{{ url_for('invoice.new_invoice', project_id=project.id) }}" novalidate>
             {{ form.hidden_tag() }}
             <div class="row">
-                <div class="col-md-4">
+                <div class="col-md-6">
                     <div class="mb-3">
                         {{ form.invoice_number.label(class="form-label") }}
                         {{ form.invoice_number(class="form-control") }}
-                        {% for error in form.invoice_number.errors %}
-                            <div class="text-danger small mt-1">{{ error }}</div>
-                        {% endfor %}
+                        {% for error in form.invoice_number.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-6">
                     <div class="mb-3">
                         {{ form.invoice_date.label(class="form-label") }}
                         {{ form.invoice_date(class="form-control") }}
-                        {% for error in form.invoice_date.errors %}
-                            <div class="text-danger small mt-1">{{ error }}</div>
-                        {% endfor %}
+                        {% for error in form.invoice_date.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
                     </div>
                 </div>
-                <div class="col-md-4">
+            </div>
+            <div class="row">
+                <div class="col-md-6">
                     <div class="mb-3">
                         {{ form.contractor_id.label(class="form-label") }}
                         {{ form.contractor_id(class="form-select") }}
-                        {% for error in form.contractor_id.errors %}
-                            <div class="text-danger small mt-1">{{ error }}</div>
-                        {% endfor %}
+                        {% for error in form.contractor_id.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        {{ form.invoice_type.label(class="form-label") }}
+                        {{ form.invoice_type(class="form-select") }}
+                        {% for error in form.invoice_type.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                    </div>
+                </div>
+            </div>
+             <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        {{ form.purchase_order_number.label(class="form-label") }}
+                        {{ form.purchase_order_number(class="form-control") }}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        {{ form.disbursement_order_number.label(class="form-label") }}
+                        {{ form.disbursement_order_number(class="form-control") }}
                     </div>
                 </div>
             </div>

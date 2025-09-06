@@ -6,9 +6,9 @@ from app.models.user import User
 from app.models.contractor import Contractor
 from app.models.invoice import Invoice
 from app.models.item import Item
-from app import constants # <-- إضافة جديدة
+from app import constants
 
-# ... (LoginForm, RegisterForm, ContractorForm, InvoiceForm remain the same) ...
+# ... (LoginForm, RegisterForm, ProjectForm, ContractorForm remain the same) ...
 class LoginForm(FlaskForm):
     username = StringField('اسم المستخدم', validators=[DataRequired(message="هذا الحقل مطلوب.")])
     password = PasswordField('كلمة المرور', validators=[DataRequired(message="هذا الحقل مطلوب.")])
@@ -29,18 +29,17 @@ class RegisterForm(FlaskForm):
         if user:
             raise ValidationError('البريد الإلكتروني هذا مسجل بالفعل. الرجاء استخدام بريد آخر.')
 
-# --- START: تحديث نموذج المشروع ---
+
 class ProjectForm(FlaskForm):
     name = StringField('اسم المشروع', validators=[DataRequired(message="اسم المشروع مطلوب.")])
     location = StringField('الموقع')
     start_date = DateField('تاريخ البداية', validators=[Optional()])
     end_date = DateField('تاريخ النهاية', validators=[Optional()])
-    status = SelectField('الحالة', choices=constants.PROJECT_STATUS_CHOICES, validators=[DataRequired()]) # <-- استخدام الثوابت
+    status = SelectField('الحالة', choices=constants.PROJECT_STATUS_CHOICES, validators=[DataRequired()])
     notes = TextAreaField('ملاحظات')
     spreadsheet_id = StringField('معرّف Google Sheets')
     manager_id = SelectField('مدير المشروع', coerce=int, validators=[Optional()])
     submit = SubmitField('حفظ المشروع')
-# --- END: تحديث نموذج المشروع ---
 
 class ContractorForm(FlaskForm):
     name = StringField('اسم المقاول', validators=[DataRequired(message="اسم المقاول مطلوب.")])
@@ -60,30 +59,38 @@ class ContractorForm(FlaskForm):
         if Contractor.query.filter(Contractor.name.ilike(name.data)).first():
             raise ValidationError('مقاول بنفس هذا الاسم موجود بالفعل.')
 
+# --- START: تحديث نموذج المستخلص ---
 class InvoiceForm(FlaskForm):
     invoice_number = StringField('رقم المستخلص/الفاتورة', validators=[DataRequired(message="هذا الحقل مطلوب.")])
     invoice_date = DateField('تاريخ المستخلص', validators=[DataRequired(message="هذا الحقل مطلوب.")])
-    contractor_id = SelectField('المقاول', coerce=int, validators=[DataRequired(message="يجب اختيار مقاول.")])
+    contractor_id = SelectField('المقاول / المورد', coerce=int, validators=[DataRequired(message="يجب اختيار مقاول.")])
+    invoice_type = SelectField('نوع المستخلص', choices=constants.INVOICE_TYPE_CHOICES, validators=[DataRequired()])
+    purchase_order_number = StringField('رقم أمر الشراء (اختياري)')
+    disbursement_order_number = StringField('رقم أمر الصرف (اختياري)')
     notes = TextAreaField('ملاحظات (اختياري)')
     submit = SubmitField('إنشاء المستخلص والانتقال لإضافة البنود')
 
     def validate_invoice_number(self, invoice_number):
         if Invoice.query.filter_by(invoice_number=invoice_number.data).first():
             raise ValidationError('رقم المستخلص هذا موجود بالفعل. الرجاء إدخال رقم فريد.')
+# --- END: تحديث نموذج المستخلص ---
 
-# --- START: تحديث نموذج البنود ---
+# --- START: تحديث نموذج البند ---
 class ItemForm(FlaskForm):
     item_number = StringField('رقم البند', validators=[DataRequired(message="هذا الحقل مطلوب.")])
     description = TextAreaField('الوصف', validators=[DataRequired(message="هذا الحقل مطلوب.")])
     unit = StringField('الوحدة')
     
+    purchase_order_number = StringField('رقم أمر الشراء (اختياري)')
+    disbursement_order_number = StringField('رقم أمر الصرف (اختياري)')
+
     contract_quantity = FloatField('الكمية التعاقدية', validators=[Optional()])
     contract_unit_cost = FloatField('التكلفة الإفرادية التعاقدية', validators=[Optional()])
     
     actual_quantity = FloatField('الكمية الفعلية (للتحكم بالمستخلصات)', validators=[Optional()])
     actual_unit_cost = FloatField('التكلفة الإفرادية الفعلية (يدوي)', validators=[Optional()])
     
-    status = SelectField('الحالة', choices=constants.ITEM_STATUS_CHOICES, validators=[DataRequired()]) # <-- استخدام الثوابت
+    status = SelectField('الحالة', choices=constants.ITEM_STATUS_CHOICES, validators=[DataRequired()])
     contractor_id = SelectField('المقاول الرئيسي للبند', coerce=int, validators=[Optional()])
     notes = TextAreaField('ملاحظات')
     submit = SubmitField('حفظ التغييرات')
@@ -99,4 +106,4 @@ class ItemForm(FlaskForm):
         existing_item = Item.query.filter_by(project_id=self.project_id, item_number=item_number.data).first()
         if existing_item:
             raise ValidationError('هذا الرقم مستخدم بالفعل في هذا المشروع.')
-# --- END: تحديث نموذج البنود ---
+# --- END: تحديث نموذج البند ---

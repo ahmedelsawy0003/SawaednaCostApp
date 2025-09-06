@@ -8,14 +8,15 @@ class CostDetail(db.Model):
     quantity = db.Column(db.Float, nullable=False)
     unit_cost = db.Column(db.Float, nullable=False)
     
-    # Foreign Keys to link to the main item and an optional contractor/supplier
+    # --- START: الحقول الجديدة ---
+    purchase_order_number = db.Column(db.String(100), nullable=True)
+    disbursement_order_number = db.Column(db.String(100), nullable=True)
+    # --- END: الحقول الجديدة ---
+
     item_id = db.Column(db.Integer, db.ForeignKey('item.id'), nullable=False)
     contractor_id = db.Column(db.Integer, db.ForeignKey('contractor.id'), nullable=True)
 
-    # Relationships
-    # This links the detail back to the main item it belongs to
     item = db.relationship('Item', back_populates='cost_details')
-    # This links the detail to a specific contractor or supplier
     contractor = db.relationship('Contractor', back_populates='cost_details')
 
     __table_args__ = (
@@ -25,7 +26,6 @@ class CostDetail(db.Model):
 
     @property
     def total_cost(self):
-        """Calculates the total cost for this detail line."""
         if self.quantity is not None and self.unit_cost is not None:
             return self.quantity * self.unit_cost
         return 0.0

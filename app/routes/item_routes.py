@@ -12,7 +12,7 @@ from app.forms import ItemForm
 
 item_bp = Blueprint("item", __name__)
 
-# ... (log_item_change, get_items_by_project, and bulk functions remain the same) ...
+# ... (log_item_change, get_items_by_project, bulk functions, new_item remain the same) ...
 def log_item_change(item, action, changes_details=""):
     details = ""
     if action == 'create':
@@ -144,7 +144,6 @@ def new_item(project_id):
 
     return render_template("items/new.html", project=project, form=form)
 
-
 # --- START: تحديث دالة edit_item ---
 @item_bp.route("/items/<int:item_id>/edit", methods=["GET", "POST"])
 @login_required
@@ -158,21 +157,22 @@ def edit_item(item_id):
     form.contractor_id.choices.insert(0, (0, '-- تنفيذ ذاتي / بدون مقاول رئيسي --'))
 
     if form.validate_on_submit():
-        # --- LOGGING: نقوم بتسجيل التغييرات قبل الحفظ ---
         changes_list = []
         # نقارن كل حقل في النموذج مع القيمة الحالية في قاعدة البيانات
-        for field in form:
-            if field.name in item.__table__.columns and field.name != 'submit' and field.name != 'csrf_token':
-                current_value = getattr(item, field.name)
-                new_value = field.data
+        # استخدام get_object_data لتجنب مشاكل populate_obj مع القيم غير الموجودة
+        form_data = {key: val for key, val in form.data.items()}
+
+        for field_name, new_value in form_data.items():
+            if hasattr(item, field_name) and field_name not in ['submit', 'csrf_token']:
+                current_value = getattr(item, field_name)
+                
                 # معالجة خاصة لحقل المقاول الفارغ
-                if field.name == 'contractor_id' and new_value == 0:
+                if field_name == 'contractor_id' and new_value == 0:
                     new_value = None
                 
                 if str(current_value or '') != str(new_value or ''):
-                    changes_list.append(f"- {field.label.text}: من '{current_value or 'لا شيء'}' إلى '{new_value or 'لا شيء'}'")
-        
-        # --- نهاية التسجيل ---
+                    label = getattr(getattr(form, field_name), 'label').text
+                    changes_list.append(f"- {label}: من '{current_value or 'لا شيء'}' إلى '{new_value or 'لا شيء'}'")
         
         form.populate_obj(item) # تحديث البند بالبيانات الجديدة
         if form.contractor_id.data == 0:
@@ -185,7 +185,6 @@ def edit_item(item_id):
         flash("تم تحديث البند بنجاح!", "success")
         return redirect(url_for("item.edit_item", item_id=item.id))
 
-    # لإظهار القيمة الصحيحة في القائمة المنسدلة عند فتح الصفحة أول مرة
     if request.method == 'GET' and item.contractor_id:
         form.contractor_id.data = item.contractor_id
         
@@ -193,16 +192,16 @@ def edit_item(item_id):
     return render_template("items/edit.html", 
                            item=item, 
                            project=project, 
-                           form=form, # <-- تمرير النموذج الجديد
+                           form=form,
                            AuditLog=AuditLog,
                            contractors=contractors,
                            CostDetail=CostDetail)
 # --- END: تحديث دالة edit_item ---
 
-
 @item_bp.route("/items/<int:item_id>/delete", methods=["POST"])
 @login_required
 def delete_item(item_id):
+    # ... (الكود هنا يبقى كما هو) ...
     item = Item.query.get_or_404(item_id)
     check_project_permission(item.project)
     project_id = item.project_id

@@ -17,7 +17,7 @@ def log_cost_detail_change(item_id, action, details):
     log_entry = AuditLog(
         item_id=item_id,
         user_id=current_user.id,
-        action='update', # We use 'update' as the main action for the parent item
+        action='update', 
         details=details
     )
     db.session.add(log_entry)
@@ -35,6 +35,11 @@ def add_cost_detail(item_id):
         quantity_str = request.form.get("quantity")
         unit_cost_str = request.form.get("unit_cost")
         contractor_id_str = request.form.get("contractor_id")
+        
+        # --- START: جلب البيانات الجديدة ---
+        purchase_order = sanitize_input(request.form.get("purchase_order_number"))
+        disbursement_order = sanitize_input(request.form.get("disbursement_order_number"))
+        # --- END: جلب البيانات الجديدة ---
 
         if not all([description, quantity_str, unit_cost_str]):
             flash("الوصف، الكمية، وتكلفة الوحدة هي حقول مطلوبة.", "danger")
@@ -50,14 +55,16 @@ def add_cost_detail(item_id):
             unit=unit,
             quantity=quantity,
             unit_cost=unit_cost,
-            contractor_id=contractor_id
+            contractor_id=contractor_id,
+            # --- START: حفظ البيانات الجديدة ---
+            purchase_order_number=purchase_order,
+            disbursement_order_number=disbursement_order
+            # --- END: حفظ البيانات الجديدة ---
         )
         db.session.add(new_detail)
         
-        # --- LOGGING ---
         log_details = f"تمت إضافة تفصيل تكلفة جديد: '{description}' (الكمية: {quantity}, التكلفة: {unit_cost})"
         log_cost_detail_change(item_id, 'create', log_details)
-        # --- END LOGGING ---
 
         db.session.commit()
         flash("تمت إضافة تفصيل التكلفة بنجاح!", "success")
@@ -76,11 +83,9 @@ def edit_cost_detail(detail_id):
 
     if request.method == "POST":
         try:
-            # --- LOGGING: Store old values ---
             old_desc = detail.description
             old_qty = detail.quantity
             old_cost = detail.unit_cost
-            # --- END LOGGING ---
 
             detail.description = sanitize_input(request.form.get("description"))
             detail.unit = sanitize_input(request.form.get("unit"))
@@ -89,7 +94,11 @@ def edit_cost_detail(detail_id):
             contractor_id_str = request.form.get("contractor_id")
             detail.contractor_id = int(contractor_id_str) if contractor_id_str else None
             
-            # --- LOGGING: Compare and log changes ---
+            # --- START: تحديث البيانات الجديدة ---
+            detail.purchase_order_number = sanitize_input(request.form.get("purchase_order_number"))
+            detail.disbursement_order_number = sanitize_input(request.form.get("disbursement_order_number"))
+            # --- END: تحديث البيانات الجديدة ---
+            
             changes = []
             if old_desc != detail.description:
                 changes.append(f"وصف التفصيل تغير من '{old_desc}' إلى '{detail.description}'")
@@ -100,7 +109,6 @@ def edit_cost_detail(detail_id):
             
             if changes:
                 log_cost_detail_change(detail.item_id, 'update', "\n".join(changes))
-            # --- END LOGGING ---
 
             db.session.commit()
             flash("تم تحديث تفصيل التكلفة بنجاح.", "success")
@@ -116,15 +124,12 @@ def edit_cost_detail(detail_id):
 @cost_detail_bp.route("/<int:detail_id>/delete", methods=["POST"])
 @login_required
 def delete_cost_detail(detail_id):
-    """Deletes a cost detail."""
     detail = CostDetail.query.get_or_404(detail_id)
     item_id = detail.item_id
     check_project_permission(detail.item.project)
 
-    # --- LOGGING ---
     log_details = f"تم حذف تفصيل التكلفة: '{detail.description}'"
     log_cost_detail_change(item_id, 'delete', log_details)
-    # --- END LOGGING ---
 
     db.session.delete(detail)
     db.session.commit()
