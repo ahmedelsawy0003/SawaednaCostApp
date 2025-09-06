@@ -45,19 +45,41 @@
                             {% if current_user.role == 'admin' %}
                             <li><a href="{{ url_for('project.new_project') }}" class="sidebar-submenu-link"><i class="fas fa-plus me-2"></i> إضافة مشروع</a></li>
                             {% endif %}
+                            <hr class="sidebar-divider">
+                             {% for project in sidebar_projects %}
+                                <li><a href="{{ url_for('project.get_project', project_id=project.id) }}" class="sidebar-submenu-link" title="{{ project.name }}">{{ project.name | truncate(20) }}</a></li>
+                             {% else %}
+                                <li><span class="sidebar-submenu-link text-muted">لا توجد مشاريع.</span></li>
+                             {% endfor %}
                         </ul>
                     </li>
 
                     <!-- Invoices Menu -->
                     <li class="sidebar-item">
                         <a href="#invoices-submenu" data-bs-toggle="collapse" class="sidebar-link collapsed">
-                            <i class="fas fa-file-invoice-dollar fa-fw me-2"></i> المستخلصات
+                            <i class="fas fa-file-invoice-dollar fa-fw me-2"></i> عرض المستخلصات
                         </a>
                         <ul id="invoices-submenu" class="list-unstyled collapse sidebar-submenu">
-                             <li><a href="#" class="sidebar-submenu-link text-muted">اختر مشروعاً لعرض مستخلصاته:</a></li>
+                             <li><a href="#" class="sidebar-submenu-link text-muted">اختر مشروعاً:</a></li>
                              <hr class="sidebar-divider">
                              {% for project in sidebar_projects %}
                                 <li><a href="{{ url_for('invoice.get_invoices_by_project', project_id=project.id) }}" class="sidebar-submenu-link" title="{{ project.name }}">{{ project.name | truncate(20) }}</a></li>
+                             {% else %}
+                                <li><span class="sidebar-submenu-link text-muted">لا توجد مشاريع.</span></li>
+                             {% endfor %}
+                        </ul>
+                    </li>
+                    
+                    <!-- NEW: Add Invoice Menu -->
+                    <li class="sidebar-item">
+                        <a href="#add-invoice-submenu" data-bs-toggle="collapse" class="sidebar-link collapsed">
+                            <i class="fas fa-plus-circle fa-fw me-2"></i> إضافة مستخلص
+                        </a>
+                        <ul id="add-invoice-submenu" class="list-unstyled collapse sidebar-submenu">
+                             <li><a href="#" class="sidebar-submenu-link text-muted">اختر مشروعاً للإضافة إليه:</a></li>
+                             <hr class="sidebar-divider">
+                             {% for project in sidebar_projects %}
+                                <li><a href="{{ url_for('invoice.new_invoice', project_id=project.id) }}" class="sidebar-submenu-link" title="{{ project.name }}">{{ project.name | truncate(20) }}</a></li>
                              {% else %}
                                 <li><span class="sidebar-submenu-link text-muted">لا توجد مشاريع.</span></li>
                              {% endfor %}
@@ -74,6 +96,12 @@
                              {% if current_user.role == 'admin' %}
                             <li><a href="{{ url_for('contractor.new_contractor') }}" class="sidebar-submenu-link"><i class="fas fa-plus me-2"></i> إضافة مقاول</a></li>
                              {% endif %}
+                             <hr class="sidebar-divider">
+                             {% for contractor in sidebar_contractors %}
+                                <li><a href="{{ url_for('contractor.show_contractor', contractor_id=contractor.id) }}" class="sidebar-submenu-link" title="{{ contractor.name }}">{{ contractor.name | truncate(20) }}</a></li>
+                             {% else %}
+                                <li><span class="sidebar-submenu-link text-muted">لا يوجد مقاولون.</span></li>
+                             {% endfor %}
                         </ul>
                     </li>
                     

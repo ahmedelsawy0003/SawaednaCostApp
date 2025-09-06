@@ -31,23 +31,32 @@ def create_app():
     def load_user(user_id):
         return User.query.get(int(user_id))
 
-    # START: NEW CONTEXT PROCESSOR FOR SIDEBAR
+    # START: UPDATED CONTEXT PROCESSOR FOR SIDEBAR
     @app.context_processor
     def inject_sidebar_data():
         """
         Injects data into all templates for the sidebar.
         """
         sidebar_projects = []
+        sidebar_contractors = [] # New list for contractors
         if current_user.is_authenticated:
             if current_user.role == 'admin':
-                # Admins see all non-archived projects
+                # Admins see all non-archived projects and all contractors
                 sidebar_projects = Project.query.filter_by(is_archived=False).order_by(Project.name).all()
+                sidebar_contractors = Contractor.query.order_by(Contractor.name).all()
             else:
                 # Regular users see their associated non-archived projects
                 sidebar_projects = sorted([p for p in current_user.projects if not p.is_archived], key=lambda x: x.name)
-        
-        return dict(sidebar_projects=sidebar_projects)
-    # END: NEW CONTEXT PROCESSOR
+                # And contractors related to those projects
+                if sidebar_projects:
+                    project_ids = [p.id for p in sidebar_projects]
+                    sidebar_contractors = Contractor.query.join(Invoice).filter(Invoice.project_id.in_(project_ids)).distinct().order_by(Contractor.name).all()
+
+        return dict(
+            sidebar_projects=sidebar_projects,
+            sidebar_contractors=sidebar_contractors # Pass contractors to the template
+        )
+    # END: UPDATED CONTEXT PROCESSOR
 
 
     # Import and register blueprints
@@ -72,3 +81,4 @@ def create_app():
         return redirect(url_for('project.get_projects'))
    
     return app
+
