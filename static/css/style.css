@@ -188,7 +188,7 @@ a:hover {
     border-radius: var(--radius-sm);
     padding: 0.75rem 1.5rem;
     font-weight: 700;
-    transition: all var(--transition);
+    transition: all 0.2s ease-in-out;
     border: none;
 }
 .btn:hover {
@@ -283,10 +283,17 @@ a:hover {
 }
 
 
-/* 6. UTILITY & FIXES
+/* 6. UTILITY CLASSES
 /* ========================================================================== */
-/* --- START: NEW Custom Toggler Styles --- */
-.sidebar-link.sidebar-toggler::after {
+.no-transition {
+    transition: none !important;
+}
+
+/* --- START: NEW CUSTOM SIDEBAR TOGGLER STYLES (v1.4) --- */
+
+/* Style for the arrow icon on the toggler links */
+.sidebar-link.sidebar-toggler::after,
+.sidebar-submenu-link.sidebar-toggler::after {
     content: '\f078'; /* Font Awesome Chevron Down */
     font-family: 'Font Awesome 6 Free';
     font-weight: 900;
@@ -297,19 +304,27 @@ a:hover {
     transition: transform var(--transition);
 }
 
-.sidebar-link.sidebar-toggler.is-active::after {
+/* Rotate the arrow icon when the menu is active/open */
+.sidebar-link.sidebar-toggler.is-active::after,
+.sidebar-submenu-link.sidebar-toggler.is-active::after {
     transform: translateY(-50%) rotate(180deg);
 }
 
+/* Hide all submenus by default */
 .sidebar-submenu {
+    display: none; /* This is the key change to hide them initially */
     background-color: var(--bg-dark);
-    overflow: hidden;
-    max-height: 0;
-    transition: max-height 0.4s ease-out;
 }
 
-.sidebar-submenu.is-open {
-    max-height: 1500px; /* Use a large number that can contain the submenu */
-    transition: max-height 0.4s ease-in;
+/* Style for the nested menus to give them a slight indent */
+.sidebar-submenu.nested-menu {
+    background-color: var(--bg-dark);
+    padding-right: 1rem; /* Indent nested menus */
 }
-/* --- END: NEW Custom Toggler Styles --- */
+
+/* Reduce font size for all links within any submenu */
+.sidebar-submenu a {
+    font-size: 0.9rem;
+}
+
+/* --- END: NEW CUSTOM SIDEBAR TOGGLER STYLES (v1.4) --- */

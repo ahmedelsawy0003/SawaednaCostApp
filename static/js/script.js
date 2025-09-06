@@ -1,53 +1,47 @@
 document.addEventListener("DOMContentLoaded", function() {
-    
-    // --- START: NEW Custom Sidebar Toggler ---
-    function setupSidebarToggler() {
+
+    // --- START: FINAL Custom Sidebar Toggler (v1.4) ---
+    function setupSidebar() {
+        // 1. Find all links that are meant to toggle a menu.
         const togglers = document.querySelectorAll('.sidebar-toggler');
 
+        // 2. Loop through each of these toggler links.
         togglers.forEach(toggler => {
-            const submenu = toggler.nextElementSibling;
+            
+            // 3. Add a click event listener to each one.
+            toggler.addEventListener('click', function(event) {
+                // Prevent the link from trying to navigate anywhere.
+                event.preventDefault();
 
-            if (submenu && submenu.classList.contains('sidebar-submenu')) {
-                // Check if any link inside the submenu matches the current page URL
-                let isSectionActive = false;
-                submenu.querySelectorAll('a.sidebar-submenu-link').forEach(link => {
-                    // Using 'pathname' to ignore query strings or hashes
-                    if (link.pathname === window.location.pathname) {
-                        isSectionActive = true;
-                    }
-                });
+                // Find the submenu, which is the VERY NEXT element in the HTML.
+                const submenu = this.nextElementSibling;
 
-                // If a link is active, open this submenu by default on page load
-                if (isSectionActive) {
-                    toggler.classList.add('is-active');
-                    submenu.classList.add('is-open');
-                }
-
-                // Add the click event listener to the toggler
-                toggler.addEventListener('click', function(event) {
-                    event.preventDefault(); // Prevent default link behavior
-
-                    // Toggle the active classes for the icon and the menu visibility
+                // Check if the submenu actually exists.
+                if (submenu) {
+                    // Toggle the class on the link itself (for the arrow icon).
                     this.classList.toggle('is-active');
-                    submenu.classList.toggle('is-open');
-                });
-            }
-        });
 
-        // Also, set the 'active' class on the main "الرئيسية" link if it's the current page
-        document.querySelectorAll('.sidebar-link').forEach(link => {
-            if (link.href === window.location.href) {
-                link.classList.add('active');
-            }
+                    // Check if the submenu is currently visible.
+                    if (submenu.style.display === 'block') {
+                        // If it is visible, hide it.
+                        submenu.style.display = 'none';
+                    } else {
+                        // If it is hidden, show it.
+                        submenu.style.display = 'block';
+                    }
+                }
+            });
         });
     }
 
-    // Run the function to activate the sidebar
-    setupSidebarToggler();
-    // --- END: NEW Custom Sidebar Toggler ---
+    // Run the function to make the sidebar work.
+    setupSidebar();
+    // --- END: FINAL Custom Sidebar Toggler (v1.4) ---
 
 
-    // --- Sidebar Toggle Functionality for mobile ---
+    // --- Other functionalities ---
+
+    // Sidebar Toggle Functionality for mobile
     const sidebar = document.querySelector('.sidebar');
     const openSidebarBtn = document.getElementById('open-sidebar-btn');
     const closeSidebarBtn = document.getElementById('close-sidebar-btn');
@@ -87,7 +81,7 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 
-    // --- Bulk actions section ---
+    // Bulk actions section
     const selectAllCheckbox = document.getElementById('select-all');
     const itemCheckboxes = document.querySelectorAll('.item-checkbox');
     const bulkEditForm = document.getElementById('bulk-edit-form');
