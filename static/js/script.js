@@ -1,54 +1,51 @@
 document.addEventListener("DOMContentLoaded", function() {
     
-    // --- START: NEW Sidebar Auto-Open Logic ---
-    function activateSidebarMenu() {
-        const currentPath = window.location.pathname;
-        let activeSection = null;
+    // --- START: NEW Custom Sidebar Toggler ---
+    function setupSidebarToggler() {
+        const togglers = document.querySelectorAll('.sidebar-toggler');
 
-        if (currentPath.includes('/projects/') || currentPath.includes('/items/') || currentPath.includes('/sheets/')) {
-            activeSection = 'project';
-        } else if (currentPath.startsWith('/projects')) {
-            activeSection = 'project';
-        } else if (currentPath.includes('/invoices/')) {
-            activeSection = 'invoice';
-        } else if (currentPath.includes('/contractors/')) {
-            activeSection = 'contractor';
-        } else if (currentPath.includes('/admin/')) {
-            activeSection = 'admin';
-        }
+        togglers.forEach(toggler => {
+            const submenu = toggler.nextElementSibling;
 
-        // Deactivate all active links first
-        document.querySelectorAll('.sidebar-link.active').forEach(link => link.classList.remove('active'));
-        document.querySelectorAll('.sidebar-submenu.show').forEach(menu => menu.classList.remove('show'));
-        document.querySelectorAll('.sidebar-link:not(.collapsed)').forEach(link => link.classList.add('collapsed'));
-
-        if (activeSection) {
-            const activeLink = document.querySelector(`.sidebar-link[data-section="${activeSection}"]`);
-            if (activeLink) {
-                // If it's a main link, make it active
-                if (!activeLink.hasAttribute('data-bs-toggle')) {
-                     activeLink.classList.add('active');
-                }
-                
-                // If it's a dropdown, open it
-                const submenuId = activeLink.getAttribute('href');
-                if (submenuId) {
-                    const submenu = document.querySelector(submenuId);
-                    if (submenu) {
-                        activeLink.classList.remove('collapsed');
-                        submenu.classList.add('show');
+            if (submenu && submenu.classList.contains('sidebar-submenu')) {
+                // Check if any link inside the submenu matches the current page URL
+                let isSectionActive = false;
+                submenu.querySelectorAll('a.sidebar-submenu-link').forEach(link => {
+                    // Using 'pathname' to ignore query strings or hashes
+                    if (link.pathname === window.location.pathname) {
+                        isSectionActive = true;
                     }
+                });
+
+                // If a link is active, open this submenu by default on page load
+                if (isSectionActive) {
+                    toggler.classList.add('is-active');
+                    submenu.classList.add('is-open');
                 }
+
+                // Add the click event listener to the toggler
+                toggler.addEventListener('click', function(event) {
+                    event.preventDefault(); // Prevent default link behavior
+
+                    // Toggle the active classes for the icon and the menu visibility
+                    this.classList.toggle('is-active');
+                    submenu.classList.toggle('is-open');
+                });
             }
-        } else if (currentPath === '/' || currentPath.startsWith('/projects')) {
-             const homeLink = document.querySelector('.sidebar-link[data-section="home"]');
-             if(homeLink) homeLink.classList.add('active');
-        }
+        });
+
+        // Also, set the 'active' class on the main "الرئيسية" link if it's the current page
+        document.querySelectorAll('.sidebar-link').forEach(link => {
+            if (link.href === window.location.href) {
+                link.classList.add('active');
+            }
+        });
     }
-    
-    // Run the function to set the correct menu state on page load
-    activateSidebarMenu();
-    // --- END: NEW Sidebar Auto-Open Logic ---
+
+    // Run the function to activate the sidebar
+    setupSidebarToggler();
+    // --- END: NEW Custom Sidebar Toggler ---
+
 
     // --- Sidebar Toggle Functionality for mobile ---
     const sidebar = document.querySelector('.sidebar');

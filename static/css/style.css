@@ -27,7 +27,7 @@
     --radius: 0.75rem;
     --radius-sm: 0.5rem;
     --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-    --transition: 0.2s ease-in-out;
+    --transition: 0.3s ease;
 }
 
 body {
@@ -145,24 +145,7 @@ a:hover {
     border-right: 3px solid var(--primary-hover);
     padding-right: calc(1.5rem - 3px);
 }
-.sidebar-link[data-bs-toggle="collapse"]::after {
-    content: '\f078';
-    font-family: 'Font Awesome 6 Free';
-    font-weight: 900;
-    position: absolute;
-    left: 1.5rem;
-    top: 50%;
-    transform: translateY(-50%);
-    transition: transform var(--transition);
-}
-.sidebar-link[data-bs-toggle="collapse"]:not(.collapsed)::after {
-    transform: translateY(-50%) rotate(180deg);
-}
 
-.sidebar-submenu {
-    background-color: var(--bg-dark);
-    padding: 0.5rem 0;
-}
 .sidebar-submenu-link {
     padding-top: 0.5rem;
     padding-bottom: 0.5rem;
@@ -302,17 +285,31 @@ a:hover {
 
 /* 6. UTILITY & FIXES
 /* ========================================================================== */
-.no-transition {
-    transition: none !important;
+/* --- START: NEW Custom Toggler Styles --- */
+.sidebar-link.sidebar-toggler::after {
+    content: '\f078'; /* Font Awesome Chevron Down */
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    position: absolute;
+    left: 1.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    transition: transform var(--transition);
 }
 
-/* START: Force Collapse Behavior */
-.sidebar-submenu.collapse:not(.show) {
-  display: none !important;
+.sidebar-link.sidebar-toggler.is-active::after {
+    transform: translateY(-50%) rotate(180deg);
 }
-.sidebar-submenu.collapsing {
-  height: 0 !important;
-  overflow: hidden !important;
-  transition: height 0.3s ease !important;
+
+.sidebar-submenu {
+    background-color: var(--bg-dark);
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.4s ease-out;
 }
-/* END: Force Collapse Behavior */
+
+.sidebar-submenu.is-open {
+    max-height: 1500px; /* Use a large number that can contain the submenu */
+    transition: max-height 0.4s ease-in;
+}
+/* --- END: NEW Custom Toggler Styles --- */
