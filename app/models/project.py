@@ -3,6 +3,8 @@ from .user import user_project_association
 from .invoice import Invoice
 from .payment import Payment
 from app import constants
+from sqlalchemy.ext.hybrid import hybrid_property
+from .item import Item
 
 class Project(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -28,6 +30,10 @@ class Project(db.Model):
 
     items = db.relationship('Item', back_populates='project', cascade="all, delete-orphan")
     invoices = db.relationship('Invoice', back_populates='project', lazy='dynamic', cascade="all, delete-orphan")
+
+    @hybrid_property
+    def total_actual_cost(self):
+        return sum(item.actual_total_cost for item in self.items if item.actual_total_cost is not None)
 
     def __repr__(self):
         return f'<Project {self.name}>'
