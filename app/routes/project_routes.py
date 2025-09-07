@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from sqlalchemy.orm import joinedload
 from sqlalchemy import func
 from app.models.project import Project
+from app.models.item import Item
 from app.models.user import User
 from app.extensions import db
 from flask_login import login_required, current_user
