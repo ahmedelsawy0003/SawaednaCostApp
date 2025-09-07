@@ -41,7 +41,9 @@ def create_app():
         sidebar_contractors = []
 
         if current_user.is_authenticated:
-            if current_user.role == 'admin':
+            # --- START: التعديل الرئيسي هنا ---
+            if current_user.role in ['admin', 'sub-admin']:
+            # --- END: التعديل الرئيسي هنا ---
                 sidebar_projects = Project.query.filter_by(is_archived=False).order_by(Project.name).all()
                 sidebar_contractors = Contractor.query.order_by(Contractor.name).all()
             else:
@@ -80,4 +82,3 @@ def create_app():
         return redirect(url_for('project.get_projects'))
    
     return app
-

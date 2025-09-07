@@ -16,7 +16,9 @@ contractor_bp = Blueprint("contractor", __name__, url_prefix='/contractors')
 @login_required
 def get_contractors():
     """عرض قائمة بجميع المقاولين"""
-    if current_user.role != 'admin':
+    # --- START: التعديل الرئيسي هنا ---
+    if current_user.role not in ['admin', 'sub-admin']:
+    # --- END: التعديل الرئيسي هنا ---
         allowed_project_ids = [p.id for p in current_user.projects]
         if not allowed_project_ids:
             contractors = []
@@ -87,13 +89,11 @@ def delete_contractor(contractor_id):
     flash(f"تم حذف المقاول '{contractor.name}' بنجاح.", "success")
     return redirect(url_for('contractor.get_contractors'))
 
-# --- START: التعديل الرئيسي هنا ---
 @contractor_bp.route("/<int:contractor_id>")
 @login_required
 def show_contractor(contractor_id):
     contractor = Contractor.query.get_or_404(contractor_id)
     
-    # جلب المستخلصات (لا تغيير هنا)
     invoices_query = Invoice.query.filter_by(contractor_id=contractor_id)
     project_filter = request.args.get('project_id', type=int)
     search_filter = request.args.get('search', '')
@@ -106,18 +106,17 @@ def show_contractor(contractor_id):
     
     invoices = invoices_query.order_by(Invoice.invoice_date.desc()).all()
     
-    # حساب الإجماليات المالية (لا تغيير هنا)
     total_due = sum(inv.total_amount for inv in invoices if inv.status != 'ملغي')
     total_paid = sum(inv.paid_amount for inv in invoices if inv.status != 'ملغي')
     remaining = total_due - total_paid
 
-    # جلب المشاريع لفلتر المستخلصات (لا تغيير هنا)
     projects_query = Project.query.join(Invoice).filter(Invoice.contractor_id == contractor_id)
-    if current_user.role != 'admin':
+    # --- START: التعديل الرئيسي هنا ---
+    if current_user.role not in ['admin', 'sub-admin']:
+    # --- END: التعديل الرئيسي هنا ---
         projects_query = projects_query.join(Project.users).filter(User.id == current_user.id)
     projects = projects_query.distinct().order_by(Project.name).all()
 
-    # *** الإضافة الجديدة: جلب كل البنود المسندة للمقاول ***
     assigned_items = Item.query.filter_by(contractor_id=contractor_id).order_by(Item.project_id, Item.item_number).all()
 
     return render_template(
@@ -125,10 +124,9 @@ def show_contractor(contractor_id):
         contractor=contractor, 
         invoices=invoices,
         projects=projects,
-        assigned_items=assigned_items, # <-- تمرير قائمة البنود الجديدة
+        assigned_items=assigned_items, 
         total_due=total_due,
         total_paid=total_paid,
         remaining=remaining,
         filters={'project_id': project_filter, 'search': search_filter}
     )
-# --- END: التعديل الرئيسي ---
