@@ -27,7 +27,7 @@ class Item(db.Model):
 
     project = db.relationship('Project', back_populates='items')
     contractor = db.relationship('Contractor', back_populates='items')
-    cost_details = db.relationship('CostDetail', back_populates='item', lazy='dynamic', cascade="all, delete-orphan")
+    cost_details = db.relationship('CostDetail', back_populates='item', cascade="all, delete-orphan")
 
     __table_args__ = (
         db.Index('idx_item_project_id', 'project_id'),
