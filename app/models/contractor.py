@@ -1,7 +1,6 @@
 from app.extensions import db
 from sqlalchemy.orm import relationship
 
-from .cost_detail import CostDetail
 
 class Contractor(db.Model):
     id = db.Column(db.Integer, primary_key=True)
