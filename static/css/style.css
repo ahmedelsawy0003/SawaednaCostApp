@@ -328,3 +328,9 @@ a:hover {
 }
 
 /* --- END: NEW CUSTOM SIDEBAR TOGGLER STYLES (v1.4) --- */
+
+
+.table-responsive {
+    max-height: 75vh;
+    overflow-y: auto;
+}
