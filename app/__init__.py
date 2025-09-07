@@ -20,17 +20,18 @@ def create_app():
     app.config.from_object('config.Config')
 
     db.init_app(app)
-    migrate.init_app(app, db) 
+    # We remove migrate from init, as we will handle schema creation manually
+    # migrate.init_app(app, db) 
     login_manager.init_app(app)
     login_manager.login_view = 'auth.login'
     
     commands.init_app(app)
 
-    # --- START: الكود الجديد لضمان تحديث قاعدة البيانات ---
+    # --- START: الكود النهائي لضمان تحديث قاعدة البيانات ---
     # هذا السطر سيقوم بإنشاء أي جداول أو أعمدة ناقصة تلقائياً
     with app.app_context():
         db.create_all()
-    # --- END: الكود الجديد ---
+    # --- END: الكود النهائي ---
 
     @login_manager.user_loader
     def load_user(user_id):
