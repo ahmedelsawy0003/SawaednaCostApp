@@ -38,18 +38,37 @@ def get_items_by_project(project_id):
     project = Project.query.get_or_404(project_id)
     check_project_permission(project)
 
-    search_query = request.args.get('search', '')
+    # قراءة جميع الفلاتر من الرابط
+    search_number = request.args.get('search_number', '')
+    search_description = request.args.get('search_description', '')
+    status = request.args.get('status', '')
+    contractor_search = request.args.get('contractor', '')
+
     query = Item.query.filter_by(project_id=project_id)
 
-    if search_query:
-        search_term = f"%{search_query}%"
-        query = query.filter(
-            (Item.item_number.ilike(search_term)) |
-            (Item.description.ilike(search_term))
-        )
+    # تطبيق الفلاتر على الاستعلام
+    if search_number:
+        query = query.filter(Item.item_number.ilike(f"%{search_number}%"))
+    if search_description:
+        query = query.filter(Item.description.ilike(f"%{search_description}%"))
+    if status:
+        query = query.filter(Item.status == status)
+    if contractor_search:
+        # الانضمام إلى جدول المقاولين للبحث بالاسم
+        query = query.join(Item.contractor).filter(Contractor.name.ilike(f"%{contractor_search}%"))
+
+    # إنشاء قاموس الفلاتر لإرساله للقالب
+    filters = {
+        'search_number': search_number,
+        'search_description': search_description,
+        'status': status,
+        'contractor': contractor_search
+    }
 
     items = query.order_by(Item.item_number).all()
-    return render_template("items/index.html", items=items, project=project, search_query=search_query)
+    
+    # إرسال قاموس "filters" بدلاً من "search_query"
+    return render_template("items/index.html", items=items, project=project, filters=filters)
 
 @item_bp.route("/projects/<int:project_id>/items/bulk_add", methods=['GET', 'POST'])
 @login_required
