@@ -1,15 +1,11 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, abort
 from sqlalchemy.orm import joinedload
-from sqlalchemy import func, case
+from sqlalchemy import func
 from app.models.project import Project
-from app.models.user import User, user_project_association
-from app.models.item import Item
-from app.models.invoice import Invoice
-from app.models.invoice_item import InvoiceItem 
-from app.models.payment import Payment
+from app.models.user import User
 from app.extensions import db
 from flask_login import login_required, current_user
-from app.utils import check_project_permission, sanitize_input
+from app.utils import check_project_permission
 from app.forms import ProjectForm
 
 project_bp = Blueprint("project", __name__)
@@ -19,60 +15,40 @@ project_bp = Blueprint("project", __name__)
 def get_projects():
     show_archived = request.args.get('show_archived', 'false').lower() == 'true'
 
-    paid_subquery = db.session.query(
-        Invoice.project_id,
-        func.sum(Payment.amount).label('total_paid')
-    ).join(Payment).group_by(Invoice.project_id).subquery()
+    # The query is now much simpler
+    query = Project.query
 
-    query = db.session.query(
-        Project,
-        func.coalesce(func.sum(Item.contract_quantity * Item.contract_unit_cost), 0).label('total_contract_cost'),
-        func.coalesce(func.sum(Item.actual_quantity * Item.actual_unit_cost), 0).label('total_actual_cost'),
-        func.coalesce(paid_subquery.c.total_paid, 0).label('total_paid_amount')
-    ).outerjoin(Item).outerjoin(paid_subquery, Project.id == paid_subquery.c.project_id).group_by(Project.id, paid_subquery.c.total_paid)
-
-    # --- START: التعديل الرئيسي هنا ---
-    # إذا لم يكن المستخدم admin أو sub-admin، قم بعرض المشاريع المخصصة له فقط
     if current_user.role not in ['admin', 'sub-admin']:
-        query = query.join(user_project_association).filter(user_project_association.c.user_id == current_user.id)
-    # --- END: التعديل الرئيسي هنا ---
+        query = query.join(Project.users).filter(User.id == current_user.id)
 
     if show_archived:
         query = query.filter(Project.is_archived == True)
     else:
         query = query.filter(Project.is_archived == False)
-
-    results = query.all()
     
-    projects_with_costs = []
-    for project, total_contract, total_actual, total_paid in results:
-        project.total_contract_cost = total_contract
-        project.total_actual_cost = total_actual
-        project.total_paid_amount = total_paid
-        project.total_savings = total_contract - total_actual
-        project.total_remaining_amount = total_actual - total_paid
-        projects_with_costs.append(project)
-        
-    return render_template("projects/index.html", projects=projects_with_costs, show_archived=show_archived)
+    # We use joinedload to prevent multiple queries for items later
+    projects = query.options(joinedload(Project.items)).all()
+    
+    return render_template("projects/index.html", projects=projects, show_archived=show_archived)
+
 
 @project_bp.route("/projects/<int:project_id>")
 @login_required
 def get_project(project_id):
-    project = Project.query.options(joinedload(Project.items)).get_or_404(project_id)
+    # Eagerly load items and their cost details to optimize performance
+    project = Project.query.options(
+        joinedload(Project.items).joinedload(Item.cost_details)
+    ).get_or_404(project_id)
+    
     check_project_permission(project)
     
-    items = project.items
-    project.total_contract_cost = sum(item.contract_total_cost for item in items)
-    project.total_actual_cost = sum(item.actual_total_cost for item in items if item.actual_total_cost is not None)
-    project.total_paid_amount = db.session.query(func.sum(Payment.amount)).join(Invoice).filter(Invoice.project_id == project.id).scalar() or 0.0
-    project.total_savings = project.total_contract_cost - project.total_actual_cost
-    project.total_remaining_amount = project.total_actual_cost - project.total_paid_amount
-    
-    if not items:
+    # The cost properties are now accessed directly from the project object
+    # These calculations are specific to the view and can remain here
+    if not project.items:
         project.completion_percentage = 0.0
     else:
-        completed_items = sum(1 for item in items if item.status == 'مكتمل')
-        project.completion_percentage = (completed_items / len(items)) * 100 if len(items) > 0 else 0.0
+        completed_items = sum(1 for item in project.items if item.status == 'مكتمل')
+        project.completion_percentage = (completed_items / len(project.items)) * 100 if project.items else 0.0
 
     if project.total_actual_cost == 0:
         project.financial_completion_percentage = 0.0
@@ -81,11 +57,12 @@ def get_project(project_id):
 
     return render_template("projects/show.html", project=project)
 
+
 @project_bp.route("/projects/new", methods=["GET", "POST"])
 @login_required
 def new_project():
     if current_user.role not in ['admin', 'sub-admin']:
-        abort(403)
+        abort(43)
     
     form = ProjectForm()
     form.manager_id.choices = [(user.id, user.username) for user in User.query.order_by('username').all()]
@@ -110,6 +87,7 @@ def new_project():
         return redirect(url_for("project.get_projects"))
     
     return render_template("projects/new.html", form=form)
+
 
 @project_bp.route("/projects/<int:project_id>/edit", methods=["GET", "POST"])
 @login_required
@@ -142,6 +120,7 @@ def edit_project(project_id):
 
     return render_template("projects/edit.html", form=form, project=project)
 
+
 @project_bp.route("/projects/<int:project_id>/delete", methods=["POST"])
 @login_required
 def delete_project(project_id):
@@ -153,6 +132,7 @@ def delete_project(project_id):
     db.session.commit()
     flash("تم حذف المشروع بنجاح!", "success")
     return redirect(url_for("project.get_projects"))
+
 
 @project_bp.route("/projects/<int:project_id>/toggle-archive", methods=["POST"])
 @login_required
@@ -172,10 +152,12 @@ def toggle_archive(project_id):
     show_archived = request.args.get('show_archived', 'false')
     return redirect(url_for("project.get_projects", show_archived=show_archived))
 
+
 @project_bp.route("/projects/<int:project_id>/dashboard")
 @login_required
 def project_dashboard(project_id):
     return redirect(url_for('project.get_project', project_id=project_id))
+
 
 @project_bp.route("/dashboard")
 @login_required

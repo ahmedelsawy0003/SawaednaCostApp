@@ -5,6 +5,7 @@ from .payment import Payment
 from app import constants
 from sqlalchemy.ext.hybrid import hybrid_property
 from .item import Item
+from sqlalchemy import func
 
 class Project(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -32,8 +33,29 @@ class Project(db.Model):
     invoices = db.relationship('Invoice', back_populates='project', lazy='dynamic', cascade="all, delete-orphan")
 
     @hybrid_property
+    def total_contract_cost(self):
+        return sum(item.contract_total_cost for item in self.items if item.contract_total_cost is not None)
+
+    @hybrid_property
     def total_actual_cost(self):
         return sum(item.actual_total_cost for item in self.items if item.actual_total_cost is not None)
+
+    @hybrid_property
+    def total_paid_amount(self):
+        # Ensure payments are summed correctly across all invoices for the project
+        total = db.session.query(func.sum(Payment.amount))\
+            .join(Invoice)\
+            .filter(Invoice.project_id == self.id)\
+            .scalar()
+        return total or 0.0
+
+    @hybrid_property
+    def total_savings(self):
+        return self.total_contract_cost - self.total_actual_cost
+
+    @hybrid_property
+    def total_remaining_amount(self):
+        return self.total_actual_cost - self.total_paid_amount
 
     def __repr__(self):
         return f'<Project {self.name}>'
