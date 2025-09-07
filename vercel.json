@@ -1,15 +1,39 @@
 {
-  "version": 2,
   "builds": [
     {
       "src": "index.py",
-      "use": "@vercel/python"
+      "use": "@vercel/python",
+      "config": {
+        "maxLambdaSize": "15mb",
+        "runtime": "python3.12"
+      }
+    },
+    {
+      "src": "static/**",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
     {
+      "src": "/static/(.*)",
+      "dest": "/static/$1"
+    },
+    {
       "src": "/(.*)",
       "dest": "index.py"
     }
-  ]
+  ],
+  "build": {
+    "env": {
+      "FLASK_APP": "index.py"
+    }
+  },
+  "functions": {
+    "index.py": {
+      "memory": 2048
+    }
+  },
+  "commands": {
+    "build": "pip install -r requirements.txt && flask db upgrade"
+  }
 }
