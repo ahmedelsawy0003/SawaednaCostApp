@@ -65,7 +65,7 @@ def get_items_by_project(project_id):
         'contractor': contractor_search
     }
 
-    items = query.order_by(Item.item_number).all()
+    items = query.order_by(cast(Item.item_number, Integer)).all()
     
     # إرسال قاموس "filters" بدلاً من "search_query"
     return render_template("items/index.html", items=items, project=project, filters=filters)
