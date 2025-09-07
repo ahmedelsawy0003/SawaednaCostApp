@@ -29,196 +29,242 @@
                         {{ form.description(class="form-control", rows="3") }}
                         {% for error in form.description.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
                     </div>
-                </div>
-                <div class="col-md-6">
                     <div class="mb-3">
                         {{ form.unit.label(class="form-label") }}
                         {{ form.unit(class="form-control") }}
-                        {% for error in form.unit.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            {{ form.purchase_order_number.label(class="form-label") }}
+                            {{ form.purchase_order_number(class="form-control") }}
+                        </div>
+                        <div class="col-6 mb-3">
+                            {{ form.disbursement_order_number.label(class="form-label") }}
+                            {{ form.disbursement_order_number(class="form-control") }}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                     {% if current_user.role in ['admin', 'sub-admin'] %}
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            {{ form.contract_quantity.label(class="form-label") }}
+                            {{ form.contract_quantity(class="form-control") }}
+                            {% for error in form.contract_quantity.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                        </div>
+                        <div class="col-6 mb-3">
+                            {{ form.contract_unit_cost.label(class="form-label") }}
+                            {{ form.contract_unit_cost(class="form-control") }}
+                            {% for error in form.contract_unit_cost.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="contract_total_cost" class="form-label">الإجمالي التعاقدي (تلقائي)</label>
+                        <input type="text" class="form-control" id="contract_total_cost" value="{{ "{:,.2f}".format(item.contract_total_cost) }}" disabled>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            <hr>
+            <h4 class="text-white-50">البيانات الفعلية</h4>
+             <div class="row">
+                <div class="col-md-6">
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                             {{ form.actual_quantity.label(class="form-label") }}
+                             {{ form.actual_quantity(class="form-control") }}
+                             {% for error in form.actual_quantity.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                        </div>
+                        <div class="col-6 mb-3">
+                             {{ form.actual_unit_cost.label(class="form-label") }}
+                             {{ form.actual_unit_cost(class="form-control") }}
+                             {% for error in form.actual_unit_cost.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="actual_total_cost" class="form-label">الإجمالي الفعلي (محسوب من التفاصيل)</label>
+                        <input type="text" class="form-control" id="actual_total_cost" value="{{ "{:,.2f}".format(item.actual_total_cost) }}" disabled>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        {{ form.status.label(class="form-label") }}
+                        {{ form.status(class="form-select") }}
                     </div>
                     <div class="mb-3">
                         {{ form.contractor_id.label(class="form-label") }}
                         {{ form.contractor_id(class="form-select") }}
-                         {% for error in form.contractor_id.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
                     </div>
                 </div>
             </div>
-
-            <hr>
-            <h4 class="mb-3">البيانات التعاقدية</h4>
-            <div class="row">
-                 <div class="col-md-4">
-                    <div class="mb-3">
-                        {{ form.contract_quantity.label(class="form-label") }}
-                        {{ form.contract_quantity(class="form-control", id="contract_quantity") }}
-                         {% for error in form.contract_quantity.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="mb-3">
-                        {{ form.contract_unit_cost.label(class="form-label") }}
-                        {{ form.contract_unit_cost(class="form-control", id="contract_unit_cost") }}
-                        {% for error in form.contract_unit_cost.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="mb-3">
-                        <label class="form-label">إجمالي التكلفة التعاقدية</label>
-                        <input type="text" class="form-control" id="contract_total" readonly>
-                    </div>
-                </div>
+            <div class="mb-3">
+                {{ form.notes.label(class="form-label") }}
+                {{ form.notes(class="form-control", rows="3") }}
             </div>
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="mb-3">
-                        {{ form.purchase_order_number.label(class="form-label") }}
-                        {{ form.purchase_order_number(class="form-control") }}
-                        {% for error in form.purchase_order_number.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="mb-3">
-                        {{ form.disbursement_order_number.label(class="form-label") }}
-                        {{ form.disbursement_order_number(class="form-control") }}
-                        {% for error in form.disbursement_order_number.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
-                    </div>
-                </div>
-            </div>
-
-            <hr>
-            <h4 class="mb-3">البيانات الفعلية</h4>
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="mb-3">
-                        {{ form.actual_quantity.label(class="form-label") }}
-                        {{ form.actual_quantity(class="form-control", id="actual_quantity") }}
-                        {% for error in form.actual_quantity.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="mb-3">
-                        {{ form.actual_unit_cost.label(class="form-label") }}
-                        {{ form.actual_unit_cost(class="form-control", id="actual_unit_cost") }}
-                        {% for error in form.actual_unit_cost.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
-                    </div>
-                </div>
-            </div>
-            
-            <hr>
-            <div class="row">
-                 <div class="col-md-6">
-                    <div class="mb-3">
-                        {{ form.status.label(class="form-label") }}
-                        {{ form.status(class="form-select") }}
-                        {% for error in form.status.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="mb-3">
-                        {{ form.notes.label(class="form-label") }}
-                        {{ form.notes(class="form-control") }}
-                        {% for error in form.notes.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
-                    </div>
-                </div>
-            </div>
-
-            <button type="submit" class="btn btn-primary">
-                <i class="fas fa-save me-1"></i> حفظ التعديلات
-            </button>
+            {{ form.submit(class="btn btn-primary") }}
         </form>
     </div>
 </div>
 
-<div class="row">
-    <div class="col-md-8">
-        <div class="card mb-4">
-            <div class="card-header bg-secondary text-white">
-                <h3 class="mb-0">تفاصيل التكلفة</h3>
-            </div>
-            <div class="card-body">
-                <a href="{{ url_for('cost_detail.add_cost_detail', item_id=item.id) }}" class="btn btn-success mb-3">
-                    <i class="fas fa-plus me-1"></i> إضافة تفصيل جديد
-                </a>
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>الوصف</th>
-                                <th>الكمية</th>
-                                <th>سعر الوحدة</th>
-                                <th>VAT %</th>
-                                <th>إجمالي</th>
-                                <th>ملاحظات</th>
-                                <th>الإجراءات</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for detail in cost_details %}
-                            <tr>
-                                <td>{{ detail.description }}</td>
-                                <td>{{ detail.quantity }}</td>
-                                <td>{{ "%.2f"|format(detail.unit_cost) }}</td>
-                                <td>{{ detail.vat_percent }}</td>
-                                <td>{{ "%.2f"|format(detail.total_cost) }}</td>
-                                <td>{{ detail.notes }}</td>
-                                <td>
-                                    <a href="{{ url_for('cost_detail.edit_cost_detail', detail_id=detail.id) }}" class="btn btn-sm btn-outline-primary">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    <form action="{{ url_for('cost_detail.delete_cost_detail', detail_id=detail.id) }}" method="POST" class="d-inline" onsubmit="return confirm('هل أنت متأكد من رغبتك في حذف هذا التفصيل؟');">
-                                        <button type="submit" class="btn btn-sm btn-outline-danger">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
-                            {% else %}
-                            <tr>
-                                <td colspan="7" class="text-center">لا توجد تفاصيل تكلفة مضافة.</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+<div class="card mb-4">
+    <div class="card-header">
+        <h3 class="mb-0">قائمة التكاليف المباشرة وأوامر العمل</h3>
     </div>
-
-    <div class="col-md-4">
-        <div class="card mb-4">
-            <div class="card-header bg-info text-white">
-                <h3 class="mb-0">سجل التغييرات</h3>
-            </div>
-            <div class="card-body">
-                <ul class="list-group list-group-flush">
-                    {% set logs = AuditLog.query.filter_by(item_id=item.id).order_by(AuditLog.timestamp.desc()).all() %}
-                    {% if logs %}
-                        {% for log in logs %}
-                        <li class="list-group-item">
-                            <small class="text-muted">{{ log.timestamp.strftime('%Y-%m-%d %H:%M') }} - {{ log.user.username }}</small>
-                            <p class="mb-0" style="white-space: pre-wrap;">{{ log.details }}</p>
-                        </li>
+    <div class="card-body p-0">
+        {% set details = item.cost_details.order_by(CostDetail.id.desc()).all() %}
+        {% if details %}
+            <div class="table-responsive">
+                <table class="table table-dark table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>الوصف</th>
+                            <th>المورد/المقاول</th>
+                            <th class="text-end">الكمية</th>
+                            <th class="text-end">تكلفة الوحدة</th>
+                            <th class="text-end">الضريبة (%)</th>
+                            <th class="text-end">الإجمالي</th>
+                            <th class="text-center">الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for detail in details %}
+                        <tr>
+                            <td>{{ detail.description }}</td>
+                            <td>{{ detail.contractor.name if detail.contractor else 'شراء مباشر' }}</td>
+                            <td class="text-end">{{ detail.quantity }}</td>
+                            <td class="text-end">{{ "{:,.2f}".format(detail.unit_cost) }}</td>
+                            <td class="text-end">{{ detail.vat_percent }}%</td>
+                            <td class="text-end">{{ "{:,.2f}".format(detail.total_cost) }} ريال</td>
+                            <td class="text-center">
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{{ url_for('cost_detail.edit_cost_detail', detail_id=detail.id) }}" class="btn btn-warning"><i class="fas fa-edit"></i></a>
+                                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteDetailModal-{{ detail.id }}"><i class="fas fa-trash"></i></button>
+                                </div>
+                            </td>
+                        </tr>
                         {% endfor %}
-                    {% else %}
-                        <li class="list-group-item text-center">لا توجد تغييرات مسجلة.</li>
-                    {% endif %}
-                </ul>
+                    </tbody>
+                </table>
             </div>
-        </div>
+        {% else %}
+            <div class="alert alert-secondary text-center m-3">
+                <i class="fas fa-info-circle me-2"></i>لا توجد تكاليف مباشرة أو أوامر عمل مضافة لهذا البند بعد.
+            </div>
+        {% endif %}
     </div>
 </div>
+<div class="card mb-4">
+    <div class="card-header bg-success text-white">
+        <h3 class="mb-0">إضافة تفصيل تكلفة جديد</h3>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('cost_detail.add_cost_detail', item_id=item.id) }}">
+            <div class="row g-3">
+                <div class="col-md-12">
+                    <label class="form-label">وصف التفصيل</label>
+                    <input type="text" name="description" class="form-control" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">الكمية</label>
+                    <input type="number" step="0.01" name="quantity" class="form-control" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">تكلفة الوحدة</label>
+                    <input type="number" step="0.01" name="unit_cost" class="form-control" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">الوحدة</label>
+                    <input type="text" name="unit" class="form-control">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">نسبة الضريبة (%)</label>
+                    <input type="number" step="0.01" name="vat_percent" class="form-control" placeholder="0.00">
+                </div>
+                <div class="col-md-12">
+                    <label class="form-label">المورد</label>
+                    <select name="contractor_id" class="form-select">
+                        <option value="">-- شراء مباشر (تنفيذ ذاتي) --</option>
+                        {% for contractor in contractors %}
+                            <option value="{{ contractor.id }}">{{ contractor.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">رقم أمر الشراء</label>
+                    <input type="text" name="purchase_order_number" class="form-control">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">رقم أمر الصرف</label>
+                    <input type="text" name="disbursement_order_number" class="form-control">
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-success w-100"><i class="fas fa-plus me-2"></i>إضافة التفصيل</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% for detail in item.cost_details %}
+<div class="modal fade" id="deleteDetailModal-{{ detail.id }}" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">تأكيد الحذف</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><p>هل أنت متأكد أنك تريد حذف تفصيل التكلفة <strong>"{{ detail.description }}"</strong>؟</p></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button><form action="{{ url_for('cost_detail.delete_cost_detail', detail_id=detail.id) }}" method="POST"><button type="submit" class="btn btn-danger">تأكيد الحذف</button></form></div></div></div></div>
+{% endfor %}
+
+<div class="card">
+    <div class="card-header bg-secondary text-white">
+        <h3 class="mb-0">سجل التغييرات</h3>
+    </div>
+    <div class="card-body">
+        {% set logs = item.history_logs.order_by(AuditLog.timestamp.desc()).all() %}
+        {% if logs %}
+            <div class="table-responsive">
+                <table class="table table-sm table-bordered">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 15%;">الوقت</th>
+                            <th style="width: 15%;">المستخدم</th>
+                            <th style="width: 10%;">الإجراء</th>
+                            <th>التفاصيل</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in logs %}
+                        <tr>
+                            <td>{{ log.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td>{{ log.user.username }}</td>
+                            <td>
+                                {% if log.action == 'create' %}
+                                    <span class="badge bg-success">إنشاء</span>
+                                {% elif log.action == 'update' %}
+                                    <span class="badge bg-warning text-dark">تحديث</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <pre style="white-space: pre-wrap; margin: 0;">{{ log.details }}</pre>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="alert alert-light">
+                لا توجد تغييرات مسجلة لهذا البند.
+            </div>
+        {% endif %}
+    </div>
+</div>
+
 {% endblock %}
 
 {% block scripts %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener("DOMContentLoaded", function() {
     const contractQtyInput = document.getElementById('contract_quantity');
     const contractUnitCostInput = document.getElementById('contract_unit_cost');
-    const contractTotalInput = document.getElementById('contract_total');
-    
+    const contractTotalInput = document.getElementById('contract_total_cost');
     const actualQtyInput = document.getElementById('actual_quantity');
     const actualUnitCostInput = document.getElementById('actual_unit_cost');
-    const actualTotalInput = document.getElementById('actual_total');
+    const actualTotalInput = document.getElementById('actual_total_cost');
 
     function formatNumber(num) {
         return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
