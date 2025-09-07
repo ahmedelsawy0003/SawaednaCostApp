@@ -13,6 +13,7 @@ class Contractor(db.Model):
 
     # --- بداية الإضافة ---
     # تعريف العلاقة المفقودة مع تفاصيل التكلفة
+    invoices = relationship('Invoice', back_populates='contractor', cascade="all, delete-orphan")
     cost_details = db.relationship('CostDetail', back_populates='contractor', lazy='dynamic')
     # --- نهاية الإضافة ---
 
