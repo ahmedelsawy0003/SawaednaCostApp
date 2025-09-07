@@ -263,6 +263,7 @@ def edit_item(item_id):
                            cost_details=sorted_cost_details,
                            # --- نهاية التعديل ---
                            CostDetail=CostDetail)
+
 # --- END: تحديث دالة edit_item ---
 
 @item_bp.route("/items/<int:item_id>/delete", methods=["POST"])

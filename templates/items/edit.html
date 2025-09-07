@@ -112,8 +112,8 @@
         <h3 class="mb-0">قائمة التكاليف المباشرة وأوامر العمل</h3>
     </div>
     <div class="card-body p-0">
-        {% set details = item.cost_details.order_by(CostDetail.id.desc()).all() %}
-        {% if details %}
+        {# The variable is now 'cost_details', passed directly from the route #}
+        {% if cost_details %}
             <div class="table-responsive">
                 <table class="table table-dark table-hover mb-0">
                     <thead>
@@ -128,7 +128,8 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for detail in details %}
+                        {# Loop through the pre-sorted list #}
+                        {% for detail in cost_details %}
                         <tr>
                             <td>{{ detail.description }}</td>
                             <td>{{ detail.contractor.name if detail.contractor else 'شراء مباشر' }}</td>
