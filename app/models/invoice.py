@@ -1,6 +1,11 @@
 from app.extensions import db
 from sqlalchemy import func
 from app import constants
+from sqlalchemy.orm import relationship
+
+# Make sure to import related models at the top
+from .invoice_item import InvoiceItem
+from .payment import Payment
 
 class Invoice(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -9,22 +14,19 @@ class Invoice(db.Model):
     due_date = db.Column(db.Date)
     status = db.Column(db.String(50), nullable=False, default=constants.INVOICE_STATUS_NEW)
     
-    # --- START: الحقول الجديدة ---
     invoice_type = db.Column(db.String(50), nullable=False, default='مقاول') # الأنواع: مقاول، مورد، شراء مباشر
     purchase_order_number = db.Column(db.String(100), nullable=True)
     disbursement_order_number = db.Column(db.String(100), nullable=True)
-    # --- END: الحقول الجديدة ---
     
     notes = db.Column(db.Text)
 
     project_id = db.Column(db.Integer, db.ForeignKey('project.id'), nullable=False)
     contractor_id = db.Column(db.Integer, db.ForeignKey('contractor.id'), nullable=False)
 
-    # ... باقي الكود يبقى كما هو ...
-    project = db.relationship('Project', back_populates='invoices')
-    contractor = db.relationship('Contractor', back_populates='invoices')
-    items = db.relationship('InvoiceItem', back_populates='invoice', cascade="all, delete-orphan")
-    payments = db.relationship('Payment', back_populates='invoice', cascade="all, delete-orphan")
+    project = relationship('Project', back_populates='invoices')
+    contractor = relationship('Contractor', back_populates='invoices')
+    items = relationship('InvoiceItem', back_populates='invoice', cascade="all, delete-orphan")
+    payments = relationship('Payment', back_populates='invoice', cascade="all, delete-orphan")
 
     @property
     def total_amount(self):
@@ -44,8 +46,9 @@ class Invoice(db.Model):
         total = self.total_amount
         paid = self.paid_amount
         if paid <= 0:
+            # Keep the current status if it's New, Under Review, or Approved
             if self.status not in [constants.INVOICE_STATUS_NEW, constants.INVOICE_STATUS_UNDER_REVIEW, constants.INVOICE_STATUS_APPROVED]:
-                 self.status = constants.INVOICE_STATUS_APPROVED
+                self.status = constants.INVOICE_STATUS_APPROVED
         elif paid >= total:
             self.status = constants.INVOICE_STATUS_FULLY_PAID
         else:
@@ -54,5 +57,3 @@ class Invoice(db.Model):
     def __repr__(self):
         return f'<Invoice {self.invoice_number} for Project {self.project_id}>'
 
-from .invoice_item import InvoiceItem
-from .payment import Payment

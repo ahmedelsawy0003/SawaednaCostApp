@@ -5,7 +5,8 @@ from .payment import Payment
 from app import constants
 from sqlalchemy.ext.hybrid import hybrid_property
 from .item import Item
-from sqlalchemy import func
+from sqlalchemy import func, select
+from sqlalchemy.orm import column_property
 
 class Project(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -40,14 +41,14 @@ class Project(db.Model):
     def total_actual_cost(self):
         return sum(item.actual_total_cost for item in self.items if item.actual_total_cost is not None)
 
-    @hybrid_property
-    def total_paid_amount(self):
-        # Ensure payments are summed correctly across all invoices for the project
-        total = db.session.query(func.sum(Payment.amount))\
-            .join(Invoice)\
-            .filter(Invoice.project_id == self.id)\
-            .scalar()
-        return total or 0.0
+    total_paid_amount = column_property(
+        select(func.coalesce(func.sum(Payment.amount), 0.0))
+            .join(Invoice, Invoice.id == Payment.invoice_id)
+            .where(Invoice.project_id == id)  # "id" هنا عمود Project.id داخل نطاق الكلاس
+            .correlate_except(Payment, Invoice)
+            .scalar_subquery(),
+        deferred=True  # لو عايز تحميل فوري احذف السطر ده
+    )
 
     @hybrid_property
     def total_savings(self):
