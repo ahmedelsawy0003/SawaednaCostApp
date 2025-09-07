@@ -66,7 +66,7 @@ class Item(db.Model):
         
         # --- START: تعديل معادلة الحساب ---
         details_cost_expression = func.sum(
-            (CostDetail.quantity * CostDetail.unit_cost) * (1.0 + (CostDetail.vat_percent / 100.0))
+            CostDetail.quantity * CostDetail.unit_cost * (1 + CostDetail.vat_percent / 100)
         )
         details_cost = db.session.query(details_cost_expression).filter(CostDetail.item_id == self.id).scalar() or 0.0
         # --- END: تعديل معادلة الحساب ---
