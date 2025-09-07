@@ -9,7 +9,9 @@ def check_project_permission(project):
     A regular user only has access to their associated projects.
     If no permission, it aborts with a 403 Forbidden error.
     """
-    if current_user.role != 'admin' and project not in current_user.projects:
+    # --- START: التعديل الرئيسي هنا ---
+    if current_user.role not in ['admin', 'sub-admin'] and project not in current_user.projects:
+    # --- END: التعديل الرئيسي هنا ---
         abort(403)
 
 # START: Corrected Sanitization Function
