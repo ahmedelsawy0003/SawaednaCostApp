@@ -27,7 +27,7 @@
             <a href="{{ url_for('project.get_projects', show_archived=True) }}" class="btn btn-secondary">
                 <i class="fas fa-archive me-1"></i> عرض الأرشيف
             </a>
-            {% if current_user.role == 'admin' %}
+            {% if current_user.role in ['admin', 'sub-admin'] %}
             <a href="{{ url_for("project.new_project") }}" class="btn btn-primary">
                 <i class="fas fa-plus me-1"></i> إضافة مشروع جديد
             </a>
@@ -51,13 +51,13 @@
                         <tr>
                             <th>اسم المشروع</th>
                             <th>الحالة</th>
-                            {% if current_user.role == 'admin' %}
+                            {% if current_user.role in ['admin', 'sub-admin'] %}
                             <th>التكلفة التعاقدية</th>
                             {% endif %}
                             <th>التكلفة الفعلية</th>
                             <th>إجمالي المدفوع</th>
                             <th>المبلغ المتبقي</th>
-                             {% if current_user.role == 'admin' %}
+                             {% if current_user.role in ['admin', 'sub-admin'] %}
                              <th>الوفر/الزيادة</th>
                              {% endif %}
                              <th class="text-center">الإجراءات</th>
@@ -74,7 +74,7 @@
                                     {{ project.status }}
                                 </span>
                             </td>
-                            {% if current_user.role == 'admin' %}
+                            {% if current_user.role in ['admin', 'sub-admin'] %}
                             <td>{{ "{:,.2f}".format(project.total_contract_cost) }}</td>
                             {% endif %}
                             <td>{{ "{:,.2f}".format(project.total_actual_cost) }}</td>
@@ -84,7 +84,7 @@
                             <td>
                                 <span class="text-danger">{{ "{:,.2f}".format(project.total_remaining_amount) }}</span>
                             </td>
-                            {% if current_user.role == 'admin' %}
+                            {% if current_user.role in ['admin', 'sub-admin'] %}
                             <td>
                                 <span class="{{ "text-success" if project.total_savings >= 0 else "text-danger" }}">
                                     {{ "{:,.2f}".format(project.total_savings) }}
@@ -96,7 +96,7 @@
                                     <a href="{{ url_for("project.get_project", project_id=project.id) }}" class="btn btn-info" title="عرض التفاصيل">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    {% if current_user.role == 'admin' %}
+                                    {% if current_user.role in ['admin', 'sub-admin'] %}
                                     <a href="{{ url_for("project.edit_project", project_id=project.id) }}" class="btn btn-warning" title="تعديل">
                                         <i class="fas fa-edit"></i>
                                     </a>
@@ -130,7 +130,7 @@
                 {% if show_archived %}
                     لا توجد مشاريع مؤرشفة حالياً.
                 {% else %}
-                    لا توجد مشاريع نشطة حالياً. {% if current_user.role == 'admin' %} ابدأ بإضافة مشروع جديد! {% endif %}
+                    لا توجد مشاريع نشطة حالياً. {% if current_user.role in ['admin', 'sub-admin'] %} ابدأ بإضافة مشروع جديد! {% endif %}
                 {% endif %}
             </div>
         {% endif %}

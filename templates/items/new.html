@@ -34,7 +34,7 @@
                         {{ form.unit(class="form-control") }}
                     </div>
                     
-                    {% if current_user.role == 'admin' %}
+                    {% if current_user.role in ['admin', 'sub-admin'] %}
                     <div class="mb-3">
                         {{ form.contract_quantity.label(class="form-label") }}
                         {{ form.contract_quantity(class="form-control") }}
