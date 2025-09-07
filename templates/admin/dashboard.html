@@ -35,6 +35,8 @@
                             <td>
                                 {% if user.role == 'admin' %}
                                     <span class="badge bg-success">Admin</span>
+                                {% elif user.role == 'sub-admin' %}
+                                    <span class="badge bg-info">Sub Admin</span>
                                 {% else %}
                                     <span class="badge bg-secondary">User</span>
                                 {% endif %}
@@ -50,6 +52,11 @@
                                             <form action="{{ url_for('auth.promote_user', user_id=user.id) }}" method="POST" class="d-inline">
                                                 <button type="submit" class="btn btn-success" title="ترقية إلى مسؤول">
                                                     <i class="fas fa-user-shield"></i>
+                                                </button>
+                                            </form>
+                                            <form action="{{ url_for('auth.promote_to_sub_admin', user_id=user.id) }}" method="POST" class="d-inline">
+                                                <button type="submit" class="btn btn-info" title="ترقية إلى مشرف فرعي">
+                                                    <i class="fas fa-user-cog"></i>
                                                 </button>
                                             </form>
                                         {% else %}

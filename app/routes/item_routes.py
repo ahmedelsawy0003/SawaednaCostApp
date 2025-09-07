@@ -96,7 +96,7 @@ def bulk_update_items(project_id):
 @item_bp.route("/projects/<int:project_id>/items/bulk_delete", methods=["POST"])
 @login_required
 def bulk_delete_items(project_id):
-    if current_user.role != 'admin':
+    if current_user.role not in ['admin', 'sub-admin']:
         abort(403)
     project = Project.query.get_or_404(project_id)
     check_project_permission(project)
@@ -205,7 +205,7 @@ def delete_item(item_id):
     item = Item.query.get_or_404(item_id)
     check_project_permission(item.project)
     project_id = item.project_id
-    if current_user.role != 'admin':
+    if current_user.role not in ['admin', 'sub-admin']:
         abort(403)
     db.session.delete(item)
     db.session.commit()

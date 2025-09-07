@@ -133,7 +133,7 @@ def delete_invoice(invoice_id):
     invoice = Invoice.query.get_or_404(invoice_id)
     check_project_permission(invoice.project)
     project_id = invoice.project_id
-    if current_user.role != 'admin':
+    if current_user.role not in ['admin', 'sub-admin']:
         abort(403)
     db.session.delete(invoice)
     db.session.commit()
@@ -389,7 +389,7 @@ def delete_item_from_invoice(invoice_item_id):
     db.session.delete(invoice_item)
     db.session.commit()
     flash("تم حذف البند من المستخلص بنجاح.", "success")
-    return redirect(url_for('invoice.show_invoice', invoice_id=invoice_id))
+    return redirect(url_for('invoice.show_invoice', invoice_id=invoice.id))
 
 @invoice_bp.route("/items/<int:invoice_item_id>/edit", methods=["GET", "POST"])
 @login_required

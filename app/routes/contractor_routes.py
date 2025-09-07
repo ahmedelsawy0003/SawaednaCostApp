@@ -32,7 +32,7 @@ def get_contractors():
 @contractor_bp.route("/new", methods=['GET', 'POST'])
 @login_required
 def new_contractor():
-    if current_user.role != 'admin':
+    if current_user.role not in ['admin', 'sub-admin']:
         abort(403)
     
     form = ContractorForm() 
@@ -55,7 +55,7 @@ def new_contractor():
 @contractor_bp.route("/<int:contractor_id>/edit", methods=['GET', 'POST'])
 @login_required
 def edit_contractor(contractor_id):
-    if current_user.role != 'admin':
+    if current_user.role not in ['admin', 'sub-admin']:
         abort(403)
     
     contractor = Contractor.query.get_or_404(contractor_id)
@@ -73,7 +73,7 @@ def edit_contractor(contractor_id):
 @contractor_bp.route("/<int:contractor_id>/delete", methods=['POST'])
 @login_required
 def delete_contractor(contractor_id):
-    if current_user.role != 'admin':
+    if current_user.role not in ['admin', 'sub-admin']:
         abort(403)
         
     contractor = Contractor.query.get_or_404(contractor_id)

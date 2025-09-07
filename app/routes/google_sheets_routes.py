@@ -11,7 +11,7 @@ sheets_bp = Blueprint("sheets", __name__)
 @sheets_bp.route("/projects/<int:project_id>/export_items", methods=["POST"])
 @login_required
 def export_project(project_id):
-    if current_user.role != 'admin':
+    if current_user.role not in ['admin', 'sub-admin']:
         abort(403)
     project = Project.query.get_or_404(project_id)
     check_project_permission(project)
@@ -56,7 +56,7 @@ def export_project(project_id):
 @sheets_bp.route("/projects/<int:project_id>/export_summary", methods=["POST"])
 @login_required
 def export_summary(project_id):
-    if current_user.role != 'admin':
+    if current_user.role not in ['admin', 'sub-admin']:
         abort(403)
     project = Project.query.get_or_404(project_id)
     check_project_permission(project)
@@ -95,7 +95,7 @@ def export_summary(project_id):
 @sheets_bp.route("/projects/<int:project_id>/import_items", methods=["GET", "POST"])
 @login_required
 def import_items(project_id):
-    if current_user.role != 'admin':
+    if current_user.role not in ['admin', 'sub-admin']:
         abort(403)
     
     project = Project.query.get_or_404(project_id)

@@ -86,7 +86,7 @@ def get_project(project_id):
 @project_bp.route("/projects/new", methods=["GET", "POST"])
 @login_required
 def new_project():
-    if current_user.role != 'admin':
+    if current_user.role not in ['admin', 'sub-admin']:
         abort(403)
     
     form = ProjectForm()
@@ -117,7 +117,7 @@ def new_project():
 @login_required
 def edit_project(project_id):
     project = Project.query.get_or_404(project_id)
-    if current_user.role != 'admin':
+    if current_user.role not in ['admin', 'sub-admin']:
         abort(403)
     
     form = ProjectForm(obj=project)
@@ -148,7 +148,7 @@ def edit_project(project_id):
 @login_required
 def delete_project(project_id):
     project = Project.query.get_or_404(project_id)
-    if current_user.role != 'admin':
+    if current_user.role not in ['admin', 'sub-admin']:
         abort(403)
         
     db.session.delete(project)
@@ -160,7 +160,7 @@ def delete_project(project_id):
 @login_required
 def toggle_archive(project_id):
     project = Project.query.get_or_404(project_id)
-    if current_user.role != 'admin':
+    if current_user.role not in ['admin', 'sub-admin']:
         abort(403)
     
     project.is_archived = not project.is_archived
@@ -182,6 +182,6 @@ def project_dashboard(project_id):
 @project_bp.route("/dashboard")
 @login_required
 def all_projects_dashboard():
-    if current_user.role != 'admin':
+    if current_user.role not in ['admin', 'sub-admin']:
         abort(403)
     return redirect(url_for('project.get_projects'))

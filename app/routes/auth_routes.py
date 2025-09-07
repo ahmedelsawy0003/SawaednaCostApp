@@ -73,7 +73,7 @@ def profile():
 @login_required
 def admin_dashboard():
     if current_user.role != 'admin':
-        abort(43)
+        abort(403)
     users = User.query.all()
     return render_template("admin/dashboard.html", users=users)
 
@@ -86,6 +86,17 @@ def promote_user(user_id):
     user_to_promote.role = 'admin'
     db.session.commit()
     flash(f"تمت ترقية المستخدم {user_to_promote.username} إلى Admin بنجاح.", "success")
+    return redirect(url_for('auth.admin_dashboard'))
+
+@auth_bp.route('/admin/user/<int:user_id>/promote_sub', methods=['POST'])
+@login_required
+def promote_to_sub_admin(user_id):
+    if current_user.role != 'admin':
+        abort(403)
+    user_to_promote = User.query.get_or_404(user_id)
+    user_to_promote.role = 'sub-admin'
+    db.session.commit()
+    flash(f"تمت ترقية المستخدم {user_to_promote.username} إلى Sub Admin بنجاح.", "success")
     return redirect(url_for('auth.admin_dashboard'))
 
 @auth_bp.route('/admin/user/<int:user_id>/demote', methods=['POST'])
