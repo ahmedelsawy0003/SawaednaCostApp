@@ -3,10 +3,7 @@
   "builds": [
     {
       "src": "index.py",
-      "use": "@vercel/python",
-      "config": {
-        "command": "flask db stamp head && flask db upgrade"
-      }
+      "use": "@vercel/python"
     }
   ],
   "routes": [

@@ -1,5 +1,8 @@
 from flask import Flask, redirect, url_for
 from flask_login import current_user
+# --- START: استيراد مكتبة الترحيل ---
+from flask_migrate import upgrade
+# --- END: استيراد مكتبة الترحيل ---
 from .extensions import db, migrate, login_manager
 from . import commands
 
@@ -26,11 +29,15 @@ def create_app():
     
     commands.init_app(app)
 
+    # --- START: الكود الجديد لتشغيل التحديث التلقائي ---
+    with app.app_context():
+        upgrade()
+    # --- END: الكود الجديد ---
+
     @login_manager.user_loader
     def load_user(user_id):
         return User.query.get(int(user_id))
 
-    # START: NEW CONTEXT PROCESSOR FOR SIDEBAR DATA
     @app.context_processor
     def inject_sidebar_data():
         """
@@ -41,15 +48,11 @@ def create_app():
         sidebar_contractors = []
 
         if current_user.is_authenticated:
-            # --- START: التعديل الرئيسي هنا ---
             if current_user.role in ['admin', 'sub-admin']:
-            # --- END: التعديل الرئيسي هنا ---
                 sidebar_projects = Project.query.filter_by(is_archived=False).order_by(Project.name).all()
                 sidebar_contractors = Contractor.query.order_by(Contractor.name).all()
             else:
-                # Regular user sees only their assigned projects
                 sidebar_projects = Project.query.join(User.projects).filter(User.id == current_user.id, Project.is_archived==False).order_by(Project.name).all()
-                # And contractors related to those projects
                 if sidebar_projects:
                     project_ids = [p.id for p in sidebar_projects]
                     sidebar_contractors = Contractor.query.join(Invoice).filter(Invoice.project_id.in_(project_ids)).distinct().order_by(Contractor.name).all()
@@ -58,7 +61,6 @@ def create_app():
             sidebar_projects=sidebar_projects,
             sidebar_contractors=sidebar_contractors
         )
-    # END: NEW CONTEXT PROCESSOR
 
     # Import and register blueprints
     from .routes.project_routes import project_bp

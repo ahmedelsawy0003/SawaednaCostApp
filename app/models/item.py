@@ -60,19 +60,18 @@ class Item(db.Model):
 
     @property
     def actual_total_cost(self):
-        # --- START: تعديل منطق الحساب ليشمل الضريبة ---
         manual_cost = 0.0
         if self.actual_quantity is not None and self.actual_unit_cost is not None:
             manual_cost = self.actual_quantity * self.actual_unit_cost
         
-        # إعادة حساب الإجمالي من التفاصيل مع الضريبة مباشرة في الاستعلام
+        # --- START: تعديل معادلة الحساب ---
         details_cost_expression = func.sum(
-            (CostDetail.quantity * CostDetail.unit_cost) * (1 + (CostDetail.vat_percent / 100.0))
+            (CostDetail.quantity * CostDetail.unit_cost) * (1.0 + (CostDetail.vat_percent / 100.0))
         )
         details_cost = db.session.query(details_cost_expression).filter(CostDetail.item_id == self.id).scalar() or 0.0
+        # --- END: تعديل معادلة الحساب ---
         
         return manual_cost + details_cost
-        # --- END: تعديل منطق الحساب ---
     
     @property
     def remaining_amount(self):
