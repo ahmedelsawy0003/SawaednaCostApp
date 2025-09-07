@@ -120,6 +120,9 @@
                         <tr>
                             <th>الوصف</th>
                             <th>المورد/المقاول</th>
+                            <th class="text-end">الكمية</th>
+                            <th class="text-end">تكلفة الوحدة</th>
+                            <th class="text-end">الضريبة (%)</th>
                             <th class="text-end">الإجمالي</th>
                             <th class="text-center">الإجراءات</th>
                         </tr>
@@ -129,6 +132,9 @@
                         <tr>
                             <td>{{ detail.description }}</td>
                             <td>{{ detail.contractor.name if detail.contractor else 'شراء مباشر' }}</td>
+                            <td class="text-end">{{ detail.quantity }}</td>
+                            <td class="text-end">{{ "{:,.2f}".format(detail.unit_cost) }}</td>
+                            <td class="text-end">{{ detail.vat_percent }}%</td>
                             <td class="text-end">{{ "{:,.2f}".format(detail.total_cost) }} ريال</td>
                             <td class="text-center">
                                 <div class="btn-group btn-group-sm">
@@ -172,6 +178,10 @@
                     <input type="text" name="unit" class="form-control">
                 </div>
                 <div class="col-md-3">
+                    <label class="form-label">نسبة الضريبة (%)</label>
+                    <input type="number" step="0.01" name="vat_percent" class="form-control" placeholder="0.00">
+                </div>
+                <div class="col-md-12">
                     <label class="form-label">المورد</label>
                     <select name="contractor_id" class="form-select">
                         <option value="">-- شراء مباشر (تنفيذ ذاتي) --</option>

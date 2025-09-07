@@ -34,12 +34,13 @@ def add_cost_detail(item_id):
         unit = sanitize_input(request.form.get("unit"))
         quantity_str = request.form.get("quantity")
         unit_cost_str = request.form.get("unit_cost")
+        # --- START: جلب قيمة الضريبة ---
+        vat_percent_str = request.form.get("vat_percent")
+        # --- END: جلب قيمة الضريبة ---
         contractor_id_str = request.form.get("contractor_id")
         
-        # --- START: جلب البيانات الجديدة ---
         purchase_order = sanitize_input(request.form.get("purchase_order_number"))
         disbursement_order = sanitize_input(request.form.get("disbursement_order_number"))
-        # --- END: جلب البيانات الجديدة ---
 
         if not all([description, quantity_str, unit_cost_str]):
             flash("الوصف، الكمية، وتكلفة الوحدة هي حقول مطلوبة.", "danger")
@@ -47,6 +48,9 @@ def add_cost_detail(item_id):
 
         quantity = float(quantity_str)
         unit_cost = float(unit_cost_str)
+        # --- START: معالجة قيمة الضريبة ---
+        vat_percent = float(vat_percent_str) if vat_percent_str else 0.0
+        # --- END: معالجة قيمة الضريبة ---
         contractor_id = int(contractor_id_str) if contractor_id_str else None
 
         new_detail = CostDetail(
@@ -55,22 +59,23 @@ def add_cost_detail(item_id):
             unit=unit,
             quantity=quantity,
             unit_cost=unit_cost,
+            # --- START: حفظ قيمة الضريبة ---
+            vat_percent=vat_percent,
+            # --- END: حفظ قيمة الضريبة ---
             contractor_id=contractor_id,
-            # --- START: حفظ البيانات الجديدة ---
             purchase_order_number=purchase_order,
             disbursement_order_number=disbursement_order
-            # --- END: حفظ البيانات الجديدة ---
         )
         db.session.add(new_detail)
         
-        log_details = f"تمت إضافة تفصيل تكلفة جديد: '{description}' (الكمية: {quantity}, التكلفة: {unit_cost})"
+        log_details = f"تمت إضافة تفصيل تكلفة جديد: '{description}' (الكمية: {quantity}, التكلفة: {unit_cost}, الضريبة: {vat_percent}%)"
         log_cost_detail_change(item_id, 'create', log_details)
 
         db.session.commit()
         flash("تمت إضافة تفصيل التكلفة بنجاح!", "success")
 
     except (ValueError, TypeError):
-        flash("الرجاء إدخال قيم رقمية صالحة للكمية والتكلفة.", "danger")
+        flash("الرجاء إدخال قيم رقمية صالحة للكمية والتكلفة والضريبة.", "danger")
     
     return redirect(url_for("item.edit_item", item_id=item_id))
 
@@ -86,18 +91,22 @@ def edit_cost_detail(detail_id):
             old_desc = detail.description
             old_qty = detail.quantity
             old_cost = detail.unit_cost
+            # --- START: جلب القيمة القديمة للضريبة ---
+            old_vat = detail.vat_percent
+            # --- END: جلب القيمة القديمة للضريبة ---
 
             detail.description = sanitize_input(request.form.get("description"))
             detail.unit = sanitize_input(request.form.get("unit"))
             detail.quantity = float(request.form.get("quantity"))
             detail.unit_cost = float(request.form.get("unit_cost"))
+            # --- START: تحديث قيمة الضريبة ---
+            detail.vat_percent = float(request.form.get("vat_percent") or 0.0)
+            # --- END: تحديث قيمة الضريبة ---
             contractor_id_str = request.form.get("contractor_id")
             detail.contractor_id = int(contractor_id_str) if contractor_id_str else None
             
-            # --- START: تحديث البيانات الجديدة ---
             detail.purchase_order_number = sanitize_input(request.form.get("purchase_order_number"))
             detail.disbursement_order_number = sanitize_input(request.form.get("disbursement_order_number"))
-            # --- END: تحديث البيانات الجديدة ---
             
             changes = []
             if old_desc != detail.description:
@@ -106,6 +115,10 @@ def edit_cost_detail(detail_id):
                 changes.append(f"كمية التفصيل '{detail.description}' تغيرت من {old_qty} إلى {detail.quantity}")
             if old_cost != detail.unit_cost:
                 changes.append(f"تكلفة التفصيل '{detail.description}' تغيرت من {old_cost} إلى {detail.unit_cost}")
+            # --- START: تسجيل تغيير الضريبة ---
+            if old_vat != detail.vat_percent:
+                changes.append(f"ضريبة التفصيل '{detail.description}' تغيرت من {old_vat}% إلى {detail.vat_percent}%")
+            # --- END: تسجيل تغيير الضريبة ---
             
             if changes:
                 log_cost_detail_change(detail.item_id, 'update', "\n".join(changes))
@@ -115,7 +128,7 @@ def edit_cost_detail(detail_id):
             return redirect(url_for("item.edit_item", item_id=detail.item_id))
 
         except (ValueError, TypeError):
-            flash("الرجاء إدخال قيم رقمية صالحة للكمية والتكلفة.", "danger")
+            flash("الرجاء إدخال قيم رقمية صالحة للكمية والتكلفة والضريبة.", "danger")
     
     contractors = Contractor.query.order_by(Contractor.name).all()
     return render_template("cost_details/edit.html", detail=detail, contractors=contractors)

@@ -20,14 +20,11 @@ class Item(db.Model):
     status = db.Column(db.String(50), default=constants.ITEM_STATUS_ACTIVE)
     notes = db.Column(db.Text)
     
-    # --- START: الحقول الجديدة ---
     purchase_order_number = db.Column(db.String(100), nullable=True)
     disbursement_order_number = db.Column(db.String(100), nullable=True)
-    # --- END: الحقول الجديدة ---
 
     contractor_id = db.Column(db.Integer, db.ForeignKey('contractor.id'), nullable=True)
 
-    # ... باقي الكود يبقى كما هو ...
     project = db.relationship('Project', back_populates='items')
     contractor = db.relationship('Contractor', back_populates='items')
     cost_details = db.relationship('CostDetail', back_populates='item', lazy='dynamic', cascade="all, delete-orphan")
@@ -63,15 +60,19 @@ class Item(db.Model):
 
     @property
     def actual_total_cost(self):
-        # *** START: إصلاح منطق الحسابات الذي ناقشناه سابقاً ***
+        # --- START: تعديل منطق الحساب ليشمل الضريبة ---
         manual_cost = 0.0
         if self.actual_quantity is not None and self.actual_unit_cost is not None:
             manual_cost = self.actual_quantity * self.actual_unit_cost
         
-        details_cost = db.session.query(func.sum(CostDetail.quantity * CostDetail.unit_cost)).filter(CostDetail.item_id == self.id).scalar() or 0.0
+        # إعادة حساب الإجمالي من التفاصيل مع الضريبة مباشرة في الاستعلام
+        details_cost_expression = func.sum(
+            (CostDetail.quantity * CostDetail.unit_cost) * (1 + (CostDetail.vat_percent / 100.0))
+        )
+        details_cost = db.session.query(details_cost_expression).filter(CostDetail.item_id == self.id).scalar() or 0.0
         
         return manual_cost + details_cost
-        # *** END: إصلاح منطق الحسابات ***
+        # --- END: تعديل منطق الحساب ---
     
     @property
     def remaining_amount(self):

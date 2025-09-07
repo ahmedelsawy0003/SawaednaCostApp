@@ -8,10 +8,12 @@ class CostDetail(db.Model):
     quantity = db.Column(db.Float, nullable=False)
     unit_cost = db.Column(db.Float, nullable=False)
     
-    # --- START: الحقول الجديدة ---
+    # --- START: إضافة حقل الضريبة ---
+    vat_percent = db.Column(db.Float, nullable=False, default=0.0)
+    # --- END: إضافة حقل الضريبة ---
+
     purchase_order_number = db.Column(db.String(100), nullable=True)
     disbursement_order_number = db.Column(db.String(100), nullable=True)
-    # --- END: الحقول الجديدة ---
 
     item_id = db.Column(db.Integer, db.ForeignKey('item.id'), nullable=False)
     contractor_id = db.Column(db.Integer, db.ForeignKey('contractor.id'), nullable=True)
@@ -25,10 +27,21 @@ class CostDetail(db.Model):
     )
 
     @property
-    def total_cost(self):
+    def base_cost(self):
+        """التكلفة الأساسية قبل الضريبة"""
         if self.quantity is not None and self.unit_cost is not None:
             return self.quantity * self.unit_cost
         return 0.0
+        
+    @property
+    def vat_amount(self):
+        """مبلغ الضريبة المحسوب"""
+        return self.base_cost * (self.vat_percent / 100.0)
+
+    @property
+    def total_cost(self):
+        """التكلفة الإجمالية شاملة الضريبة"""
+        return self.base_cost + self.vat_amount
 
     def __repr__(self):
         return f'<CostDetail {self.description} for Item {self.item_id}>'

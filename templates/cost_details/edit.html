@@ -34,7 +34,13 @@
                     <input type="text" class="form-control" id="unit" name="unit" value="{{ detail.unit or '' }}">
                 </div>
                 <div class="col-md-3">
-                    <label for="contractor_id" class="form-label">المورد / المقاول (اختياري)</label>
+                    <label for="vat_percent" class="form-label">نسبة الضريبة (%)</label>
+                    <input type="number" step="0.01" class="form-control" id="vat_percent" name="vat_percent" value="{{ detail.vat_percent or 0.0 }}">
+                    </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-md-12">
+                     <label for="contractor_id" class="form-label">المورد / المقاول (اختياري)</label>
                     <select class="form-select" id="contractor_id" name="contractor_id">
                         <option value="">-- شراء مباشر --</option>
                         {% for contractor in contractors %}
@@ -45,7 +51,6 @@
                     </select>
                 </div>
             </div>
-            {# --- START: إضافة الحقول الجديدة --- #}
             <div class="row mt-3">
                 <div class="col-md-6">
                     <label for="purchase_order_number" class="form-label">رقم أمر الشراء (اختياري)</label>
@@ -56,7 +61,6 @@
                     <input type="text" class="form-control" id="disbursement_order_number" name="disbursement_order_number" value="{{ detail.disbursement_order_number or '' }}">
                 </div>
             </div>
-            {# --- END: إضافة الحقول الجديدة --- #}
             <button type="submit" class="btn btn-primary mt-4">
                 <i class="fas fa-save me-1"></i> حفظ التعديلات
             </button>
