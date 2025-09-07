@@ -1,8 +1,5 @@
 from flask import Flask, redirect, url_for
 from flask_login import current_user
-# --- START: استيراد مكتبة الترحيل ---
-from flask_migrate import upgrade
-# --- END: استيراد مكتبة الترحيل ---
 from .extensions import db, migrate, login_manager
 from . import commands
 
@@ -23,15 +20,16 @@ def create_app():
     app.config.from_object('config.Config')
 
     db.init_app(app)
-    migrate.init_app(app, db)
+    migrate.init_app(app, db) 
     login_manager.init_app(app)
     login_manager.login_view = 'auth.login'
     
     commands.init_app(app)
 
-    # --- START: الكود الجديد لتشغيل التحديث التلقائي ---
+    # --- START: الكود الجديد لضمان تحديث قاعدة البيانات ---
+    # هذا السطر سيقوم بإنشاء أي جداول أو أعمدة ناقصة تلقائياً
     with app.app_context():
-        upgrade()
+        db.create_all()
     # --- END: الكود الجديد ---
 
     @login_manager.user_loader
