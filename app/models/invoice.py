@@ -40,6 +40,11 @@ class Invoice(db.Model):
     def remaining_amount(self):
         return self.total_amount - self.paid_amount
 
+    @property
+    def is_fully_paid(self):
+        # Using a small tolerance for float comparison
+        return self.remaining_amount < 0.01
+
     def update_status(self):
         if self.status == constants.INVOICE_STATUS_CANCELLED:
             return
@@ -56,4 +61,3 @@ class Invoice(db.Model):
 
     def __repr__(self):
         return f'<Invoice {self.invoice_number} for Project {self.project_id}>'
-

@@ -143,12 +143,6 @@ def upgrade():
         sa.PrimaryKeyConstraint('id')
     )
     
-    # Check if the column exists before adding it
-    inspector = sa.inspect(bind)
-    columns = [c['name'] for c in inspector.get_columns('cost_detail')]
-    if 'vat_percent' not in columns:
-        with op.batch_alter_table('cost_detail', schema=None) as batch_op:
-            batch_op.add_column(sa.Column('vat_percent', sa.Float(), server_default='0.0', nullable=False))
 
 def downgrade():
     # This is a comprehensive downgrade for all tables
