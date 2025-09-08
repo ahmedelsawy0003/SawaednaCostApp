@@ -1,7 +1,7 @@
 /*
- * SawaednaCostApp - Sidebar Theme
- * Version: 4.1 (Restored transition helper)
- * Author: Gemini AI
+ * SawaednaCostApp - Cyan Sidebar Theme
+ * Version: 4.1 (Cyan Color Scheme)
+ * Author: Modified for Cyan Theme
 */
 
 /* 1. FOUNDATION: Variables & Base Styles
@@ -9,36 +9,60 @@
 @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap');
 
 :root {
-    --primary: #10b981;
-    --primary-hover: #059669;
-    --danger: #ef4444;
-    --warning: #f59e0b;
-    --info: #3b82f6;
+    --primary: #00ffff;
+    --primary-hover: #00cccc;
+    --primary-light: #33ffff;
+    --primary-dark: #0099cc;
+    --danger: #ff4444;
+    --warning: #ffaa00;
+    --info: #0099ff;
 
-    --bg-dark: #111827;
-    --bg-surface: #1f2937;
-    --border-color: #374151;
+    --bg-dark: #001122;
+    --bg-surface: #002233;
+    --bg-card: #003344;
+    --border-color: #004466;
     
-    --text-light: #f9fafb;
-    --text-normal: #d1d5db;
-    --text-muted: #9ca3af;
+    --text-light: #ffffff;
+    --text-normal: #e6f7ff;
+    --text-muted: #99ccff;
 
     --sidebar-width: 260px;
     --radius: 0.75rem;
     --radius-sm: 0.5rem;
-    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-md: 0 4px 6px -1px rgba(0, 255, 255, 0.1), 0 2px 4px -2px rgba(0, 255, 255, 0.1);
+    --shadow-glow: 0 0 20px rgba(0, 255, 255, 0.3);
     --transition: 0.3s ease;
+
+    /* تأثيرات الإضاءة */
+    --glow-primary: 0 0 20px rgba(0, 255, 255, 0.5);
+    --glow-hover: 0 0 30px rgba(0, 255, 255, 0.8);
 }
 
 body {
     font-family: 'Tajawal', sans-serif;
-    background-color: var(--bg-dark);
+    background: linear-gradient(135deg, #001122 0%, #002233 25%, #003344 75%, #004466 100%);
     color: var(--text-normal);
     text-align: right;
     direction: rtl;
     font-size: 16px;
     line-height: 1.7;
     overflow-x: hidden;
+    position: relative;
+}
+
+/* خلفية متحركة */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        radial-gradient(circle at 20% 80%, rgba(0, 255, 255, 0.05) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(0, 255, 255, 0.03) 0%, transparent 50%);
+    z-index: -1;
+    pointer-events: none;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -46,15 +70,17 @@ h1, h2, h3, h4, h5, h6 {
     font-weight: 700;
     color: var(--text-light);
     margin: 0;
+    text-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
 }
 
 a {
     color: var(--primary);
     text-decoration: none;
-    transition: color var(--transition);
+    transition: all var(--transition);
 }
 a:hover {
-    color: var(--primary-hover);
+    color: var(--primary-light);
+    text-shadow: var(--glow-primary);
 }
 
 /* 2. LAYOUT: Sidebar & Main Content Wrapper
@@ -67,11 +93,26 @@ a:hover {
 .sidebar {
     width: var(--sidebar-width);
     min-width: var(--sidebar-width);
-    background-color: var(--bg-surface);
-    border-left: 1px solid var(--border-color);
+    background: linear-gradient(180deg, rgba(0, 255, 255, 0.1) 0%, rgba(0, 153, 204, 0.1) 100%);
+    backdrop-filter: blur(10px);
+    border-left: 2px solid rgba(0, 255, 255, 0.3);
     display: flex;
     flex-direction: column;
-    transition: margin-right var(--transition);
+    transition: all var(--transition);
+    box-shadow: 0 0 30px rgba(0, 255, 255, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.sidebar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, transparent, rgba(0, 255, 255, 0.02), transparent);
+    z-index: -1;
 }
 
 .main-content-wrapper {
@@ -83,8 +124,9 @@ a:hover {
 }
 
 .topbar {
-    background-color: var(--bg-surface);
-    border-bottom: 1px solid var(--border-color);
+    background: linear-gradient(90deg, rgba(0, 255, 255, 0.1) 0%, rgba(0, 153, 204, 0.1) 100%);
+    backdrop-filter: blur(10px);
+    border-bottom: 2px solid rgba(0, 255, 255, 0.3);
     padding: 0.75rem 1.5rem;
     display: flex;
     align-items: center;
@@ -94,11 +136,15 @@ a:hover {
     top: 0;
     z-index: 1020;
 }
-.topbar-title { color: var(--text-muted); }
+.topbar-title { 
+    color: var(--text-muted);
+    text-shadow: 0 0 5px rgba(0, 255, 255, 0.2);
+}
 .topbar-brand {
-    color: var(--text-light);
+    color: var(--primary);
     font-weight: 700;
     font-size: 1.2rem;
+    text-shadow: var(--glow-primary);
 }
 
 .main-content {
@@ -109,18 +155,24 @@ a:hover {
 /* ========================================================================== */
 .sidebar-header {
     padding: 0.75rem 1.25rem;
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 2px solid rgba(0, 255, 255, 0.3);
     display: flex;
     align-items: center;
     justify-content: space-between;
     min-height: 65px;
+    background: rgba(0, 255, 255, 0.05);
 }
 .sidebar-brand {
-    color: var(--text-light);
+    color: var(--primary);
     font-weight: 700;
     font-size: 1.2rem;
+    text-shadow: var(--glow-primary);
+    transition: all var(--transition);
 }
-.sidebar-brand:hover { color: var(--text-light); }
+.sidebar-brand:hover { 
+    color: var(--primary-light);
+    text-shadow: var(--glow-hover);
+}
 
 .sidebar-nav {
     padding: 1rem 0;
@@ -134,16 +186,42 @@ a:hover {
     color: var(--text-normal);
     position: relative;
     white-space: nowrap;
+    transition: all var(--transition);
+    border-radius: 0 1rem 1rem 0;
+    margin: 0.2rem 0;
 }
+
 .sidebar-link:hover {
-    background-color: var(--bg-dark);
-    color: var(--text-light);
+    background: linear-gradient(90deg, rgba(0, 255, 255, 0.1), rgba(0, 255, 255, 0.2));
+    color: var(--primary-light);
+    text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+    box-shadow: inset 0 0 20px rgba(0, 255, 255, 0.1);
+    transform: translateX(-5px);
 }
+
 .sidebar-link.active {
-    background-color: var(--primary);
-    color: #fff;
-    border-right: 3px solid var(--primary-hover);
-    padding-right: calc(1.5rem - 3px);
+    background: linear-gradient(90deg, var(--primary), var(--primary-hover));
+    color: var(--bg-dark);
+    border-right: 4px solid var(--primary-light);
+    padding-right: calc(1.5rem - 4px);
+    box-shadow: var(--shadow-glow);
+    font-weight: 700;
+}
+
+.sidebar-link.active::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    animation: shimmer 2s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
 }
 
 .sidebar-submenu-link {
@@ -152,72 +230,123 @@ a:hover {
     padding-right: 2.5rem;
     font-size: 0.9rem;
     color: var(--text-muted);
+    border-left: 2px solid transparent;
 }
 .sidebar-submenu-link:hover {
-    color: var(--text-light);
-    background: none;
+    color: var(--primary-light);
+    background: rgba(0, 255, 255, 0.05);
+    border-left-color: var(--primary);
+    text-shadow: 0 0 5px rgba(0, 255, 255, 0.3);
 }
 .sidebar-divider {
     margin: 0.5rem 1.5rem;
-    border-color: var(--border-color);
+    border-color: rgba(0, 255, 255, 0.3);
+    box-shadow: 0 1px 0 rgba(0, 255, 255, 0.1);
 }
 
 .sidebar-footer {
     padding: 1rem 1.5rem;
-    border-top: 1px solid var(--border-color);
+    border-top: 2px solid rgba(0, 255, 255, 0.3);
+    background: rgba(0, 255, 255, 0.05);
 }
-
 
 /* 4. OTHER COMPONENTS (Cards, Tables, etc.)
 /* ========================================================================== */
 .card {
-    background-color: var(--bg-surface);
-    border: 1px solid var(--border-color);
+    background: linear-gradient(135deg, rgba(0, 255, 255, 0.05), rgba(0, 153, 204, 0.05));
+    border: 2px solid rgba(0, 255, 255, 0.3);
     border-radius: var(--radius);
+    backdrop-filter: blur(5px);
+    box-shadow: var(--shadow-md);
+    transition: all var(--transition);
 }
+
+.card:hover {
+    border-color: var(--primary);
+    box-shadow: var(--shadow-glow);
+    transform: translateY(-2px);
+}
+
 .card-header {
-    background-color: rgba(16, 185, 129, 0.05) !important;
-    border-bottom: 1px solid var(--border-color);
-    color: var(--text-light) !important;
+    background: linear-gradient(90deg, rgba(0, 255, 255, 0.1), rgba(0, 255, 255, 0.15)) !important;
+    border-bottom: 2px solid rgba(0, 255, 255, 0.3);
+    color: var(--primary) !important;
     padding: 1rem 1.5rem;
+    font-weight: 700;
+    text-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
 }
+
 .card-body {
     padding: 1.5rem;
 }
+
 .btn {
     border-radius: var(--radius-sm);
     padding: 0.75rem 1.5rem;
     font-weight: 700;
-    transition: all 0.2s ease-in-out;
-    border: none;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    position: relative;
+    overflow: hidden;
 }
-.btn:hover {
-    transform: translateY(-2px);
-}
-.btn-primary { background-color: var(--primary); color: #fff; }
-.btn-primary:hover { background-color: var(--primary-hover); }
 
-.table { border-color: var(--border-color); }
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+.btn:hover::before {
+    left: 100%;
+}
+
+.btn:hover {
+    transform: translateY(-3px) scale(1.05);
+}
+
+.btn-primary { 
+    background: linear-gradient(45deg, var(--primary), var(--primary-hover));
+    color: var(--bg-dark);
+    box-shadow: 0 4px 15px rgba(0, 255, 255, 0.3);
+    border-color: var(--primary);
+}
+.btn-primary:hover { 
+    background: linear-gradient(45deg, var(--primary-light), var(--primary));
+    box-shadow: var(--shadow-glow);
+    border-color: var(--primary-light);
+}
+
+.table { 
+    border-color: rgba(0, 255, 255, 0.3);
+}
 .table-dark {
-    --bs-table-bg: var(--bg-surface);
-    --bs-table-border-color: var(--border-color);
-    --bs-table-striped-bg: #293548;
-    --bs-table-hover-bg: #374151;
+    --bs-table-bg: rgba(0, 255, 255, 0.05);
+    --bs-table-border-color: rgba(0, 255, 255, 0.2);
+    --bs-table-striped-bg: rgba(0, 255, 255, 0.08);
+    --bs-table-hover-bg: rgba(0, 255, 255, 0.1);
     color: var(--text-normal);
 }
 .table thead th {
-    background-color: var(--bg-dark) !important;
-    color: var(--text-muted);
+    background: linear-gradient(135deg, rgba(0, 255, 255, 0.1), rgba(0, 255, 255, 0.2)) !important;
+    color: var(--primary);
     font-weight: 700;
     font-size: 0.8rem;
-    border-bottom: 2px solid var(--border-color);
+    border-bottom: 2px solid var(--primary);
     white-space: nowrap;
     position: sticky;
     top: 0;
     z-index: 10;
+    text-shadow: 0 0 5px rgba(0, 255, 255, 0.3);
 }
 .table-hover > tbody > tr:hover > * {
-    color: var(--text-light);
+    color: var(--primary-light);
+    background: rgba(0, 255, 255, 0.1) !important;
+    text-shadow: 0 0 5px rgba(0, 255, 255, 0.2);
 }
 
 .summary-item {
@@ -225,7 +354,13 @@ a:hover {
     justify-content: space-between;
     align-items: center;
     padding: 0.85rem 0;
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+    transition: all var(--transition);
+}
+.summary-item:hover {
+    padding-right: 0.5rem;
+    background: rgba(0, 255, 255, 0.05);
+    border-radius: var(--radius-sm);
 }
 .summary-item:last-child {
     border-bottom: none;
@@ -243,6 +378,9 @@ a:hover {
     width: 100%;
     max-width: 450px;
     border: none;
+    background: linear-gradient(135deg, rgba(0, 255, 255, 0.1), rgba(0, 153, 204, 0.1));
+    backdrop-filter: blur(15px);
+    box-shadow: var(--shadow-glow);
 }
 
 .password-container {
@@ -255,9 +393,33 @@ a:hover {
     left: 15px;
     transform: translateY(-50%);
     cursor: pointer;
-    color: var(--text-muted);
+    color: var(--primary);
+    transition: all var(--transition);
 }
 
+.password-toggle-icon:hover {
+    color: var(--primary-light);
+    text-shadow: var(--glow-primary);
+}
+
+/* تحسين حقول الإدخال */
+.form-control {
+    background: rgba(0, 255, 255, 0.05);
+    border: 2px solid rgba(0, 255, 255, 0.3);
+    color: var(--text-light);
+    transition: all var(--transition);
+}
+
+.form-control:focus {
+    background: rgba(0, 255, 255, 0.1);
+    border-color: var(--primary);
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+    color: var(--text-light);
+}
+
+.form-control::placeholder {
+    color: var(--text-muted);
+}
 
 /* 5. RESPONSIVE STYLES
 /* ========================================================================== */
@@ -272,7 +434,7 @@ a:hover {
     }
     .sidebar.show {
         margin-right: 0;
-        box-shadow: 0 0 2rem rgba(0,0,0,0.5);
+        box-shadow: 0 0 3rem rgba(0, 255, 255, 0.5);
     }
     .main-content-wrapper {
         width: 100%;
@@ -281,7 +443,6 @@ a:hover {
         padding: 1.5rem;
     }
 }
-
 
 /* 6. UTILITY CLASSES
 /* ========================================================================== */
@@ -301,36 +462,133 @@ a:hover {
     left: 1.5rem;
     top: 50%;
     transform: translateY(-50%);
-    transition: transform var(--transition);
+    transition: all var(--transition);
+    color: var(--primary);
+    text-shadow: 0 0 5px rgba(0, 255, 255, 0.3);
 }
 
 /* Rotate the arrow icon when the menu is active/open */
 .sidebar-link.sidebar-toggler.is-active::after,
 .sidebar-submenu-link.sidebar-toggler.is-active::after {
     transform: translateY(-50%) rotate(180deg);
+    color: var(--primary-light);
+    text-shadow: var(--glow-primary);
 }
 
 /* Hide all submenus by default */
 .sidebar-submenu {
     display: none; /* This is the key change to hide them initially */
-    background-color: var(--bg-dark);
+    background: linear-gradient(135deg, rgba(0, 255, 255, 0.08), rgba(0, 153, 204, 0.08));
+    backdrop-filter: blur(5px);
+    border-right: 2px solid rgba(0, 255, 255, 0.2);
+    border-radius: 0 1rem 1rem 0;
+    margin: 0.2rem 0;
 }
 
 /* Style for the nested menus to give them a slight indent */
 .sidebar-submenu.nested-menu {
-    background-color: var(--bg-dark);
+    background: linear-gradient(135deg, rgba(0, 255, 255, 0.08), rgba(0, 153, 204, 0.08));
     padding-right: 1rem; /* Indent nested menus */
+    border-right: 3px solid rgba(0, 255, 255, 0.4);
 }
 
 /* Reduce font size for all links within any submenu */
 .sidebar-submenu a {
     font-size: 0.9rem;
+    position: relative;
+}
+
+.sidebar-submenu a::before {
+    content: '•';
+    position: absolute;
+    right: 1rem;
+    color: var(--primary);
+    font-size: 1.2rem;
 }
 
 /* --- END: NEW CUSTOM SIDEBAR TOGGLER STYLES (v1.4) --- */
 
-
 .table-responsive {
     max-height: 75vh;
     overflow-y: auto;
+    border: 2px solid rgba(0, 255, 255, 0.2);
+    border-radius: var(--radius);
+    background: rgba(0, 255, 255, 0.02);
+}
+
+.table-responsive::-webkit-scrollbar {
+    width: 8px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+    background: rgba(0, 255, 255, 0.1);
+    border-radius: var(--radius-sm);
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, var(--primary), var(--primary-hover));
+    border-radius: var(--radius-sm);
+}
+
+.table-responsive::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, var(--primary-light), var(--primary));
+}
+
+/* تأثيرات إضافية للنصوص */
+.text-primary {
+    color: var(--primary) !important;
+    text-shadow: 0 0 5px rgba(0, 255, 255, 0.3);
+}
+
+.text-success {
+    color: #00ff88 !important;
+}
+
+.text-warning {
+    color: #ffcc00 !important;
+}
+
+.text-danger {
+    color: #ff4466 !important;
+}
+
+/* تحسين الإشعارات والتنبيهات */
+.alert {
+    border-radius: var(--radius);
+    border: 2px solid;
+    backdrop-filter: blur(5px);
+}
+
+.alert-primary {
+    background: rgba(0, 255, 255, 0.1);
+    border-color: var(--primary);
+    color: var(--primary-light);
+}
+
+.alert-success {
+    background: rgba(0, 255, 136, 0.1);
+    border-color: #00ff88;
+    color: #33ff99;
+}
+
+.alert-warning {
+    background: rgba(255, 204, 0, 0.1);
+    border-color: #ffcc00;
+    color: #ffdd33;
+}
+
+.alert-danger {
+    background: rgba(255, 68, 102, 0.1);
+    border-color: #ff4466;
+    color: #ff6688;
+}
+
+/* تأثيرات تحميل */
+@keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 5px rgba(0, 255, 255, 0.5); }
+    50% { box-shadow: 0 0 20px rgba(0, 255, 255, 0.8), 0 0 30px rgba(0, 255, 255, 0.4); }
+}
+
+.loading {
+    animation: pulse-glow 2s ease-in-out infinite;
 }
