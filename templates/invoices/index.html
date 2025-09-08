@@ -98,8 +98,9 @@
                             <td>{{ invoice.contractor.name }}</td>
                             <td>{{ invoice.invoice_date.strftime('%Y-%m-%d') }}</td>
                             <td class="text-end">{{ "{:,.2f}".format(invoice.total_amount) }}</td>
-                            <td class="text-end text-success">{{ "{:,.2f}".format(invoice.paid_amount) }}</td>
-                            <td class="text-end text-danger">{{ "{:,.2f}".format(invoice.remaining_amount) }}</td>
+                            <td class="text-end">{{ "{:,.2f}".format(invoice.paid_amount) }}</td>
+                            <td class="text-end">{{ "{:,.2f}".format(invoice.remaining_amount) }}</td>
+
                             <td class="text-center">
                                 <span class="badge 
                                     {% if invoice.status == 'مدفوع بالكامل' %} bg-success

@@ -113,13 +113,13 @@
                                 <td>{{ item.item_number }}</td>
                                 <td>{{ item.description }}</td>
                                 {% if current_user.role in ['admin', 'sub-admin'] %}
-                                <td>{{ "{:,.2f}".format(item.contract_total_cost) }}</td>
+                                <td class="text-end">{{ "{:,.2f}".format(item.contract_total_cost) }}</td>
                                 {% endif %}
-                                <td>{{ "{:,.2f}".format(item.actual_total_cost) }}</td>
-                                <td><span class="text-info">{{ "{:,.2f}".format(item.paid_amount) }}</span></td>
-                                <td><span class="text-danger">{{ "{:,.2f}".format(item.remaining_amount) }}</span></td>
+                                <td class="text-end">{{ "{:,.2f}".format(item.actual_total_cost) }}</td>
+                                <td class="text-end"><span class="text-info">{{ "{:,.2f}".format(item.paid_amount) }}</span></td>
+                                <td class="text-end"><span class="text-danger">{{ "{:,.2f}".format(item.remaining_amount) }}</span></td>
                                 {% if current_user.role in ['admin', 'sub-admin'] %}
-                                <td>
+                                <td class="text-end">
                                     <span class="{{ 'text-success' if item.cost_variance >= 0 else 'text-danger' }}">
                                         {{ "{:,.2f}".format(item.cost_variance) }}
                                     </span>
