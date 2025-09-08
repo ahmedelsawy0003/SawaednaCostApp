@@ -27,11 +27,7 @@ def create_app():
     
     commands.init_app(app)
 
-    # --- START: الكود النهائي لضمان تحديث قاعدة البيانات ---
-    # هذا السطر سيقوم بإنشاء أي جداول أو أعمدة ناقصة تلقائياً
-    with app.app_context():
-        db.create_all()
-    # --- END: الكود النهائي ---
+    migrate.init_app(app, db)
 
     @login_manager.user_loader
     def load_user(user_id):

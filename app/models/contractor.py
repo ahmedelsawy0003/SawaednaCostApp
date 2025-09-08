@@ -8,7 +8,7 @@ class Contractor(db.Model):
     contact_person = db.Column(db.String(255))
     phone = db.Column(db.String(50))
     email = db.Column(db.String(255))
-
+    notes = db.Column(db.Text, nullable=True)
     items = db.relationship('Item', back_populates='contractor', lazy=True)
 
     # --- بداية الإضافة ---
