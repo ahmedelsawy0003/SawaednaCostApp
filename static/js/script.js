@@ -89,9 +89,12 @@ document.addEventListener("DOMContentLoaded", function() {
     const selectedCountDisplay = document.getElementById('selected-count-display'); 
     const bulkUpdateBtn = document.getElementById('bulk-update-btn');
     const bulkDeleteBtn = document.getElementById('bulk-delete-btn');
+    const bulkDuplicateBtn = document.getElementById('bulk-duplicate-btn'); // Add this
 
     const bulkDeleteCount = document.getElementById('bulk-delete-count');
     const confirmBulkDeleteBtn = document.getElementById('confirm-bulk-delete-btn');
+    const confirmBulkDuplicateBtn = document.getElementById('confirm-bulk-duplicate-btn'); // Add this
+
 
     if (selectAllCheckbox && itemCheckboxes.length > 0 && bulkEditForm) {
         
@@ -109,9 +112,8 @@ document.addEventListener("DOMContentLoaded", function() {
             if (bulkUpdateBtn) {
                 bulkUpdateBtn.disabled = !hasSelection;
             }
-            if (bulkDeleteBtn) {
-                bulkDeleteBtn.disabled = !hasSelection;
-            }
+            if (bulkDeleteBtn) bulkDeleteBtn.disabled = !hasSelection;
+            if (bulkDuplicateBtn) bulkDuplicateBtn.disabled = !hasSelection; // Add this
         }
 
         selectAllCheckbox.addEventListener('change', function() {
@@ -134,10 +136,18 @@ document.addEventListener("DOMContentLoaded", function() {
         
         if (confirmBulkDeleteBtn) {
             confirmBulkDeleteBtn.addEventListener('click', function() {
-                bulkEditForm.action = bulkEditForm.action.replace('bulk_update', 'bulk_delete');
+                bulkEditForm.action = "{{ url_for('item.bulk_delete_items', project_id=project.id) }}";
                 bulkEditForm.submit();
             });
         }
+
+        if (confirmBulkDuplicateBtn) { // Add this whole block
+            confirmBulkDuplicateBtn.addEventListener('click', function() {
+                bulkEditForm.action = "{{ url_for('item.bulk_duplicate_items', project_id=project.id) }}";
+                bulkEditForm.submit();
+            });
+        }
+		
         updateSelectedState();
     }
 });

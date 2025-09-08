@@ -279,3 +279,43 @@ def delete_item(item_id):
     db.session.commit()
     flash("تم حذف البند بنجاح.", "success")
     return redirect(url_for("item.get_items_by_project", project_id=project_id))
+    
+@item_bp.route("/projects/<int:project_id>/items/bulk_duplicate", methods=['POST'])
+@login_required
+def bulk_duplicate_items(project_id):
+    project = Project.query.get_or_404(project_id)
+    check_project_permission(project, require_admin=True)
+
+    item_ids = request.form.getlist('item_ids')
+    if not item_ids:
+        flash('الرجاء تحديد بند واحد على الأقل لتكراره.', 'warning')
+        return redirect(url_for('item.get_items_by_project', project_id=project_id))
+
+    duplicated_count = 0
+    for item_id in item_ids:
+        original_item = Item.query.get(item_id)
+        if original_item:
+            # Create a copy
+            new_item = Item(
+                project_id=original_item.project_id,
+                item_number=f"{original_item.item_number}-نسخة",
+                description=original_item.description,
+                unit=original_item.unit,
+                contract_quantity=original_item.contract_quantity,
+                contract_unit_cost=original_item.contract_unit_cost,
+                actual_quantity=original_item.actual_quantity,
+                actual_unit_cost=original_item.actual_unit_cost,
+                status=original_item.status,
+                notes=original_item.notes,
+                purchase_order_number=original_item.purchase_order_number,
+                disbursement_order_number=original_item.disbursement_order_number,
+                contractor_id=original_item.contractor_id
+            )
+            db.session.add(new_item)
+            duplicated_count += 1
+    
+    if duplicated_count > 0:
+        db.session.commit()
+        flash(f'تم تكرار {duplicated_count} بندًا بنجاح.', 'success')
+
+    return redirect(url_for('item.get_items_by_project', project_id=project_id))    

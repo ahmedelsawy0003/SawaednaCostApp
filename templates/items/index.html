@@ -58,9 +58,14 @@
                             <div class="col-md-3"><label for="bulk-status" class="form-label">تغيير حالة المحدد</label><select name="bulk_status" id="bulk-status" class="form-select"><option value="">-- اختر --</option><option value="نشط">نشط</option><option value="مكتمل">مكتمل</option><option value="معلق">معلق</option></select></div>
                             <div class="col-md-4"><label for="bulk-contractor" class="form-label">تغيير مقاول المحدد</label><input type="text" name="bulk_contractor" id="bulk-contractor" class="form-control" placeholder="اتركه فارغاً لعدم التغيير"></div>
                             <div class="col-md-2"><button type="submit" class="btn btn-warning w-100" id="bulk-update-btn"><i class="fas fa-save me-1"></i> تطبيق التعديلات</button></div>
-                            <div class="col-md-3">
-                                <button type="button" class="btn btn-danger w-100" id="bulk-delete-btn" data-bs-toggle="modal" data-bs-target="#bulkDeleteConfirmModal">
-                                    <i class="fas fa-trash me-1"></i> حذف المحدد
+                            <div class="col-md-2">
+                                <button type="button" class="btn btn-info w-100" id="bulk-duplicate-btn" data-bs-toggle="modal" data-bs-target="#bulkDuplicateConfirmModal" disabled>
+                                    <i class="fas fa-copy me-1"></i> تكرار
+                                </button>
+                            </div>
+                            <div class="col-md-2">
+                                <button type="button" class="btn btn-danger w-100" id="bulk-delete-btn" data-bs-toggle="modal" data-bs-target="#bulkDeleteConfirmModal" disabled>
+                                    <i class="fas fa-trash me-1"></i> حذف
                                 </button>
                             </div>
                         </div>
@@ -233,6 +238,25 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
                 <button type="button" class="btn btn-danger" id="confirm-bulk-delete-btn">نعم، قم بالحذف</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="bulkDuplicateConfirmModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title">تأكيد التكرار الجماعي</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>هل أنت متأكد أنك تريد تكرار البنود المحددة؟</p>
+                <p class="text-info"><i class="fas fa-info-circle me-2"></i>سيتم إنشاء نسخة جديدة من كل بند محدد مع إضافة "-نسخة" إلى رقم البند.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-info" id="confirm-bulk-duplicate-btn">نعم، قم بالتكرار</button>
             </div>
         </div>
     </div>
