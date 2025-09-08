@@ -8,6 +8,8 @@ from app.extensions import db
 from flask_login import login_required, current_user
 from app.utils import check_project_permission
 from app.forms import ProjectForm
+from sqlalchemy.orm import selectinload, undefer
+
 
 project_bp = Blueprint("project", __name__)
 
@@ -28,8 +30,11 @@ def get_projects():
         query = query.filter(Project.is_archived == False)
     
     # We use joinedload to prevent multiple queries for items later
-    projects = query.options(joinedload(Project.items)).all()
-    
+    # Use selectinload for better performance on one-to-many relationships
+    # and undefer to explicitly load our calculated property
+    projects = query.options(
+        selectinload(Project.items).undefer(Item.actual_details_cost)
+    ).all()    
     return render_template("projects/index.html", projects=projects, show_archived=show_archived)
 
 
