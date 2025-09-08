@@ -156,7 +156,7 @@ def bulk_delete_items(project_id):
     project = Project.query.get_or_404(project_id)
     check_project_permission(project, require_admin=True)
 
-    item_ids = request.form.getlist('item_ids')
+    item_ids = [int(id) for id in request.form.getlist('item_ids')]
     if not item_ids:
         flash('الرجاء تحديد بند واحد على الأقل لحذفه.', 'warning')
         return redirect(url_for('item.get_items_by_project', project_id=project_id))
