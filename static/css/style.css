@@ -421,6 +421,19 @@ a:hover {
     color: var(--text-muted);
 }
 
+/* --- START: NEW STICKY SIDEBAR FOR DESKTOP --- */
+@media (min-width: 992px) {
+    .sidebar {
+        position: fixed;
+        height: 100vh;
+        z-index: 1030;
+    }
+    .main-content-wrapper {
+        margin-right: var(--sidebar-width);
+    }
+}
+/* --- END: NEW STICKY SIDEBAR FOR DESKTOP --- */
+
 /* 5. RESPONSIVE STYLES
 /* ========================================================================== */
 @media (max-width: 991.98px) {

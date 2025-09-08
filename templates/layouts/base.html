@@ -35,76 +35,33 @@
                     </li>
 
                     <li class="sidebar-item">
-                        <a href="#" class="sidebar-link sidebar-toggler">
+                        <a href="#submenu-projects" data-bs-toggle="collapse" class="sidebar-link">
                             <i class="fas fa-project-diagram fa-fw me-2"></i> المشاريع
                         </a>
-                        <div class="sidebar-submenu">
+                        <div class="collapse sidebar-submenu" id="submenu-projects">
                             <a href="{{ url_for('project.get_projects') }}" class="sidebar-submenu-link"><i class="fas fa-eye me-2"></i> عرض المشاريع</a>
                             {% if current_user.role in ['admin', 'sub-admin'] %}
                             <a href="{{ url_for('project.new_project') }}" class="sidebar-submenu-link"><i class="fas fa-plus me-2"></i> إضافة مشروع</a>
-							<a href="{{ url_for('project.projects_summary') }}" class="sidebar-submenu-link"><i class="fas fa-chart-pie me-2"></i> الملخص المالي</a>
+                            <a href="{{ url_for('project.projects_summary') }}" class="sidebar-submenu-link"><i class="fas fa-chart-pie me-2"></i> الملخص المالي</a>
                             {% endif %}
-                            <hr class="sidebar-divider">
-                            <a href="#" class="sidebar-submenu-link sidebar-toggler nested"><i class="fas fa-list me-2"></i> قائمة المشاريع</a>
-                            <div class="sidebar-submenu nested-menu">
-                                {% for project in sidebar_projects %}
-                                    <a href="{{ url_for('project.get_project', project_id=project.id) }}" class="sidebar-submenu-link" title="{{ project.name }}">{{ project.name | truncate(20) }}</a>
-                                {% else %}
-                                    <span class="sidebar-submenu-link text-muted">لا توجد مشاريع.</span>
-                                {% endfor %}
-                            </div>
                         </div>
                     </li>
 
                     <li class="sidebar-item">
-                        <a href="#" class="sidebar-link sidebar-toggler">
-                            <i class="fas fa-file-invoice-dollar fa-fw me-2"></i> المستخلصات
+                        <a href="{{ url_for('payment.get_all_payments') }}" class="sidebar-link">
+                            <i class="fas fa-cash-register fa-fw me-2"></i> سجل الدفعات
                         </a>
-                        <div class="sidebar-submenu">
-                            <a href="#" class="sidebar-submenu-link sidebar-toggler nested"><i class="fas fa-eye me-2"></i>اختر مشروعاً للعرض</a>
-                            <div class="sidebar-submenu nested-menu">
-                                {% for project in sidebar_projects %}
-                                    <a href="{{ url_for('invoice.get_invoices_by_project', project_id=project.id) }}" class="sidebar-submenu-link" title="{{ project.name }}">{{ project.name | truncate(20) }}</a>
-                                {% else %}
-                                    <span class="sidebar-submenu-link text-muted">لا توجد مشاريع.</span>
-                                {% endfor %}
-                            </div>
-                            <hr class="sidebar-divider">
-                            <a href="#" class="sidebar-submenu-link sidebar-toggler nested"><i class="fas fa-plus me-2"></i>اختر مشروعاً للإضافة إليه</a>
-                            <div class="sidebar-submenu nested-menu">
-                                {% for project in sidebar_projects %}
-                                    <a href="{{ url_for('invoice.new_invoice', project_id=project.id) }}" class="sidebar-submenu-link" title="{{ project.name }}">{{ project.name | truncate(20) }}</a>
-                                {% else %}
-                                    <span class="sidebar-submenu-link text-muted">لا توجد مشاريع.</span>
-                                {% endfor %}
-                            </div>
-                        </div>
                     </li>
 
                     <li class="sidebar-item">
-                        <a href="#" class="sidebar-link sidebar-toggler">
+                        <a href="#submenu-contractors" data-bs-toggle="collapse" class="sidebar-link">
                             <i class="fas fa-hard-hat fa-fw me-2"></i> المقاولون
-							</a>
-							<li class="sidebar-item">
-								<a href="{{ url_for('payment.get_all_payments') }}" class="sidebar-link">
-									<i class="fas fa-cash-register fa-fw me-2"></i> سجل الدفعات
-								</a>
-							</li>							
-
-                        <div class="sidebar-submenu">
+                        </a>
+                        <div class="collapse sidebar-submenu" id="submenu-contractors">
                             <a href="{{ url_for('contractor.get_contractors') }}" class="sidebar-submenu-link"><i class="fas fa-eye me-2"></i> عرض المقاولين</a>
                              {% if current_user.role in ['admin', 'sub-admin'] %}
                             <a href="{{ url_for('contractor.new_contractor') }}" class="sidebar-submenu-link"><i class="fas fa-plus me-2"></i> إضافة مقاول</a>
                              {% endif %}
-                            <hr class="sidebar-divider">
-                            <a href="#" class="sidebar-submenu-link sidebar-toggler nested"><i class="fas fa-list me-2"></i> قائمة المقاولين</a>
-                            <div class="sidebar-submenu nested-menu">
-                                {% for contractor in sidebar_contractors %}
-                                    <a href="{{ url_for('contractor.show_contractor', contractor_id=contractor.id) }}" class="sidebar-submenu-link" title="{{ contractor.name }}">{{ contractor.name | truncate(20) }}</a>
-                                {% else %}
-                                    <span class="sidebar-submenu-link text-muted">لا يوجد مقاولون.</span>
-                                {% endfor %}
-                            </div>
                         </div>
                     </li>
                     
