@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, abort
-from sqlalchemy import cast, Integer
+from sqlalchemy import cast, Integer, func
 from app.models.item import Item
 from app.models.project import Project
 from app.models.audit_log import AuditLog
@@ -65,7 +65,9 @@ def get_items_by_project(project_id):
         'contractor': contractor_search
     }
 
-    items = query.order_by(cast(Item.item_number, Integer)).all()
+    # Use substring to extract leading numbers for a safe numerical sort
+    numeric_part = func.substring(Item.item_number, '^[0-9]+')
+    items = query.order_by(cast(numeric_part, Integer), Item.item_number).all()
     
     # إرسال قاموس "filters" بدلاً من "search_query"
     return render_template("items/index.html", items=items, project=project, filters=filters)
