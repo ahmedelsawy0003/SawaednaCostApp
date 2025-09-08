@@ -43,8 +43,13 @@
     </div>
 </div>
 
-<form id="bulk-edit-form" method="POST" action="{{ url_for('item.bulk_update_items', project_id=project.id) }}">
-    <div class="card mb-4">
+<form id="bulk-edit-form"
+      method="POST"
+      action="{{ url_for('item.bulk_update_items', project_id=project.id) }}"
+      data-update-url="{{ url_for('item.bulk_update_items', project_id=project.id) }}"
+      data-delete-url="{{ url_for('item.bulk_delete_items', project_id=project.id) }}"
+      data-duplicate-url="{{ url_for('item.bulk_duplicate_items', project_id=project.id) }}">
+	  <div class="card mb-4">
         <div class="accordion" id="bulkEditAccordion">
             <div class="accordion-item">
                 <h2 class="accordion-header">

@@ -134,16 +134,25 @@ document.addEventListener("DOMContentLoaded", function() {
             });
         });
         
+        // --- START: NEW, CORRECTED EVENT LISTENERS ---
+        if (bulkUpdateBtn) {
+            bulkUpdateBtn.addEventListener('click', function(e) {
+                e.preventDefault(); // Prevent default submission
+                bulkEditForm.action = bulkEditForm.dataset.updateUrl;
+                bulkEditForm.submit();
+            });
+        }
+        
         if (confirmBulkDeleteBtn) {
             confirmBulkDeleteBtn.addEventListener('click', function() {
-                bulkEditForm.action = "{{ url_for('item.bulk_delete_items', project_id=project.id) }}";
+                bulkEditForm.action = bulkEditForm.dataset.deleteUrl;
                 bulkEditForm.submit();
             });
         }
 
-        if (confirmBulkDuplicateBtn) { // Add this whole block
+        if (confirmBulkDuplicateBtn) {
             confirmBulkDuplicateBtn.addEventListener('click', function() {
-                bulkEditForm.action = "{{ url_for('item.bulk_duplicate_items', project_id=project.id) }}";
+                bulkEditForm.action = bulkEditForm.dataset.duplicateUrl;
                 bulkEditForm.submit();
             });
         }
