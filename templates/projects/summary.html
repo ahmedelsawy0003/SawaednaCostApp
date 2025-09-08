@@ -55,10 +55,10 @@
                         <td>
                             <a href="{{ url_for('project.get_project', project_id=project.id) }}" class="fw-bold">{{ project.name }}</a>
                         </td>
-                        <td class="text-end text-info">{{ "{:,.2f}".format(project.total_contract_cost) }}</td>
-                        <td class="text-end">{{ "{:,.2f}".format(project.total_actual_cost) }}</td>
-                        <td class="text-end text-success">{{ "{:,.2f}".format(project.total_paid_amount) }}</td>
-                        <td class="text-end text-danger">{{ "{:,.2f}".format(project.total_remaining_amount) }}</td>
+                        <td class="number-cell text-end text-info">{{ "{:,.2f}".format(project.total_contract_cost) }}</td>
+                        <td class="number-cell text-end">{{ "{:,.2f}".format(project.total_actual_cost) }}</td>
+                        <td class="number-cell text-end text-success">{{ "{:,.2f}".format(project.total_paid_amount) }}</td>
+                        <td class="number-cell text-end text-danger">{{ "{:,.2f}".format(project.total_remaining_amount) }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>

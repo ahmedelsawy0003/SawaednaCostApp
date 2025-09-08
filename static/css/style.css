@@ -606,47 +606,46 @@ a:hover {
     animation: pulse-glow 2s ease-in-out infinite;
 }
 
-
-
 /* ========================================================================== */
-/* == START: V5.1 - UI ENHANCEMENT & CONSISTENCY PATCH == */
+/* == START: V6.0 - FINAL & DEFINITIVE UI OVERHAUL PATCH == */
 /* ========================================================================== */
 
-/* 1. إصلاح الأزرار ذات الخلفيات السوداء والحمراء (Action Buttons) */
-.btn-danger {
-    background: linear-gradient(45deg, #680000, #a00000);
-    border-color: #ff4444 !important;
-    color: var(--text-light) !important;
-    box-shadow: 0 0 15px rgba(255, 68, 68, 0.3);
-}
-.btn-danger:hover {
-    background: linear-gradient(45deg, #a00000, #d00000);
-    box-shadow: 0 0 20px rgba(255, 68, 68, 0.6);
-}
-
-.btn-warning {
-    color: var(--bg-dark) !important;
-}
-
-.btn-dark {
-    background: linear-gradient(45deg, #182838, #283848);
-    border-color: var(--text-muted) !important;
+/* 1. توحيد تصميم جميع حقول الإدخال (Inputs, Selects, Textareas) */
+body[data-bs-theme="dark"] .form-control,
+body[data-bs-theme="dark"] .form-select {
+    background-color: rgba(0, 45, 68, 0.7) !important;
+    border: 1px solid var(--border-color) !important;
     color: var(--text-normal) !important;
-    box-shadow: 0 0 15px rgba(153, 204, 255, 0.2);
-}
-.btn-dark:hover {
-    background: linear-gradient(45deg, #283848, #384858);
-    box-shadow: 0 0 20px rgba(153, 204, 255, 0.4);
+    box-shadow: none !important;
 }
 
+body[data-bs-theme="dark"] .form-control:focus,
+body[data-bs-theme="dark"] .form-select:focus {
+    border-color: var(--primary) !important;
+    background-color: rgba(0, 60, 85, 0.9) !important;
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.3) !important;
+}
 
-/* 2. إعادة تصميم الفلاتر والإجراءات الجماعية (Accordions) */
-.accordion, .accordion-item {
+body[data-bs-theme="dark"] .form-control:disabled,
+body[data-bs-theme="dark"] .form-control[readonly],
+body[data-bs-theme="dark"] .form-select:disabled {
+    background-color: rgba(0, 22, 34, 0.6) !important;
+    border-color: #002233 !important;
+    color: var(--text-muted) !important;
+    opacity: 0.6;
+}
+
+body[data-bs-theme="dark"] .form-select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%2300ffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
+}
+
+/* 2. إعادة تصميم شاملة للفلاتر والإجراءات (Card + Accordion) */
+.card > .accordion > .accordion-item {
     background-color: transparent !important;
     border: none !important;
 }
 
-.accordion-button {
+.card > .accordion .accordion-button {
     background: linear-gradient(90deg, rgba(0, 255, 255, 0.05), rgba(0, 255, 255, 0.1)) !important;
     border: 1px solid var(--border-color) !important;
     border-radius: var(--radius-sm) !important;
@@ -655,99 +654,91 @@ a:hover {
     padding: 0.75rem 1.25rem;
 }
 
-.accordion-button:not(.collapsed) {
+.card > .accordion .accordion-button:not(.collapsed) {
     color: var(--primary) !important;
     box-shadow: 0 0 15px rgba(0, 255, 255, 0.2) !important;
+    border-bottom: 1px solid var(--primary) !important;
 }
 
-.accordion-button::after {
-    filter: brightness(0) invert(1);
+.card > .accordion .accordion-button::after {
+    filter: brightness(0) invert(1) opacity(0.8);
 }
 
-.accordion-body {
+.card > .accordion .accordion-body {
     background-color: rgba(0, 22, 44, 0.5);
     border: 1px solid var(--border-color);
     border-top: none;
     border-radius: 0 0 var(--radius-sm) var(--radius-sm);
-    padding: 1.25rem;
+    padding: 1rem 1.25rem;
 }
 
-
-/* 3. تحسين وضوح الأرقام وأسماء المشاريع في الجداول */
-.table td {
-    vertical-align: middle;
-}
-
-/* لجعل الأرقام أكثر وضوحاً */
-.table td.text-end, .table td.text-center, .table td span.text-danger, .table td span.text-success, .table td span.text-info {
-    font-weight: 700; /* BOLD */
-    font-size: 1.05rem;
-    color: var(--primary-light) !important;
-    letter-spacing: 0.5px;
-}
-
-/* لتكبير خط اسم المشروع */
-.table td a.fw-bold {
-    font-size: 1.1rem !important;
-    font-weight: 700 !important;
-    color: var(--text-light) !important;
-}
-.table td a.fw-bold:hover {
-    color: var(--primary) !important;
-}
-
-/* 4. إزالة الهامش السفلي للعناوين داخل البطاقات */
-.card-header h1, .card-header h2, .card-header h3, .card-header h4, .card-header h5, .card-header h6 {
-    margin-bottom: 0;
-}
-
-
-/* ========================================================================== */
-/* == START: V5.2 - FINAL UI POLISHING PATCH == */
-/* ========================================================================== */
-
-/* 1. إصلاح حقول الإدخال السوداء (المعطلة والقوائم المنسدلة) */
-.form-control:disabled, .form-control[readonly] {
-    background-color: rgba(0, 34, 51, 0.7) !important;
-    border-color: var(--border-color) !important;
-    color: var(--text-muted) !important;
-    opacity: 0.7;
-}
-
-.form-select {
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%2300ffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
-}
-
-.form-select:disabled {
-    background-color: rgba(0, 34, 51, 0.7) !important;
-    border-color: var(--border-color) !important;
-    color: var(--text-muted) !important;
-    opacity: 0.7;
-}
-
-
-/* 2. تقليص حجم وتنسيق مربعات الفلترة والإجراءات الجماعية */
-.accordion-body {
-    padding: 1rem 1.25rem; /* تقليل الحشو الداخلي */
-}
-
+/* 3. تقليص حجم ومساحات الفلاتر والإجراءات الجماعية */
 .accordion-body .form-label {
-    font-size: 0.85rem; /* تصغير حجم الخط للتسميات */
+    font-size: 0.8rem;
     margin-bottom: 0.25rem;
+    color: var(--text-muted);
 }
-
-.accordion-body .form-control, .accordion-body .form-select {
-    padding: 0.5rem 0.75rem; /* تقليل الحشو الداخلي للحقول */
+.accordion-body .form-control, .accordion-body .form-select, .accordion-body .btn {
+    padding: 0.4rem 0.75rem;
     font-size: 0.9rem;
 }
-
-.accordion-body .btn {
-    padding: 0.5rem 1rem; /* تصغير حجم الأزرار الداخلية */
-    font-size: 0.9rem;
-}
-
-/* تقليل المسافات بين الصفوف والأعمدة داخل الفلاتر */
 .accordion-body .row.g-3 {
     --bs-gutter-x: 0.75rem;
     --bs-gutter-y: 0.5rem;
+}
+
+/* 4. توحيد تصميم جميع الأزرار لتتماشى مع الثيم */
+.btn-danger {
+    background: linear-gradient(45deg, #800000, #c00000);
+    border-color: #ff4444 !important;
+    color: var(--text-light) !important;
+    box-shadow: 0 0 10px rgba(255, 68, 68, 0.3);
+}
+.btn-danger:hover {
+    background: linear-gradient(45deg, #c00000, #e00000);
+    box-shadow: 0 0 15px rgba(255, 68, 68, 0.6);
+}
+.btn-warning { color: var(--bg-dark) !important; }
+.btn-dark {
+    background: linear-gradient(45deg, #182838, #283848);
+    border-color: var(--text-muted) !important;
+    color: var(--text-normal) !important;
+    box-shadow: 0 0 10px rgba(153, 204, 255, 0.2);
+}
+.btn-dark:hover {
+    background: linear-gradient(45deg, #283848, #384858);
+    box-shadow: 0 0 15px rgba(153, 204, 255, 0.4);
+}
+.btn-info {
+    background: linear-gradient(45deg, #005a9e, #0077cc);
+    border-color: #0099ff !important;
+    color: var(--text-light) !important;
+    box-shadow: 0 0 10px rgba(0, 153, 255, 0.3);
+}
+.btn-info:hover {
+    background: linear-gradient(45deg, #0077cc, #008ae6);
+    box-shadow: 0 0 15px rgba(0, 153, 255, 0.5);
+}
+
+/* 5. تحسين الجداول (الخطوط والأرقام) */
+.table td { vertical-align: middle; }
+.table td.number-cell, .table td.text-end {
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--primary-light) !important;
+    letter-spacing: 0.5px;
+}
+.table td a.fw-bold {
+    font-size: 1.05rem !important;
+    font-weight: 700 !important;
+    color: var(--text-light) !important;
+}
+.table td a.fw-bold:hover { color: var(--primary) !important; }
+.table .text-success { color: var(--success) !important; }
+.table .text-danger { color: var(--danger) !important; }
+.table .text-info { color: var(--info) !important; }
+
+/* 6. تحسينات عامة */
+.card-header h1, .card-header h2, .card-header h3, .card-header h4, .card-header h5, .card-header h6 {
+    margin-bottom: 0;
 }
