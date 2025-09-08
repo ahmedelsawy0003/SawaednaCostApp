@@ -30,41 +30,43 @@ class Item(db.Model):
     project = db.relationship('Project', back_populates='items')
     contractor = db.relationship('Contractor', back_populates='items')
     cost_details = db.relationship('CostDetail', back_populates='item', cascade="all, delete-orphan")
+    invoice_items = db.relationship('InvoiceItem', back_populates='item', cascade="all, delete-orphan")
 
     __table_args__ = (
         db.Index('idx_item_project_id', 'project_id'),
         db.Index('idx_item_contractor_id', 'contractor_id'),
     )
     
-    # --- START: PERFORMANCE & WARNING FIXES ---
+    # --- START: FULL PERFORMANCE & WARNING FIXES ---
 
-    # This property calculates the details cost efficiently at the DB level
+    # Efficiently calculates details cost at the DB level
     actual_details_cost = column_property(
         select(func.coalesce(func.sum(CostDetail.quantity * CostDetail.unit_cost * (1 + CostDetail.vat_percent / 100)), 0.0))
         .where(CostDetail.item_id == id)
         .correlate_except(CostDetail)
         .scalar_subquery(),
-        deferred=True  # Load it only when needed or explicitly requested
+        deferred=True
+    )
+
+    # Efficiently calculates paid amount at the DB level
+    paid_amount = column_property(
+        select(func.coalesce(func.sum(PaymentDistribution.amount), 0.0))
+        .join(InvoiceItem, PaymentDistribution.invoice_item_id == InvoiceItem.id)
+        .where(InvoiceItem.item_id == id)
+        .correlate_except(PaymentDistribution, InvoiceItem)
+        .scalar_subquery(),
+        deferred=True
     )
 
     @property
     def all_payments(self):
-        invoice_item_ids = db.session.query(InvoiceItem.id).filter(InvoiceItem.item_id == self.id)
-        distributions = PaymentDistribution.query.filter(
+        # This remains a Python property as it's for detailed views (modals)
+        invoice_item_ids = [ii.id for ii in self.invoice_items]
+        if not invoice_item_ids:
+            return []
+        return PaymentDistribution.query.filter(
             PaymentDistribution.invoice_item_id.in_(invoice_item_ids)
         ).all()
-        return distributions
-
-    @property
-    def paid_amount(self):
-        # Using select() to prevent SAWarning
-        invoice_item_ids_query = select(InvoiceItem.id).filter(InvoiceItem.item_id == self.id)
-        total_paid = db.session.query(
-            func.sum(PaymentDistribution.amount)
-        ).filter(
-            PaymentDistribution.invoice_item_id.in_(invoice_item_ids_query)
-        ).scalar()
-        return total_paid or 0.0
 
     @property
     def contract_total_cost(self):
@@ -72,22 +74,18 @@ class Item(db.Model):
             return self.contract_quantity * self.contract_unit_cost
         return 0.0
 
-    # This hybrid property now uses the efficient column_property
     @hybrid_property
     def actual_total_cost(self):
         manual_cost = 0.0
         if self.actual_quantity is not None and self.actual_unit_cost is not None:
             manual_cost = self.actual_quantity * self.actual_unit_cost
-        
         return manual_cost + (self.actual_details_cost or 0.0)
     
-    # --- END: PERFORMANCE & WARNING FIXES ---
-
-    @property
+    @hybrid_property
     def remaining_amount(self):
         return self.actual_total_cost - self.paid_amount
 
-    @property
+    @hybrid_property
     def cost_variance(self):
         return self.contract_total_cost - self.actual_total_cost
         
