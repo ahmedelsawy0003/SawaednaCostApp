@@ -1,6 +1,42 @@
 document.addEventListener("DOMContentLoaded", function() {
 
+    // --- START: FINAL Custom Sidebar Toggler (v1.4) ---
+    function setupSidebar() {
+        // 1. Find all links that are meant to toggle a menu.
+        const togglers = document.querySelectorAll('.sidebar-toggler');
 
+        // 2. Loop through each of these toggler links.
+        togglers.forEach(toggler => {
+            
+            // 3. Add a click event listener to each one.
+            toggler.addEventListener('click', function(event) {
+                // Prevent the link from trying to navigate anywhere.
+                event.preventDefault();
+
+                // Find the submenu, which is the VERY NEXT element in the HTML.
+                const submenu = this.nextElementSibling;
+
+                // Check if the submenu actually exists.
+                if (submenu) {
+                    // Toggle the class on the link itself (for the arrow icon).
+                    this.classList.toggle('is-active');
+
+                    // Check if the submenu is currently visible.
+                    if (submenu.style.display === 'block') {
+                        // If it is visible, hide it.
+                        submenu.style.display = 'none';
+                    } else {
+                        // If it is hidden, show it.
+                        submenu.style.display = 'block';
+                    }
+                }
+            });
+        });
+    }
+
+    // Run the function to make the sidebar work.
+    setupSidebar();
+    // --- END: FINAL Custom Sidebar Toggler (v1.4) ---
 
 
     // --- Other functionalities ---
