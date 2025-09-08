@@ -15,7 +15,7 @@ class InvoiceItem(db.Model):
 
     # Relationships
     invoice = db.relationship('Invoice', back_populates='items')
-    item = db.relationship('Item', backref=db.backref('invoice_items', lazy=True))
+    item = db.relationship('Item', back_populates='invoice_items')
     cost_detail = db.relationship('CostDetail', backref=db.backref('invoice_items', lazy=True))
     
     # --- START: REMOVED OLD RELATIONSHIP ---
