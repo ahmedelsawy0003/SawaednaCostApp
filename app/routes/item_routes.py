@@ -148,6 +148,34 @@ def bulk_update_items(project_id):
     items = Item.query.filter_by(project_id=project_id).order_by(Item.item_number).all()
     return render_template('items/bulk_update.html', project=project, items=items)
 
+@item_bp.route('/projects/<int:project_id>/items/bulk_delete', methods=['POST'])
+@login_required
+def bulk_delete_items(project_id):
+    project = Project.query.get_or_404(project_id)
+    check_project_permission(project, require_admin=True)
+
+    item_ids = request.form.getlist('item_ids')
+    if not item_ids:
+        flash('الرجاء تحديد بند واحد على الأقل لحذفه.', 'warning')
+        return redirect(url_for('item.get_items_by_project', project_id=project_id))
+
+    # Query all items to be deleted in one go for efficiency
+    items_to_delete = Item.query.filter(Item.id.in_(item_ids)).all()
+    
+    deleted_count = 0
+    for item in items_to_delete:
+        # Ensure the item belongs to the correct project for security
+        if item.project_id == int(project_id):
+            db.session.delete(item)
+            deleted_count += 1
+    
+    if deleted_count > 0:
+        db.session.commit()
+        flash(f'تم حذف {deleted_count} بندًا بنجاح.', 'success')
+
+    return redirect(url_for('item.get_items_by_project', project_id=project_id))
+
+
 @item_bp.route("/projects/<int:project_id>/items/new", methods=["GET", "POST"])
 @login_required
 def new_item(project_id):
