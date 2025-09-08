@@ -80,7 +80,7 @@ def delete_contractor(contractor_id):
         
     contractor = Contractor.query.get_or_404(contractor_id)
     
-    if contractor.invoices.first():
+    if contractor.invoices:
         flash('لا يمكن حذف هذا المقاول لوجود مستخلصات مرتبطة به. يجب حذف المستخلصات أولاً.', 'danger')
         return redirect(url_for('contractor.get_contractors'))
         
