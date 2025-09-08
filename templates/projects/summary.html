@@ -1,0 +1,69 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}الملخص المالي للمشاريع{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="fas fa-chart-line fa-fw me-2 text-muted"></i>الملخص المالي للمشاريع</h1>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h3 class="mb-0">الإجماليات الكلية لجميع المشاريع النشطة</h3>
+    </div>
+    <div class="card-body">
+        <div class="row text-center">
+            <div class="col">
+                <h5>التكلفة التعاقدية</h5>
+                <p class="fs-4 text-info">{{ "{:,.2f}".format(totals.contract_cost) }} ريال</p>
+            </div>
+            <div class="col">
+                <h5>التكلفة الفعلية</h5>
+                <p class="fs-4 text-light">{{ "{:,.2f}".format(totals.actual_cost) }} ريال</p>
+            </div>
+            <div class="col">
+                <h5>إجمالي المدفوع</h5>
+                <p class="fs-4 text-success">{{ "{:,.2f}".format(totals.paid_amount) }} ريال</p>
+            </div>
+            <div class="col">
+                <h5>إجمالي المتبقي</h5>
+                <p class="fs-4 text-danger">{{ "{:,.2f}".format(totals.remaining_amount) }} ريال</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">تفاصيل كل مشروع على حدة</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-dark table-hover table-striped mb-0">
+                <thead>
+                    <tr>
+                        <th>اسم المشروع</th>
+                        <th class="text-end">التكلفة التعاقدية</th>
+                        <th class="text-end">التكلفة الفعلية</th>
+                        <th class="text-end">إجمالي المدفوع</th>
+                        <th class="text-end">المبلغ المتبقي</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for project in projects %}
+                    <tr>
+                        <td>
+                            <a href="{{ url_for('project.get_project', project_id=project.id) }}" class="fw-bold">{{ project.name }}</a>
+                        </td>
+                        <td class="text-end text-info">{{ "{:,.2f}".format(project.total_contract_cost) }}</td>
+                        <td class="text-end">{{ "{:,.2f}".format(project.total_actual_cost) }}</td>
+                        <td class="text-end text-success">{{ "{:,.2f}".format(project.total_paid_amount) }}</td>
+                        <td class="text-end text-danger">{{ "{:,.2f}".format(project.total_remaining_amount) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

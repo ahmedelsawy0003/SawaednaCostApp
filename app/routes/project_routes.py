@@ -166,3 +166,23 @@ def all_projects_dashboard():
     if current_user.role not in ['admin', 'sub-admin']:
         abort(403)
     return redirect(url_for('project.get_projects'))
+    
+@project_bp.route("/summary")
+@login_required
+def projects_summary():
+    """
+    يعرض صفحة ملخص مالي لجميع المشاريع.
+    """
+    if current_user.role not in ['admin', 'sub-admin']:
+        abort(403)
+
+    projects = Project.query.filter_by(is_archived=False).all()
+    
+    grand_totals = {
+        'contract_cost': sum(p.total_contract_cost for p in projects),
+        'actual_cost': sum(p.total_actual_cost for p in projects),
+        'paid_amount': sum(p.total_paid_amount for p in projects),
+        'remaining_amount': sum(p.total_remaining_amount for p in projects),
+    }
+
+    return render_template("projects/summary.html", projects=projects, totals=grand_totals)

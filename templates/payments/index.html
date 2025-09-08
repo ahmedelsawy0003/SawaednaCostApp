@@ -1,0 +1,100 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}سجل الدفعات الشامل{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="fas fa-money-bill-wave fa-fw me-2 text-muted"></i>سجل الدفعات الشامل</h1>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('payment.get_all_payments') }}">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label">بحث عام</label>
+                    <input type="search" name="search" class="form-control" placeholder="رقم المستخلص, البيان, المقاول..." value="{{ filters.search or '' }}">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">المشروع</label>
+                    <select name="project_id" class="form-select">
+                        <option value="">كل المشاريع</option>
+                        {% for project in projects %}
+                            <option value="{{ project.id }}" {% if filters.project_id == project.id %}selected{% endif %}>{{ project.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">المقاول</label>
+                    <select name="contractor_id" class="form-select">
+                        <option value="">كل المقاولين</option>
+                        {% for contractor in contractors %}
+                            <option value="{{ contractor.id }}" {% if filters.contractor_id == contractor.id %}selected{% endif %}>{{ contractor.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">من تاريخ</label>
+                    <input type="date" name="start_date" class="form-control" value="{{ filters.start_date or '' }}">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">إلى تاريخ</label>
+                    <input type="date" name="end_date" class="form-control" value="{{ filters.end_date or '' }}">
+                </div>
+                <div class="col-md-1">
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-info w-100" title="تطبيق الفلتر"><i class="fas fa-filter"></i></button>
+                        <a href="{{ url_for('payment.get_all_payments') }}" class="btn btn-secondary w-100" title="مسح الفلاتر"><i class="fas fa-times"></i></a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        {% if payments %}
+            <div class="table-responsive">
+                <table class="table table-dark table-hover table-striped mb-0">
+                    <thead>
+                        <tr>
+                            <th>رقم الدفعة</th>
+                            <th>التاريخ</th>
+                            <th>المشروع</th>
+                            <th>المقاول/المورد</th>
+                            <th>بيان الدفعة</th>
+                            <th>رقم المستخلص</th>
+                            <th class="text-end">المبلغ</th>
+                            <th class="text-center">الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for payment in payments %}
+                        <tr>
+                            <td>{{ payment.id }}</td>
+                            <td>{{ payment.payment_date.strftime('%Y-%m-%d') }}</td>
+                            <td>{{ payment.invoice.project.name }}</td>
+                            <td>{{ payment.invoice.contractor.name }}</td>
+                            <td>{{ payment.description or '-' }}</td>
+                            <td><a href="{{ url_for('invoice.show_invoice', invoice_id=payment.invoice_id) }}">{{ payment.invoice.invoice_number }}</a></td>
+                            <td class="text-end text-success fw-bold">{{ "{:,.2f}".format(payment.amount) }} ريال</td>
+                            <td class="text-center">
+                                <a href="{{ url_for('invoice.edit_payment', payment_id=payment.id) }}" class="btn btn-sm btn-warning" title="تعديل الدفعة">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="alert alert-info m-3 text-center">
+                <i class="fas fa-info-circle me-2"></i>
+                لا توجد دفعات تطابق معايير البحث الحالية.
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

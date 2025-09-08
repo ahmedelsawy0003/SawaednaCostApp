@@ -42,6 +42,7 @@
                             <a href="{{ url_for('project.get_projects') }}" class="sidebar-submenu-link"><i class="fas fa-eye me-2"></i> عرض المشاريع</a>
                             {% if current_user.role in ['admin', 'sub-admin'] %}
                             <a href="{{ url_for('project.new_project') }}" class="sidebar-submenu-link"><i class="fas fa-plus me-2"></i> إضافة مشروع</a>
+							<a href="{{ url_for('project.projects_summary') }}" class="sidebar-submenu-link"><i class="fas fa-chart-pie me-2"></i> الملخص المالي</a>
                             {% endif %}
                             <hr class="sidebar-divider">
                             <a href="#" class="sidebar-submenu-link sidebar-toggler nested"><i class="fas fa-list me-2"></i> قائمة المشاريع</a>
@@ -83,6 +84,11 @@
                     <li class="sidebar-item">
                         <a href="#" class="sidebar-link sidebar-toggler">
                             <i class="fas fa-hard-hat fa-fw me-2"></i> المقاولون
+							<li class="sidebar-item">
+								<a href="{{ url_for('payment.get_all_payments') }}" class="sidebar-link">
+									<i class="fas fa-cash-register fa-fw me-2"></i> سجل الدفعات
+								</a>
+							</li>							
                         </a>
                         <div class="sidebar-submenu">
                             <a href="{{ url_for('contractor.get_contractors') }}" class="sidebar-submenu-link"><i class="fas fa-eye me-2"></i> عرض المقاولين</a>

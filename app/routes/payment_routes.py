@@ -1,0 +1,69 @@
+from flask import Blueprint, render_template, request
+from app.models import Payment, Project, Contractor, Invoice
+from flask_login import login_required, current_user
+from sqlalchemy import or_
+import datetime
+
+payment_bp = Blueprint("payment", __name__, url_prefix='/payments')
+
+@payment_bp.route("/")
+@login_required
+def get_all_payments():
+    """
+    يعرض صفحة شاملة لجميع الدفعات مع فلاتر بحث متقدمة.
+    """
+    query = Payment.query.join(Invoice).join(Contractor)
+
+    # تطبيق الفلاتر بناءً على صلاحيات المستخدم
+    if current_user.role not in ['admin', 'sub-admin']:
+        allowed_project_ids = [p.id for p in current_user.projects]
+        query = query.filter(Invoice.project_id.in_(allowed_project_ids))
+
+    # قراءة الفلاتر من الرابط
+    search_term = request.args.get('search', '')
+    project_id = request.args.get('project_id', type=int)
+    contractor_id = request.args.get('contractor_id', type=int)
+    start_date_str = request.args.get('start_date', '')
+    end_date_str = request.args.get('end_date', '')
+
+    # تطبيق الفلاتر على الاستعلام
+    if search_term:
+        query = query.filter(
+            or_(
+                Payment.description.ilike(f"%{search_term}%"),
+                Invoice.invoice_number.ilike(f"%{search_term}%"),
+                Contractor.name.ilike(f"%{search_term}%")
+            )
+        )
+    if project_id:
+        query = query.filter(Invoice.project_id == project_id)
+    if contractor_id:
+        query = query.filter(Invoice.contractor_id == contractor_id)
+    if start_date_str:
+        start_date = datetime.datetime.strptime(start_date_str, "%Y-%m-%d").date()
+        query = query.filter(Payment.payment_date >= start_date)
+    if end_date_str:
+        end_date = datetime.datetime.strptime(end_date_str, "%Y-%m-%d").date()
+        query = query.filter(Payment.payment_date <= end_date)
+
+    payments = query.order_by(Payment.payment_date.desc()).all()
+    
+    # جلب المشاريع والمقاولين لقوائم الفلترة
+    projects = Project.query.order_by(Project.name).all()
+    contractors = Contractor.query.order_by(Contractor.name).all()
+
+    filters = {
+        'search': search_term,
+        'project_id': project_id,
+        'contractor_id': contractor_id,
+        'start_date': start_date_str,
+        'end_date': end_date_str
+    }
+    
+    return render_template(
+        "payments/index.html",
+        payments=payments,
+        projects=projects,
+        contractors=contractors,
+        filters=filters
+    )
