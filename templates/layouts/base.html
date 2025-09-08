@@ -56,6 +56,31 @@
                     </li>
 
                     <li class="sidebar-item">
+                        <a href="#" class="sidebar-link sidebar-toggler">
+                            <i class="fas fa-file-invoice-dollar fa-fw me-2"></i> المستخلصات
+                        </a>
+                        <div class="sidebar-submenu">
+                            <a href="#" class="sidebar-submenu-link sidebar-toggler nested"><i class="fas fa-eye me-2"></i>اختر مشروعاً للعرض</a>
+                            <div class="sidebar-submenu nested-menu">
+                                {% for project in sidebar_projects %}
+                                    <a href="{{ url_for('invoice.get_invoices_by_project', project_id=project.id) }}" class="sidebar-submenu-link" title="{{ project.name }}">{{ project.name | truncate(20) }}</a>
+                                {% else %}
+                                    <span class="sidebar-submenu-link text-muted">لا توجد مشاريع.</span>
+                                {% endfor %}
+                            </div>
+                            <hr class="sidebar-divider">
+                            <a href="#" class="sidebar-submenu-link sidebar-toggler nested"><i class="fas fa-plus me-2"></i>اختر مشروعاً للإضافة إليه</a>
+                            <div class="sidebar-submenu nested-menu">
+                                {% for project in sidebar_projects %}
+                                    <a href="{{ url_for('invoice.new_invoice', project_id=project.id) }}" class="sidebar-submenu-link" title="{{ project.name }}">{{ project.name | truncate(20) }}</a>
+                                {% else %}
+                                    <span class="sidebar-submenu-link text-muted">لا توجد مشاريع.</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </li>
+
+                    <li class="sidebar-item">
                         <a href="{{ url_for('payment.get_all_payments') }}" class="sidebar-link">
                             <i class="fas fa-cash-register fa-fw me-2"></i> سجل الدفعات
                         </a>

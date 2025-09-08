@@ -1,17 +1,18 @@
 document.addEventListener("DOMContentLoaded", function() {
 
-    // --- START: ROBUST Custom Sidebar Toggler ---
+
+    // --- START: ROBUST Sidebar Toggler ---
     function setupSidebar() {
         const togglers = document.querySelectorAll('.sidebar-toggler');
 
         togglers.forEach(toggler => {
             toggler.addEventListener('click', function(event) {
                 event.preventDefault();
+                
+                // This robustly finds the submenu, even for nested items
+                const submenu = this.nextElementSibling;
 
-                // This is a more robust way to find the submenu
-                const submenu = this.parentElement.querySelector('.sidebar-submenu');
-
-                if (submenu) {
+                if (submenu && submenu.classList.contains('sidebar-submenu')) {
                     this.classList.toggle('is-active');
                     if (submenu.style.display === 'block') {
                         submenu.style.display = 'none';
@@ -23,7 +24,7 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
     setupSidebar();
-    // --- END: ROBUST Custom Sidebar Toggler ---
+    // --- END: ROBUST Sidebar Toggler ---
 
 
     // --- Other functionalities ---
