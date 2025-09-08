@@ -84,12 +84,13 @@
                     <li class="sidebar-item">
                         <a href="#" class="sidebar-link sidebar-toggler">
                             <i class="fas fa-hard-hat fa-fw me-2"></i> المقاولون
+							</a>
 							<li class="sidebar-item">
 								<a href="{{ url_for('payment.get_all_payments') }}" class="sidebar-link">
 									<i class="fas fa-cash-register fa-fw me-2"></i> سجل الدفعات
 								</a>
 							</li>							
-                        </a>
+
                         <div class="sidebar-submenu">
                             <a href="{{ url_for('contractor.get_contractors') }}" class="sidebar-submenu-link"><i class="fas fa-eye me-2"></i> عرض المقاولين</a>
                              {% if current_user.role in ['admin', 'sub-admin'] %}
