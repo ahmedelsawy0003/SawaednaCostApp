@@ -1,5 +1,8 @@
 from flask import Blueprint, render_template, request
-from app.models import Payment, Project, Contractor, Invoice
+from app.models.payment import Payment
+from app.models.project import Project
+from app.models.contractor import Contractor
+from app.models.invoice import Invoice
 from flask_login import login_required, current_user
 from sqlalchemy import or_
 import datetime
