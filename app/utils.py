@@ -2,16 +2,19 @@ from flask import abort
 from flask_login import current_user
 import bleach
 
-def check_project_permission(project):
+def check_project_permission(project, require_admin=False):
     """
     Checks if the current user has permission to access a project.
-    An admin has access to all projects.
-    A regular user only has access to their associated projects.
-    If no permission, it aborts with a 403 Forbidden error.
+    Admins/Sub-admins have access to all projects.
+    Regular users only have access to their associated projects.
+    The 'require_admin' flag can restrict access to admins/sub-admins only.
     """
-    # --- START: التعديل الرئيسي هنا ---
+    # If the action requires an admin role, check that first.
+    if require_admin and current_user.role not in ['admin', 'sub-admin']:
+        abort(403)
+
+    # For general access, check if the user is an admin or has the project assigned.
     if current_user.role not in ['admin', 'sub-admin'] and project not in current_user.projects:
-    # --- END: التعديل الرئيسي هنا ---
         abort(403)
 
 # START: Corrected Sanitization Function

@@ -326,7 +326,17 @@ def bulk_duplicate_items(project_id):
             # Create a copy
             new_item = Item(
                 project_id=original_item.project_id,
-                item_number=f"{original_item.item_number}-نسخة",
+                # --- START: Improved duplication logic ---
+                base_number = f"{original_item.item_number}-نسخة"
+                # Check how many copies already exist
+                existing_copies_count = Item.query.filter(
+                    Item.project_id == project_id, 
+                    Item.item_number.like(f"{base_number}%")
+                ).count()
+                
+                new_item_number = f"{base_number}-{existing_copies_count + 1}"
+                # --- END: Improved duplication logic ---
+                item_number=new_item_number,                
                 description=original_item.description,
                 unit=original_item.unit,
                 contract_quantity=original_item.contract_quantity,
