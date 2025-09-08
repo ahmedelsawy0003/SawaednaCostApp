@@ -1,6 +1,29 @@
 document.addEventListener("DOMContentLoaded", function() {
 
+    // --- START: ROBUST Custom Sidebar Toggler ---
+    function setupSidebar() {
+        const togglers = document.querySelectorAll('.sidebar-toggler');
 
+        togglers.forEach(toggler => {
+            toggler.addEventListener('click', function(event) {
+                event.preventDefault();
+
+                // This is a more robust way to find the submenu
+                const submenu = this.parentElement.querySelector('.sidebar-submenu');
+
+                if (submenu) {
+                    this.classList.toggle('is-active');
+                    if (submenu.style.display === 'block') {
+                        submenu.style.display = 'none';
+                    } else {
+                        submenu.style.display = 'block';
+                    }
+                }
+            });
+        });
+    }
+    setupSidebar();
+    // --- END: ROBUST Custom Sidebar Toggler ---
 
 
     // --- Other functionalities ---
@@ -46,62 +69,55 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     // Bulk actions section
-    const selectAllCheckbox = document.getElementById('select-all');
-    const itemCheckboxes = document.querySelectorAll('.item-checkbox');
     const bulkEditForm = document.getElementById('bulk-edit-form');
-    
-    const selectedCountDisplay = document.getElementById('selected-count-display'); 
-    const bulkUpdateBtn = document.getElementById('bulk-update-btn');
-    const bulkDeleteBtn = document.getElementById('bulk-delete-btn');
-    const bulkDuplicateBtn = document.getElementById('bulk-duplicate-btn'); // Add this
-
-    const bulkDeleteCount = document.getElementById('bulk-delete-count');
-    const confirmBulkDeleteBtn = document.getElementById('confirm-bulk-delete-btn');
-    const confirmBulkDuplicateBtn = document.getElementById('confirm-bulk-duplicate-btn'); // Add this
-
-
-    if (selectAllCheckbox && itemCheckboxes.length > 0 && bulkEditForm) {
+    if(bulkEditForm) {
+        const selectAllCheckbox = document.getElementById('select-all');
+        const itemCheckboxes = document.querySelectorAll('.item-checkbox');
         
+        const selectedCountDisplay = document.getElementById('selected-count-display'); 
+        const bulkUpdateBtn = document.getElementById('bulk-update-btn');
+        const bulkDeleteBtn = document.getElementById('bulk-delete-btn');
+        const bulkDuplicateBtn = document.getElementById('bulk-duplicate-btn');
+
+        const bulkDeleteCount = document.getElementById('bulk-delete-count');
+        const confirmBulkDeleteBtn = document.getElementById('confirm-bulk-delete-btn');
+        const confirmBulkDuplicateBtn = document.getElementById('confirm-bulk-duplicate-btn');
+
         function updateSelectedState() {
             const count = document.querySelectorAll('.item-checkbox:checked').length;
             
-            if (selectedCountDisplay) {
-                selectedCountDisplay.textContent = count;
-            }
-            if (bulkDeleteCount) {
-                bulkDeleteCount.textContent = count;
-            }
+            if (selectedCountDisplay) selectedCountDisplay.textContent = count;
+            if (bulkDeleteCount) bulkDeleteCount.textContent = count;
 
             const hasSelection = count > 0;
-            if (bulkUpdateBtn) {
-                bulkUpdateBtn.disabled = !hasSelection;
-            }
+            if (bulkUpdateBtn) bulkUpdateBtn.disabled = !hasSelection;
             if (bulkDeleteBtn) bulkDeleteBtn.disabled = !hasSelection;
-            if (bulkDuplicateBtn) bulkDuplicateBtn.disabled = !hasSelection; // Add this
+            if (bulkDuplicateBtn) bulkDuplicateBtn.disabled = !hasSelection;
         }
 
-        selectAllCheckbox.addEventListener('change', function() {
-            itemCheckboxes.forEach(checkbox => {
-                checkbox.checked = this.checked;
-            });
-            updateSelectedState();
-        });
-
-        itemCheckboxes.forEach(checkbox => {
-            checkbox.addEventListener('change', function() {
-                if (!this.checked) {
-                    selectAllCheckbox.checked = false;
-                } else if (document.querySelectorAll('.item-checkbox:checked').length === itemCheckboxes.length) {
-                    selectAllCheckbox.checked = true;
-                }
+        if (selectAllCheckbox) {
+            selectAllCheckbox.addEventListener('change', function() {
+                itemCheckboxes.forEach(checkbox => {
+                    checkbox.checked = this.checked;
+                });
                 updateSelectedState();
             });
-        });
+
+            itemCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    if (!this.checked) {
+                        selectAllCheckbox.checked = false;
+                    } else if (document.querySelectorAll('.item-checkbox:checked').length === itemCheckboxes.length) {
+                        selectAllCheckbox.checked = true;
+                    }
+                    updateSelectedState();
+                });
+            });
+        }
         
-        // --- START: NEW, CORRECTED EVENT LISTENERS ---
         if (bulkUpdateBtn) {
             bulkUpdateBtn.addEventListener('click', function(e) {
-                e.preventDefault(); // Prevent default submission
+                e.preventDefault();
                 bulkEditForm.action = bulkEditForm.dataset.updateUrl;
                 bulkEditForm.submit();
             });
@@ -120,7 +136,9 @@ document.addEventListener("DOMContentLoaded", function() {
                 bulkEditForm.submit();
             });
         }
-		
-        updateSelectedState();
+        
+        if(selectAllCheckbox) {
+            updateSelectedState();
+        }
     }
 });
