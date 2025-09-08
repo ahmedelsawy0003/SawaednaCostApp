@@ -6,6 +6,8 @@ from .invoice import Invoice
 from .cost_detail import CostDetail
 from .payment_distribution import PaymentDistribution
 from app import constants
+from sqlalchemy import select
+
 
 class Item(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -44,7 +46,7 @@ class Item(db.Model):
 
     @property
     def paid_amount(self):
-        invoice_item_ids_subquery = db.session.query(InvoiceItem.id).filter(InvoiceItem.item_id == self.id).subquery()
+        invoice_item_ids_subquery = select(InvoiceItem.id).filter(InvoiceItem.item_id == self.id)
         total_paid = db.session.query(
             func.sum(PaymentDistribution.amount)
         ).filter(
