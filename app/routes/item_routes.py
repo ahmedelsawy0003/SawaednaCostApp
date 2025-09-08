@@ -323,20 +323,21 @@ def bulk_duplicate_items(project_id):
     for item_id in item_ids:
         original_item = Item.query.get(item_id)
         if original_item:
-            # Create a copy
+            
+            # --- START: Corrected Logic ---
+            # Step 1: Prepare the new item number BEFORE creating the object
+            base_number = f"{original_item.item_number}-نسخة"
+            existing_copies_count = Item.query.filter(
+                Item.project_id == int(project_id), 
+                Item.item_number.like(f"{base_number}%")
+            ).count()
+            new_item_number = f"{base_number}-{existing_copies_count + 1}"
+            # --- END: Corrected Logic ---
+
+            # Step 2: Create the new item object with the prepared number
             new_item = Item(
                 project_id=original_item.project_id,
-                # --- START: Improved duplication logic ---
-                base_number = f"{original_item.item_number}-نسخة"
-                # Check how many copies already exist
-                existing_copies_count = Item.query.filter(
-                    Item.project_id == project_id, 
-                    Item.item_number.like(f"{base_number}%")
-                ).count()
-                
-                new_item_number = f"{base_number}-{existing_copies_count + 1}"
-                # --- END: Improved duplication logic ---
-                item_number=new_item_number,                
+                item_number=new_item_number,
                 description=original_item.description,
                 unit=original_item.unit,
                 contract_quantity=original_item.contract_quantity,
@@ -356,4 +357,4 @@ def bulk_duplicate_items(project_id):
         db.session.commit()
         flash(f'تم تكرار {duplicated_count} بندًا بنجاح.', 'success')
 
-    return redirect(url_for('item.get_items_by_project', project_id=project_id))    
+    return redirect(url_for('item.get_items_by_project', project_id=project_id))
