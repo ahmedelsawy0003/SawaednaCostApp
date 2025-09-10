@@ -95,7 +95,7 @@
                                             data-payment-amount="{{ '%.2f'|format(payment.amount) }}"
                                             data-payment-date="{{ payment.payment_date.strftime('%Y-%m-%d') }}"
                                             data-payment-description="{{ payment.description or '-' }}"
-                                            data-distributions="{{ payment.distributions | tojson }}">
+                                            data-distributions="{{ payment.distributions_json | tojson }}">
                                         <i class="fas fa-search"></i>
                                     </button>
                                 {% else %}

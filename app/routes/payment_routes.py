@@ -55,6 +55,18 @@ def get_all_payments():
         db.joinedload(Payment.distributions).joinedload(PaymentDistribution.invoice_item)
     ).all()
     
+    # Prepare JSON-serializable distributions for template
+    for payment in payments:
+        dists = []
+        for dist in payment.distributions:
+            description = dist.invoice_item.description if dist.invoice_item else ''
+            dists.append({
+                'description': description,
+                'amount': dist.amount
+            })
+        # attach transient attribute for template consumption
+        payment.distributions_json = dists
+    
     # جلب المشاريع والمقاولين لقوائم الفلترة
     projects = Project.query.order_by(Project.name).all()
     contractors = Contractor.query.order_by(Contractor.name).all()
