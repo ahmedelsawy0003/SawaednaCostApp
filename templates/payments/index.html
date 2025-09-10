@@ -72,7 +72,7 @@
                     </thead>
                     <tbody>
                         {% for payment in payments %}
-                        <tr>
+                        <tr data-distributions="{{ payment.distributions_json | tojson }}">
                             <td>{{ payment.id }}</td>
                             <td>{{ payment.payment_date.strftime('%Y-%m-%d') }}</td>
                             <td>{{ payment.invoice.project.name }}</td>
