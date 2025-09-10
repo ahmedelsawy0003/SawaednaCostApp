@@ -167,6 +167,7 @@ document.addEventListener("DOMContentLoaded", function() {
             // Try to read pre-serialized distributions from button or row; else fetch from API
             const paymentRow = button.closest('tr');
             const distributionsJsonAttr = button.getAttribute('data-distributions') || (paymentRow ? paymentRow.getAttribute('data-distributions') : '');
+            const distApiUrl = button.getAttribute('data-dist-url');
 
             const renderRows = (list) => {
                 modalItemsList.innerHTML = '';
@@ -189,7 +190,8 @@ document.addEventListener("DOMContentLoaded", function() {
                 try { parsed = JSON.parse(distributionsJsonAttr); } catch (e) { parsed = []; }
                 renderRows(parsed);
             } else {
-                fetch(`/payments/${paymentId}/distributions.json`, { credentials: 'same-origin' })
+                const url = distApiUrl || `/payments/${paymentId}/distributions.json`;
+                fetch(url, { credentials: 'same-origin' })
                     .then(r => r.ok ? r.json() : Promise.reject())
                     .then(data => {
                         renderRows(data.distributions || []);

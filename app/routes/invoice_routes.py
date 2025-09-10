@@ -145,24 +145,60 @@ def delete_invoice(invoice_id):
 def show_invoice(invoice_id):
     invoice = Invoice.query.get_or_404(invoice_id)
     check_project_permission(invoice.project)
-    added_main_items_subquery = db.session.query(InvoiceItem.item_id).filter(
-        InvoiceItem.invoice_id == invoice.id,
-        InvoiceItem.cost_detail_id.is_(None)
-    )
-    available_items = Item.query.filter(
+    # Compute availability based on remaining quantities across ALL invoices
+    # 1) Main items: show as long as remaining > 0 (actual_quantity - sum(invoiced qty))
+    candidate_items = Item.query.filter(
         Item.project_id == invoice.project_id,
-        Item.contractor_id == invoice.contractor_id,
-        ~Item.id.in_(added_main_items_subquery)
+        Item.contractor_id == invoice.contractor_id
     ).order_by(Item.item_number).all()
-    added_cost_details_subquery = db.session.query(InvoiceItem.cost_detail_id).filter(
-        InvoiceItem.invoice_id == invoice.id,
-        InvoiceItem.cost_detail_id.isnot(None)
-    )
-    available_cost_details = CostDetail.query.filter(
+
+    if candidate_items:
+        item_ids = [it.id for it in candidate_items]
+        invoiced_qty_rows = db.session.query(
+            InvoiceItem.item_id,
+            func.coalesce(func.sum(InvoiceItem.quantity), 0.0)
+        ).filter(
+            InvoiceItem.cost_detail_id.is_(None),
+            InvoiceItem.item_id.in_(item_ids)
+        ).group_by(InvoiceItem.item_id).all()
+        invoiced_qty_map = {row[0]: float(row[1] or 0.0) for row in invoiced_qty_rows}
+    else:
+        invoiced_qty_map = {}
+
+    available_items = []
+    for it in candidate_items:
+        actual_qty = float(it.actual_quantity or 0.0)
+        if actual_qty <= 0:
+            continue
+        already_invoiced = invoiced_qty_map.get(it.id, 0.0)
+        remaining = actual_qty - already_invoiced
+        if remaining > 0.0001:
+            available_items.append(it)
+
+    # 2) Cost details: show as long as remaining > 0 (detail.quantity - sum(invoiced qty for that detail))
+    candidate_details = CostDetail.query.filter(
         CostDetail.contractor_id == invoice.contractor_id,
-        CostDetail.item.has(project_id=invoice.project_id),
-        ~CostDetail.id.in_(added_cost_details_subquery)
+        CostDetail.item.has(project_id=invoice.project_id)
     ).order_by(CostDetail.id).all()
+
+    if candidate_details:
+        detail_ids = [d.id for d in candidate_details]
+        detail_invoiced_rows = db.session.query(
+            InvoiceItem.cost_detail_id,
+            func.coalesce(func.sum(InvoiceItem.quantity), 0.0)
+        ).filter(
+            InvoiceItem.cost_detail_id.in_(detail_ids)
+        ).group_by(InvoiceItem.cost_detail_id).all()
+        detail_invoiced_map = {row[0]: float(row[1] or 0.0) for row in detail_invoiced_rows}
+    else:
+        detail_invoiced_map = {}
+
+    available_cost_details = []
+    for d in candidate_details:
+        max_qty = float(d.quantity or 0.0)
+        already = detail_invoiced_map.get(d.id, 0.0)
+        if (max_qty - already) > 0.0001:
+            available_cost_details.append(d)
     return render_template(
         "invoices/show.html", 
         invoice=invoice, 
