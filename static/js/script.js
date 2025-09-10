@@ -135,7 +135,7 @@ document.addEventListener("DOMContentLoaded", function () {
             modalDescription.textContent = paymentDescription;
             modalItemsList.innerHTML = '<tr><td colspan="2" class="text-center text-muted">جاري التحميل...</td></tr>';
 
-            // جرّب القراءة من الـ data-* أولًا ثم اسحب من API لو مفيش
+            // اقرأ من data-* أولًا، ثم fallback للـ API
             const paymentRow = button.closest('tr');
             const distributionsJsonAttr =
                 button.getAttribute('data-distributions') ||
@@ -147,10 +147,12 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (list && list.length > 0) {
                     list.forEach(dist => {
                         const row = document.createElement('tr');
-                        // اسم الحقل في الـ JSON: لو عندك description مباشر استخدمه،
-                        // ولو قديم كان nested تحت invoice_item.description بدّل تلقائيًا.
-                        const desc = (dist.description) ? dist.description :
-                                     (dist.invoice_item && dist.invoice_item.description) ? dist.invoice_item.description : '-';
+                        // يدعم الصيغتين: description المباشر، أو invoice_item.description الأقدم
+                        const desc = (dist.description)
+                            ? dist.description
+                            : (dist.invoice_item && dist.invoice_item.description)
+                                ? dist.invoice_item.description
+                                : '-';
                         row.innerHTML = `
                             <td>${desc}</td>
                             <td class="text-end fw-bold text-success">${parseFloat(dist.amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ريال</td>
@@ -162,26 +164,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
             };
 
-            // لو فيه JSON جاهز في الـ attributes استخدمه
             if (distributionsJsonAttr && distributionsJsonAttr.trim() !== '') {
                 let parsed = [];
                 try { parsed = JSON.parse(distributionsJsonAttr); } catch (e) { parsed = []; }
-                renderRows(parsed);
-            } else {
-                // fallback للـ API
-                const url = distApiUrl || `/payments/${paymentId}/distributions.json`;
-                fetch(url, { credentials: 'same-origin' })
-                    .then(r => r.ok ? r.json() : Promise.reject())
-                    .then(data => {
-                        // نتوقع { distributions: [...] }
-                        renderRows(data.distributions || []);
-                    })
-                    .catch(() => {
-                        renderRows([]);
-                    });
-            }
-        });
-    }
-    // END: Show Payment Items Modal
-
-});
