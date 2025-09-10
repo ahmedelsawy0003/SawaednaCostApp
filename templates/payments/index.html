@@ -71,8 +71,8 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for payment in payments_data %}
-                        <tr>
+                        {% for payment in payments %}
+                        <tr data-distributions="{{ payment.distributions_json | tojson }}" data-payment-id="{{ payment.id }}">
                             <td>{{ payment.id }}</td>
                             <td>{{ payment.payment_date.strftime('%Y-%m-%d') }}</td>
                             <td>{{ payment.invoice.project.name }}</td>
@@ -86,23 +86,23 @@
                                 </a>
                             </td>
                             <td class="text-center">
-								{% set payment_data = payments_data[loop.index0] %}
-								{% if payment_data.distributions %}
-									<button type="button" 
-											class="btn btn-sm btn-info view-payment-items-btn" 
-											data-bs-toggle="modal" 
-											data-bs-target="#paymentItemsModal"
-											data-payment-id="{{ payment_data.id }}"
-											data-payment-amount="{{ '%.2f'|format(payment_data.amount) }}"
-											data-payment-date="{{ payment_data.payment_date }}"
-											data-payment-description="{{ payment_data.description or '-' }}"
-											data-distributions="{{ payment_data.distributions | tojson }}">
-										<i class="fas fa-search"></i>
-									</button>
-								{% else %}
-									-
-								{% endif %}
-							</td>
+                                {% if payment.distributions %}
+                                    <button type="button"
+                                            class="btn btn-sm btn-info view-payment-items-btn"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#paymentItemsModal"
+                                            data-payment-id="{{ payment.id }}"
+                                            data-payment-amount="{{ '%.2f'|format(payment.amount) }}"
+                                            data-payment-date="{{ payment.payment_date.strftime('%Y-%m-%d') }}"
+                                            data-payment-description="{{ payment.description or '-' }}"
+                                            data-distributions="{{ payment.distributions_json | tojson }}"
+                                            data-dist-url="{{ url_for('payment.get_payment_distributions', payment_id=payment.id) }}">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -138,8 +138,7 @@
                                 <th class="text-end">المبلغ الموزع</th>
                             </tr>
                         </thead>
-                        <tbody id="modal-items-list">
-                            </tbody>
+                        <tbody id="modal-items-list"></tbody>
                     </table>
                 </div>
             </div>
