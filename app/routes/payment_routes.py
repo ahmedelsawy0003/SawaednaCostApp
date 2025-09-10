@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request
+from flask import Blueprint, render_template, request, jsonify, abort
 from app.models.payment import Payment
 from app.models.project import Project
 from app.models.contractor import Contractor
@@ -6,8 +6,10 @@ from app.models.invoice import Invoice
 from app.models.payment_distribution import PaymentDistribution
 from flask_login import login_required, current_user
 from sqlalchemy import or_
+from sqlalchemy.orm import joinedload
 from app.extensions import db
 import datetime
+from app.utils import check_project_permission
 
 payment_bp = Blueprint("payment", __name__, url_prefix='/payments')
 
@@ -52,8 +54,22 @@ def get_all_payments():
         query = query.filter(Payment.payment_date <= end_date)
 
     payments = query.order_by(Payment.payment_date.desc()).options(
-        db.joinedload(Payment.distributions).joinedload(PaymentDistribution.invoice_item)
+        joinedload(Payment.distributions).joinedload(PaymentDistribution.invoice_item)
     ).all()
+    
+    # Prepare JSON-serializable distributions for template
+    payments_distributions = {}
+    for payment in payments:
+        dists = []
+        for dist in payment.distributions:
+            description = dist.invoice_item.description if dist.invoice_item else ''
+            dists.append({
+                'description': description,
+                'amount': dist.amount
+            })
+        # attach transient attribute for template consumption
+        payment.distributions_json = dists
+        payments_distributions[payment.id] = dists
     
     # جلب المشاريع والمقاولين لقوائم الفلترة
     projects = Project.query.order_by(Project.name).all()
@@ -97,5 +113,29 @@ def get_all_payments():
         payments_data=payments_data,  # Pass the new serialized data
         projects=projects,
         contractors=contractors,
-        filters=filters
+        filters=filters,
+        payments_distributions=payments_distributions
     )
+
+
+@payment_bp.route("/<int:payment_id>/distributions.json")
+@login_required
+def get_payment_distributions(payment_id):
+    payment = Payment.query.options(
+        joinedload(Payment.distributions).joinedload(PaymentDistribution.invoice_item)
+    ).get_or_404(payment_id)
+    # Permission: user must be allowed to view the payment's project
+    check_project_permission(payment.invoice.project)
+
+    distributions = []
+    for dist in payment.distributions:
+        description = dist.invoice_item.description if dist.invoice_item else ''
+        distributions.append({
+            'description': description,
+            'amount': dist.amount
+        })
+
+    return jsonify({
+        'payment_id': payment.id,
+        'distributions': distributions
+    })

@@ -26,7 +26,10 @@ def login():
             login_user(user)
             flash("تم تسجيل الدخول بنجاح!", "success")
             next_page = request.args.get('next')
-            return redirect(next_page or url_for("project.get_projects"))
+            # Prevent open redirect by allowing only internal relative paths
+            if next_page and next_page.startswith('/') and not next_page.startswith('//'):
+                return redirect(next_page)
+            return redirect(url_for("project.get_projects"))
         else:
             flash("اسم المستخدم أو كلمة المرور غير صحيحة.", "danger")
             

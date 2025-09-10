@@ -68,7 +68,7 @@ def get_project(project_id):
 @login_required
 def new_project():
     if current_user.role not in ['admin', 'sub-admin']:
-        abort(43)
+        abort(403)
     
     form = ProjectForm()
     form.manager_id.choices = [(user.id, user.username) for user in User.query.order_by('username').all()]
