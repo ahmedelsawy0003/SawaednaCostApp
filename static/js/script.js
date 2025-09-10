@@ -167,8 +167,13 @@ document.addEventListener("DOMContentLoaded", function() {
             // This is a simplified approach assuming the data is already fetched (from the route change)
             // In a real-world large app, you might make an AJAX call here.
             const paymentRow = button.closest('tr');
-            const distributionsJson = paymentRow.getAttribute('data-distributions');
-            const distributions = JSON.parse(distributionsJson);
+            const distributionsJson = button.getAttribute('data-distributions') || '[]';
+            let distributions = [];
+            try {
+                distributions = JSON.parse(distributionsJson);
+            } catch (e) {
+                distributions = [];
+            }
 
             modalItemsList.innerHTML = '';
             if (distributions && distributions.length > 0) {
