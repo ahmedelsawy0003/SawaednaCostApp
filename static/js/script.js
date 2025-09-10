@@ -164,9 +164,11 @@ document.addEventListener("DOMContentLoaded", function() {
             modalDescription.textContent = paymentDescription;
             modalItemsList.innerHTML = '<tr><td colspan="2" class="text-center text-muted">جاري التحميل...</td></tr>';
             
+            // Try to read pre-serialized distributions from button or row; else fetch from API
             const paymentRow = button.closest('tr');
             const distributionsJsonAttr = button.getAttribute('data-distributions') || (paymentRow ? paymentRow.getAttribute('data-distributions') : '');
-            
+            const distApiUrl = button.getAttribute('data-dist-url');
+
             const renderRows = (list) => {
                 modalItemsList.innerHTML = '';
                 if (list && list.length > 0) {
@@ -174,7 +176,7 @@ document.addEventListener("DOMContentLoaded", function() {
                         const row = document.createElement('tr');
                         row.innerHTML = `
                             <td>${dist.description}</td>
-                            <td class="text-end fw-bold text-success">${parseFloat(dist.amount).toLocaleString('ar-SA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ريال</td>
+                            <td class="text-end fw-bold text-success">${parseFloat(dist.amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ريال</td>
                         `;
                         modalItemsList.appendChild(row);
                     });
@@ -183,24 +185,23 @@ document.addEventListener("DOMContentLoaded", function() {
                 }
             };
 
-            let distributions = [];
-            try {
-                distributions = JSON.parse(distributionsJsonAttr);
-            } catch (e) {
-                // Fetch distributions from the API if parsing fails
-                const distApiUrl = button.getAttribute('data-dist-url');
+            if (distributionsJsonAttr && distributionsJsonAttr.trim() !== '') {
+                let parsed = [];
+                try { parsed = JSON.parse(distributionsJsonAttr); } catch (e) { parsed = []; }
+                renderRows(parsed);
+            } else {
                 const url = distApiUrl || `/payments/${paymentId}/distributions.json`;
                 fetch(url, { credentials: 'same-origin' })
-                    .then(r => r.ok ? r.json() : Promise.reject(new Error('Failed to fetch')))
+                    .then(r => r.ok ? r.json() : Promise.reject())
                     .then(data => {
                         renderRows(data.distributions || []);
                     })
                     .catch(() => {
-                        modalItemsList.innerHTML = '<tr><td colspan="2" class="text-center text-danger">حدث خطأ أثناء تحميل البيانات.</td></tr>';
+                        renderRows([]);
                     });
-                return;
             }
-            renderRows(distributions);
+        });
+    }
     // END: Show Payment Items Modal	
 	
 });
