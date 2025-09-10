@@ -6,6 +6,7 @@ from app.models.invoice import Invoice
 from app.models.payment_distribution import PaymentDistribution
 from flask_login import login_required, current_user
 from sqlalchemy import or_
+from sqlalchemy.orm import joinedload
 from app.extensions import db
 import datetime
 from app.utils import check_project_permission
@@ -53,7 +54,7 @@ def get_all_payments():
         query = query.filter(Payment.payment_date <= end_date)
 
     payments = query.order_by(Payment.payment_date.desc()).options(
-        db.joinedload(Payment.distributions).joinedload(PaymentDistribution.invoice_item)
+        joinedload(Payment.distributions).joinedload(PaymentDistribution.invoice_item)
     ).all()
     
     # Prepare JSON-serializable distributions for template
@@ -95,7 +96,9 @@ def get_all_payments():
 @payment_bp.route("/<int:payment_id>/distributions.json")
 @login_required
 def get_payment_distributions(payment_id):
-    payment = Payment.query.get_or_404(payment_id)
+    payment = Payment.query.options(
+        joinedload(Payment.distributions).joinedload(PaymentDistribution.invoice_item)
+    ).get_or_404(payment_id)
     # Permission: user must be allowed to view the payment's project
     check_project_permission(payment.invoice.project)
 
