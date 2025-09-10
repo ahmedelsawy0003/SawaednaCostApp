@@ -67,7 +67,7 @@
                             <th>رقم المستخلص</th>
                             <th class="text-end">المبلغ</th>
                             <th class="text-center">الإجراءات</th>
-							<th class="text-center">عرض البنود</th>
+                            <th class="text-center">عرض البنود</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -81,26 +81,27 @@
                             <td><a href="{{ url_for('invoice.show_invoice', invoice_id=payment.invoice_id) }}">{{ payment.invoice.invoice_number }}</a></td>
                             <td class="text-end text-success fw-bold">{{ "{:,.2f}".format(payment.amount) }} ريال</td>
                             <td class="text-center">
-								<a href="{{ url_for('invoice.edit_payment', payment_id=payment.id) }}" class="btn btn-sm btn-warning" title="تعديل الدفعة">
-									<i class="fas fa-edit"></i>
-								</a>
-							</td>
-							<td class="text-center">
-								{% if payment.distributions %}
-									<button type="button" 
-											class="btn btn-sm btn-info view-payment-items-btn" 
-											data-bs-toggle="modal" 
-											data-bs-target="#paymentItemsModal"
-											data-payment-id="{{ payment.id }}"
-											data-payment-amount="{{ '%.2f'|format(payment.amount) }}"
-											data-payment-date="{{ payment.payment_date.strftime('%Y-%m-%d') }}"
-											data-payment-description="{{ payment.description or '-' }}">
-										<i class="fas fa-search"></i>
-									</button>
-								{% else %}
-									-
-								{% endif %}
-							</td>
+                                <a href="{{ url_for('invoice.edit_payment', payment_id=payment.id) }}" class="btn btn-sm btn-warning" title="تعديل الدفعة">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            </td>
+                            <td class="text-center">
+                                {% if payment.distributions %}
+                                    <button type="button" 
+                                            class="btn btn-sm btn-info view-payment-items-btn" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#paymentItemsModal"
+                                            data-payment-id="{{ payment.id }}"
+                                            data-payment-amount="{{ '%.2f'|format(payment.amount) }}"
+                                            data-payment-date="{{ payment.payment_date.strftime('%Y-%m-%d') }}"
+                                            data-payment-description="{{ payment.description or '-' }}"
+                                            data-distributions="{{ payment.distributions | tojson }}">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>
