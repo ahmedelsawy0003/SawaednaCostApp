@@ -67,9 +67,34 @@ def get_all_payments():
         'end_date': end_date_str
     }
     
+    # Prepare data for JSON serialization
+    payments_data = []
+    for payment in payments:
+        distributions_list = []
+        for dist in payment.distributions:
+            distributions_list.append({
+                'amount': dist.amount,
+                'invoice_item': {
+                    'description': dist.invoice_item.description,
+                    'unit_price': dist.invoice_item.unit_price
+                }
+            })
+        payments_data.append({
+            'id': payment.id,
+            'payment_date': payment.payment_date.strftime('%Y-%m-%d'),
+            'description': payment.description,
+            'amount': payment.amount,
+            'invoice_id': payment.invoice_id,
+            'invoice_number': payment.invoice.invoice_number,
+            'project_name': payment.invoice.project.name,
+            'contractor_name': payment.invoice.contractor.name,
+            'distributions': distributions_list
+        })
+    
     return render_template(
         "payments/index.html",
         payments=payments,
+        payments_data=payments_data,  # Pass the new serialized data
         projects=projects,
         contractors=contractors,
         filters=filters

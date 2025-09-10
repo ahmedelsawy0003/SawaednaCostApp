@@ -175,7 +175,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 distributions.forEach(dist => {
                     const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td>${dist.description}</td>
+                        <td>${dist.invoice_item.description}</td>
                         <td class="text-end fw-bold text-success">${parseFloat(dist.amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ريال</td>
                     `;
                     modalItemsList.appendChild(row);
