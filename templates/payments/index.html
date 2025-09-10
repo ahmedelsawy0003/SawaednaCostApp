@@ -67,6 +67,7 @@
                             <th>رقم المستخلص</th>
                             <th class="text-end">المبلغ</th>
                             <th class="text-center">الإجراءات</th>
+							<th class="text-center">عرض البنود</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -80,10 +81,26 @@
                             <td><a href="{{ url_for('invoice.show_invoice', invoice_id=payment.invoice_id) }}">{{ payment.invoice.invoice_number }}</a></td>
                             <td class="text-end text-success fw-bold">{{ "{:,.2f}".format(payment.amount) }} ريال</td>
                             <td class="text-center">
-                                <a href="{{ url_for('invoice.edit_payment', payment_id=payment.id) }}" class="btn btn-sm btn-warning" title="تعديل الدفعة">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                            </td>
+								<a href="{{ url_for('invoice.edit_payment', payment_id=payment.id) }}" class="btn btn-sm btn-warning" title="تعديل الدفعة">
+									<i class="fas fa-edit"></i>
+								</a>
+							</td>
+							<td class="text-center">
+								{% if payment.distributions %}
+									<button type="button" 
+											class="btn btn-sm btn-info view-payment-items-btn" 
+											data-bs-toggle="modal" 
+											data-bs-target="#paymentItemsModal"
+											data-payment-id="{{ payment.id }}"
+											data-payment-amount="{{ '%.2f'|format(payment.amount) }}"
+											data-payment-date="{{ payment.payment_date.strftime('%Y-%m-%d') }}"
+											data-payment-description="{{ payment.description or '-' }}">
+										<i class="fas fa-search"></i>
+									</button>
+								{% else %}
+									-
+								{% endif %}
+							</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -95,6 +112,39 @@
                 لا توجد دفعات تطابق معايير البحث الحالية.
             </div>
         {% endif %}
+    </div>
+</div>
+
+<div class="modal fade" id="paymentItemsModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">تفاصيل الدفعة</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>مبلغ الدفعة:</strong> <span id="modal-payment-amount"></span> ريال</p>
+                <p><strong>تاريخ الدفعة:</strong> <span id="modal-payment-date"></span></p>
+                <p><strong>الوصف:</strong> <span id="modal-payment-description"></span></p>
+                <hr>
+                <h6>توزيع المبلغ على البنود</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>وصف البند</th>
+                                <th class="text-end">المبلغ الموزع</th>
+                            </tr>
+                        </thead>
+                        <tbody id="modal-items-list">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}

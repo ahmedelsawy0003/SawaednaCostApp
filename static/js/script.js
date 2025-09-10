@@ -142,4 +142,49 @@ document.addEventListener("DOMContentLoaded", function() {
             updateSelectedState();
         }
     }
+
+// START: Show Payment Items Modal
+    const paymentItemsModal = document.getElementById('paymentItemsModal');
+    if (paymentItemsModal) {
+        paymentItemsModal.addEventListener('show.bs.modal', function(event) {
+            const button = event.relatedTarget;
+            const paymentId = button.getAttribute('data-payment-id');
+            const paymentAmount = button.getAttribute('data-payment-amount');
+            const paymentDate = button.getAttribute('data-payment-date');
+            const paymentDescription = button.getAttribute('data-payment-description');
+
+            const modalTitle = paymentItemsModal.querySelector('.modal-title');
+            const modalAmount = paymentItemsModal.querySelector('#modal-payment-amount');
+            const modalDate = paymentItemsModal.querySelector('#modal-payment-date');
+            const modalDescription = paymentItemsModal.querySelector('#modal-payment-description');
+            const modalItemsList = paymentItemsModal.querySelector('#modal-items-list');
+            
+            modalAmount.textContent = parseFloat(paymentAmount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            modalDate.textContent = paymentDate;
+            modalDescription.textContent = paymentDescription;
+            modalItemsList.innerHTML = '<tr><td colspan="2" class="text-center text-muted">جاري التحميل...</td></tr>';
+            
+            // This is a simplified approach assuming the data is already fetched (from the route change)
+            // In a real-world large app, you might make an AJAX call here.
+            const paymentRow = button.closest('tr');
+            const distributionsJson = paymentRow.getAttribute('data-distributions');
+            const distributions = JSON.parse(distributionsJson);
+
+            modalItemsList.innerHTML = '';
+            if (distributions && distributions.length > 0) {
+                distributions.forEach(dist => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${dist.description}</td>
+                        <td class="text-end fw-bold text-success">${parseFloat(dist.amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ريال</td>
+                    `;
+                    modalItemsList.appendChild(row);
+                });
+            } else {
+                modalItemsList.innerHTML = '<tr><td colspan="2" class="text-center">لا توجد بنود مرتبطة بهذه الدفعة.</td></tr>';
+            }
+        });
+    }
+    // END: Show Payment Items Modal	
+	
 });

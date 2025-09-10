@@ -49,7 +49,9 @@ def get_all_payments():
         end_date = datetime.datetime.strptime(end_date_str, "%Y-%m-%d").date()
         query = query.filter(Payment.payment_date <= end_date)
 
-    payments = query.order_by(Payment.payment_date.desc()).all()
+    payments = query.order_by(Payment.payment_date.desc()).options(
+        db.joinedload(Payment.distributions).joinedload(PaymentDistribution.invoice_item)
+    ).all()
     
     # جلب المشاريع والمقاولين لقوائم الفلترة
     projects = Project.query.order_by(Project.name).all()
