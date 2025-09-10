@@ -14,8 +14,13 @@ def check_project_permission(project, require_admin=False):
         abort(403)
 
     # For general access, check if the user is an admin or has the project assigned.
-    if current_user.role not in ['admin', 'sub-admin'] and project not in current_user.projects:
-        abort(403)
+    if current_user.role not in ['admin', 'sub-admin']:
+        try:
+            allowed_project_ids = {p.id for p in current_user.projects}
+        except Exception:
+            allowed_project_ids = set()
+        if project.id not in allowed_project_ids:
+            abort(403)
 
 # START: Corrected Sanitization Function
 def sanitize_input(data):
