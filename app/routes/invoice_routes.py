@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, abort
-from sqlalchemy import func, or_, desc
+from sqlalchemy import func, or_, desc, cast, Integer
 import datetime
 import re
 from app.models.project import Project
@@ -92,7 +92,7 @@ def new_invoice(project_id):
     next_invoice_number = "001" 
 
     if request.method == "GET":
-        last_invoice_tuple = db.session.query(Invoice.invoice_number).filter_by(project_id=project_id).order_by(func.cast(func.regexp_replace(Invoice.invoice_number, '[^0-9]', '', 'g'), db.Integer).desc()).first()
+        last_invoice_tuple = db.session.query(Invoice.invoice_number).filter_by(project_id=project_id).order_by(cast(func.regexp_replace(Invoice.invoice_number, '[^0-9]', '', 'g'), Integer).desc()).first()
         
         if last_invoice_tuple and last_invoice_tuple[0]:
             last_invoice_number = last_invoice_tuple[0]
