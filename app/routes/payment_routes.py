@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request
+from flask import Blueprint, render_template, request, jsonify, abort
 from app.models.payment import Payment
 from app.models.project import Project
 from app.models.contractor import Contractor
@@ -8,6 +8,7 @@ from flask_login import login_required, current_user
 from sqlalchemy import or_
 from app.extensions import db
 import datetime
+from app.utils import check_project_permission
 
 payment_bp = Blueprint("payment", __name__, url_prefix='/payments')
 
@@ -56,6 +57,7 @@ def get_all_payments():
     ).all()
     
     # Prepare JSON-serializable distributions for template
+    payments_distributions = {}
     for payment in payments:
         dists = []
         for dist in payment.distributions:
@@ -66,6 +68,7 @@ def get_all_payments():
             })
         # attach transient attribute for template consumption
         payment.distributions_json = dists
+        payments_distributions[payment.id] = dists
     
     # جلب المشاريع والمقاولين لقوائم الفلترة
     projects = Project.query.order_by(Project.name).all()
@@ -84,5 +87,27 @@ def get_all_payments():
         payments=payments,
         projects=projects,
         contractors=contractors,
-        filters=filters
+        filters=filters,
+        payments_distributions=payments_distributions
     )
+
+
+@payment_bp.route("/<int:payment_id>/distributions.json")
+@login_required
+def get_payment_distributions(payment_id):
+    payment = Payment.query.get_or_404(payment_id)
+    # Permission: user must be allowed to view the payment's project
+    check_project_permission(payment.invoice.project)
+
+    distributions = []
+    for dist in payment.distributions:
+        description = dist.invoice_item.description if dist.invoice_item else ''
+        distributions.append({
+            'description': description,
+            'amount': dist.amount
+        })
+
+    return jsonify({
+        'payment_id': payment.id,
+        'distributions': distributions
+    })

@@ -164,29 +164,39 @@ document.addEventListener("DOMContentLoaded", function() {
             modalDescription.textContent = paymentDescription;
             modalItemsList.innerHTML = '<tr><td colspan="2" class="text-center text-muted">جاري التحميل...</td></tr>';
             
-            // This is a simplified approach assuming the data is already fetched (from the route change)
-            // In a real-world large app, you might make an AJAX call here.
+            // Try to read pre-serialized distributions from button or row; else fetch from API
             const paymentRow = button.closest('tr');
-            const distributionsJson = button.getAttribute('data-distributions') || (paymentRow ? paymentRow.getAttribute('data-distributions') : '[]') || '[]';
-            let distributions = [];
-            try {
-                distributions = JSON.parse(distributionsJson);
-            } catch (e) {
-                distributions = [];
-            }
+            const distributionsJsonAttr = button.getAttribute('data-distributions') || (paymentRow ? paymentRow.getAttribute('data-distributions') : '');
 
-            modalItemsList.innerHTML = '';
-            if (distributions && distributions.length > 0) {
-                distributions.forEach(dist => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${dist.description}</td>
-                        <td class="text-end fw-bold text-success">${parseFloat(dist.amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ريال</td>
-                    `;
-                    modalItemsList.appendChild(row);
-                });
+            const renderRows = (list) => {
+                modalItemsList.innerHTML = '';
+                if (list && list.length > 0) {
+                    list.forEach(dist => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${dist.description}</td>
+                            <td class="text-end fw-bold text-success">${parseFloat(dist.amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ريال</td>
+                        `;
+                        modalItemsList.appendChild(row);
+                    });
+                } else {
+                    modalItemsList.innerHTML = '<tr><td colspan="2" class="text-center">لا توجد بنود مرتبطة بهذه الدفعة.</td></tr>';
+                }
+            };
+
+            if (distributionsJsonAttr && distributionsJsonAttr.trim() !== '') {
+                let parsed = [];
+                try { parsed = JSON.parse(distributionsJsonAttr); } catch (e) { parsed = []; }
+                renderRows(parsed);
             } else {
-                modalItemsList.innerHTML = '<tr><td colspan="2" class="text-center">لا توجد بنود مرتبطة بهذه الدفعة.</td></tr>';
+                fetch(`/payments/${paymentId}/distributions.json`, { credentials: 'same-origin' })
+                    .then(r => r.ok ? r.json() : Promise.reject())
+                    .then(data => {
+                        renderRows(data.distributions || []);
+                    })
+                    .catch(() => {
+                        renderRows([]);
+                    });
             }
         });
     }
