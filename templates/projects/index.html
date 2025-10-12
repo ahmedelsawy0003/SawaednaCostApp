@@ -1,6 +1,12 @@
 {% extends "layouts/base.html" %}
 
-{% block title %}قائمة المشاريع{% endblock %}
+{% block title %}
+    {% if show_archived %}
+        المشاريع المؤرشفة
+    {% else %}
+        قائمة المشاريع
+    {% endif %}
+{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -33,7 +39,13 @@
     </div>
 </div>
 
-<div class="card shadow-sm">
+<div class="card">
+    <div class="card-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">قائمة المشاريع</h5>
+            <input type="search" class="form-control form-control-sm" placeholder="بحث سريع..." style="max-width: 250px;">
+        </div>
+    </div>
     <div class="card-body p-0">
         {% if projects %}
             <div class="table-responsive">
@@ -117,27 +129,27 @@
                             </td>
                         </tr>
                         
-                        <div class="modal fade" id="deleteProjectModal-{{ project.id }}" tabindex="-1" aria-labelledby="deleteProjectModalLabel" aria-hidden="true">
-                            <div class="modal-dialog">
+                        <div class="modal fade" id="deleteProjectModal-{{ project.id }}" tabindex="-1">
+                            <div class="modal-dialog modal-dialog-centered">
                                 <div class="modal-content">
                                     <div class="modal-header">
-                                        <h5 class="modal-title" id="deleteProjectModalLabel">تأكيد الحذف</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        <h5 class="modal-title">تأكيد الحذف</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                     </div>
                                     <div class="modal-body">
-                                        هل أنت متأكد من رغبتك في حذف المشروع: <strong>{{ project.name }}</strong>؟ 
-                                        <br><strong>(ملاحظة: سيتم حذف جميع البنود والتكاليف المرتبطة بهذا المشروع بشكل دائم).</strong>
+                                        <p>هل أنت متأكد أنك تريد حذف المشروع <strong>{{ project.name }}</strong>؟</p>
+                                        <p class="text-danger"><i class="fas fa-exclamation-triangle me-2"></i>سيتم حذف جميع البنود والدفعات المرتبطة بهذا المشروع.</p>
                                     </div>
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                                        <form method="POST" action="{{ url_for('project.delete_project', project_id=project.id) }}" class="d-inline">
-                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <form action="{{ url_for("project.delete_project", project_id=project.id) }}" method="POST" class="d-inline">
                                             <button type="submit" class="btn btn-danger">تأكيد الحذف</button>
                                         </form>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                        
                         {% endfor %}
                     </tbody>
                 </table>
