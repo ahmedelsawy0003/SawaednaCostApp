@@ -1,12 +1,6 @@
 {% extends "layouts/base.html" %}
 
-{% block title %}
-    {% if show_archived %}
-        المشاريع المؤرشفة
-    {% else %}
-        قائمة المشاريع
-    {% endif %}
-{% endblock %}
+{% block title %}قائمة المشاريع{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -14,21 +8,24 @@
         {% if show_archived %}
             <i class="fas fa-archive fa-fw me-2 text-muted"></i>المشاريع المؤرشفة
         {% else %}
-            <i class="fas fa-project-diagram fa-fw me-2 text-muted"></i>المشاريع النشطة
+            <i class="fas fa-project-diagram fa-fw me-2 text-muted"></i>قائمة المشاريع النشطة
         {% endif %}
     </h2>
     
     <div class="d-flex gap-2">
         {% if show_archived %}
-            <a href="{{ url_for('project.get_projects') }}" class="btn btn-secondary">
-                <i class="fas fa-arrow-left me-1"></i> العودة للمشاريع النشطة
+            <a href="{{ url_for('project.get_projects') }}" class="btn btn-secondary"
+               data-bs-toggle="tooltip" data-bs-placement="bottom" title="العودة إلى القائمة الرئيسية للمشاريع">
+                <i class="fas fa-arrow-left me-1"></i> العودة للنشطة
             </a>
         {% else %}
-            <a href="{{ url_for('project.get_projects', show_archived=True) }}" class="btn btn-secondary">
+            <a href="{{ url_for('project.get_projects', show_archived=True) }}" class="btn btn-secondary"
+               data-bs-toggle="tooltip" data-bs-placement="bottom" title="عرض المشاريع التي تم إيقافها أو حفظها">
                 <i class="fas fa-archive me-1"></i> عرض الأرشيف
             </a>
             {% if current_user.role in ['admin', 'sub-admin'] %}
-            <a href="{{ url_for("project.new_project") }}" class="btn btn-primary">
+            <a href="{{ url_for("project.new_project") }}" class="btn btn-primary"
+               data-bs-toggle="tooltip" data-bs-placement="bottom" title="إنشاء مشروع جديد في النظام">
                 <i class="fas fa-plus me-1"></i> إضافة مشروع جديد
             </a>
             {% endif %}
@@ -36,13 +33,7 @@
     </div>
 </div>
 
-<div class="card">
-    <div class="card-header">
-        <div class="d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">قائمة المشاريع</h5>
-            <input type="search" class="form-control form-control-sm" placeholder="بحث سريع..." style="max-width: 250px;">
-        </div>
-    </div>
+<div class="card shadow-sm">
     <div class="card-body p-0">
         {% if projects %}
             <div class="table-responsive">
@@ -50,17 +41,17 @@
                     <thead>
                         <tr>
                             <th>اسم المشروع</th>
-                            <th>الحالة</th>
+                            <th class="d-none d-sm-table-cell">الحالة</th>
                             {% if current_user.role in ['admin', 'sub-admin'] %}
-                            <th>التكلفة التعاقدية</th>
+                            <th class="d-none d-lg-table-cell text-end">التكلفة التعاقدية</th>
                             {% endif %}
-                            <th>التكلفة الفعلية</th>
-                            <th>إجمالي المدفوع</th>
-                            <th>المبلغ المتبقي</th>
+                            <th class="d-none d-sm-table-cell text-end">التكلفة الفعلية</th>
+                            <th class="d-none d-md-table-cell text-end">إجمالي المدفوع</th>
+                            <th class="d-none d-md-table-cell text-end">المبلغ المتبقي</th>
                              {% if current_user.role in ['admin', 'sub-admin'] %}
-                             <th>الوفر/الزيادة</th>
+                             <th class="d-none d-lg-table-cell text-end">الوفر/الزيادة</th>
                              {% endif %}
-                             <th class="text-center">الإجراءات</th>
+                             <th class="text-center" style="width: 200px;">الإجراءات</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -69,94 +60,105 @@
                             <td>
                                 <a href="{{ url_for("project.get_project", project_id=project.id) }}" class="fw-bold">{{ project.name }}</a>
                             </td>
-                            <td>
+                            <td class="d-none d-sm-table-cell">
                                 <span class="badge {{ "bg-warning" if project.status == "قيد التنفيذ" else "bg-success" if project.status == "مكتمل" else "bg-info" if project.status == "معلق" else "bg-danger" }}">
                                     {{ project.status }}
                                 </span>
                             </td>
                             {% if current_user.role in ['admin', 'sub-admin'] %}
-                            <td class="text-end">{{ "{:,.2f}".format(project.total_contract_cost) }}</td>
+                            <td class="d-none d-lg-table-cell text-end number-cell">{{ "{:,.2f}".format(project.total_contract_cost) }}</td>
                             {% endif %}
-                            <td class="text-end">{{ "{:,.2f}".format(project.total_actual_cost) }}</td>
-                            <td>
-                                <span class="text-info">{{ "{:,.2f}".format(project.total_paid_amount) }}</span>
+                            <td class="d-none d-sm-table-cell text-end number-cell">{{ "{:,.2f}".format(project.total_actual_cost) }}</td>
+                            <td class="d-none d-md-table-cell text-end">
+                                <span class="text-info number-cell">{{ "{:,.2f}".format(project.total_paid_amount) }}</span>
                             </td>
-                            <td>
-                                <span class="text-danger">{{ "{:,.2f}".format(project.total_remaining_amount) }}</span>
+                            <td class="d-none d-md-table-cell text-end">
+                                <span class="text-danger number-cell">{{ "{:,.2f}".format(project.total_remaining_amount) }}</span>
                             </td>
                             {% if current_user.role in ['admin', 'sub-admin'] %}
-                            <td>
-                                <span class="{{ "text-success" if project.total_savings >= 0 else "text-danger" }}">
+                            <td class="d-none d-lg-table-cell text-end">
+                                <span class="{{ "text-success" if project.total_savings >= 0 else "text-danger" }} number-cell">
                                     {{ "{:,.2f}".format(project.total_savings) }}
                                 </span>
                             </td>
                             {% endif %}
                             <td class="text-center">
-                                <div class="btn-group btn-group-sm">
-                                    <a href="{{ url_for("project.get_project", project_id=project.id) }}" class="btn btn-info" title="عرض التفاصيل">
-                                        <i class="fas fa-eye"></i>
+                                <div class="btn-group btn-group-sm flex-wrap gap-1">
+                                    <a href="{{ url_for("project.get_project", project_id=project.id) }}" class="btn btn-info"
+                                       data-bs-toggle="tooltip" data-bs-placement="top" title="مشاهدة جميع التفاصيل">
+                                        <i class="fas fa-eye me-1"></i> عرض
                                     </a>
                                     {% if current_user.role in ['admin', 'sub-admin'] %}
-                                    <a href="{{ url_for("project.edit_project", project_id=project.id) }}" class="btn btn-warning" title="تعديل">
-                                        <i class="fas fa-edit"></i>
+                                    <a href="{{ url_for("project.edit_project", project_id=project.id) }}" class="btn btn-warning"
+                                       data-bs-toggle="tooltip" data-bs-placement="top" title="تعديل بيانات المشروع">
+                                        <i class="fas fa-edit me-1"></i> تعديل
                                     </a>
                                     
                                     <form action="{{ url_for('project.toggle_archive', project_id=project.id, show_archived=show_archived) }}" method="POST" class="d-inline">
                                         {% if project.is_archived %}
-                                            <button type="submit" class="btn btn-secondary" title="إلغاء الأرشفة">
-                                                <i class="fas fa-box-open"></i>
+                                            <button type="submit" class="btn btn-secondary"
+                                                    data-bs-toggle="tooltip" data-bs-placement="top" title="إلغاء أرشفة المشروع وإعادته للنشطة">
+                                                <i class="fas fa-box-open me-1"></i> إلغاء أرشفة
                                             </button>
                                         {% else %}
-                                            <button type="submit" class="btn btn-dark" title="أرشفة">
-                                                <i class="fas fa-archive"></i>
+                                            <button type="submit" class="btn btn-dark"
+                                                    data-bs-toggle="tooltip" data-bs-placement="top" title="أرشفة المشروع لإخفائه من القائمة النشطة">
+                                                <i class="fas fa-archive me-1"></i> أرشفة
                                             </button>
                                         {% endif %}
                                     </form>
 
-                                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteProjectModal-{{ project.id }}" title="حذف">
-                                        <i class="fas fa-trash"></i>
+                                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteProjectModal-{{ project.id }}"
+                                            data-bs-toggle="tooltip" data-bs-placement="top" title="حذف المشروع نهائياً">
+                                        <i class="fas fa-trash me-1"></i> حذف
                                     </button>
                                     {% endif %}
                                 </div>
                             </td>
                         </tr>
+                        
+                        <div class="modal fade" id="deleteProjectModal-{{ project.id }}" tabindex="-1" aria-labelledby="deleteProjectModalLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="deleteProjectModalLabel">تأكيد الحذف</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        هل أنت متأكد من رغبتك في حذف المشروع: <strong>{{ project.name }}</strong>؟ 
+                                        <br><strong>(ملاحظة: سيتم حذف جميع البنود والتكاليف المرتبطة بهذا المشروع بشكل دائم).</strong>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                                        <form method="POST" action="{{ url_for('project.delete_project', project_id=project.id) }}" class="d-inline">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                            <button type="submit" class="btn btn-danger">تأكيد الحذف</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
         {% else %}
-            <div class="alert alert-secondary m-3 text-center">
-                <i class="fas fa-info-circle me-2"></i>
-                {% if show_archived %}
-                    لا توجد مشاريع مؤرشفة حالياً.
-                {% else %}
-                    لا توجد مشاريع نشطة حالياً. {% if current_user.role in ['admin', 'sub-admin'] %} ابدأ بإضافة مشروع جديد! {% endif %}
-                {% endif %}
+            <div class="alert alert-info m-3 text-center p-4">
+                <h4 class="alert-heading"><i class="fas fa-info-circle me-2"></i> لا توجد مشاريع مسجلة حالياً!</h4>
+                <p class="mb-0">
+                    {% if show_archived %}
+                        لا توجد مشاريع مؤرشفة حالياً. يمكنك العودة إلى <a href="{{ url_for('project.get_projects') }}" class="alert-link">قائمة المشاريع النشطة</a>.
+                    {% else %}
+                        لا توجد مشاريع نشطة حالياً في هذه القائمة.
+                        {% if current_user.role in ['admin', 'sub-admin'] %} 
+                            <br><strong>يرجى الضغط على زر "<i class="fas fa-plus me-1"></i> إضافة مشروع جديد" لبدء العمل.</strong> 
+                        {% else %}
+                             يرجى التواصل مع المسؤول لإضافة مشاريعك.
+                        {% endif %}
+                    {% endif %}
+                </p>
             </div>
         {% endif %}
     </div>
 </div>
-
-{% for project in projects %}
-<div class="modal fade" id="deleteProjectModal-{{ project.id }}" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">تأكيد الحذف</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <p>هل أنت متأكد أنك تريد حذف المشروع <strong>{{ project.name }}</strong>؟</p>
-                <p class="text-danger"><i class="fas fa-exclamation-triangle me-2"></i>سيتم حذف جميع البنود والدفعات المرتبطة بهذا المشروع.</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                <form action="{{ url_for("project.delete_project", project_id=project.id) }}" method="POST" class="d-inline">
-                    <button type="submit" class="btn btn-danger">تأكيد الحذف</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-{% endfor %}
 {% endblock %}
