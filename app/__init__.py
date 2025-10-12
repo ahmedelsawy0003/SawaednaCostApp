@@ -56,7 +56,8 @@ def create_app():
     from .routes.contractor_routes import contractor_bp
     from .routes.invoice_routes import invoice_bp
     from .routes.cost_detail_routes import cost_detail_bp
-    from .routes.payment_routes import payment_bp  # <-- سطر الاستيراد المضاف
+    from .routes.payment_routes import payment_bp
+    from .routes.purchase_order_routes import po_bp # <-- إضافة استيراد المسار الجديد
 
     app.register_blueprint(project_bp)
     app.register_blueprint(item_bp)
@@ -65,7 +66,8 @@ def create_app():
     app.register_blueprint(contractor_bp)
     app.register_blueprint(invoice_bp)
     app.register_blueprint(cost_detail_bp)
-    app.register_blueprint(payment_bp)  # <-- سطر التسجيل المضاف
+    app.register_blueprint(payment_bp)
+    app.register_blueprint(po_bp) # <-- إضافة تسجيل المسار الجديد
     
     @app.route('/')
     def index():
