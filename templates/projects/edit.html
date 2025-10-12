@@ -12,10 +12,9 @@
 
 <div class="card">
     <div class="card-header bg-primary text-white">
-        <h3 class="mb-0">بيانات المشروع</h3>
+        <h3 class="mb-0"><i class="fas fa-edit me-2"></i>بيانات المشروع</h3>
     </div>
     <div class="card-body">
-        {# --- START: النموذج الجديد --- #}
         <form method="POST" action="{{ url_for("project.edit_project", project_id=project.id) }}" novalidate>
             {{ form.hidden_tag() }}
             <div class="row">
@@ -51,7 +50,7 @@
                     </div>
                     <div class="mb-3">
                         {{ form.spreadsheet_id.label(class="form-label") }}
-                        {{ form.spreadsheet_id(class="form-control") }}
+                        {{ form.spreadsheet_id(class="form-control", data-bs-toggle="tooltip", data-bs-placement="top", title="يستخدم لربط بيانات المشروع بجداول Google Sheets للتصدير والاستيراد. يجب أن يكون فريدًا.") }}
                         <div class="form-text">يمكنك العثور على معرّف جدول البيانات في رابط Google Sheet الخاص بك</div>
                     </div>
                 </div>
@@ -61,10 +60,9 @@
                 {{ form.notes(class="form-control", rows="4") }}
             </div>
             
-            {{ form.submit(class="btn btn-primary", value="تحديث المشروع") }} {# تغيير نص الزر #}
+            {{ form.submit(class="btn btn-primary", value="حفظ التعديلات") }}
 
         </form>
-        {# --- END: النموذج الجديد --- #}
     </div>
 </div>
 {% endblock %}

@@ -1,7 +1,8 @@
 /*
- * SawaednaCostApp - Light Sky Blue Theme
- * Version: 6.0 (Light Theme)
- * Author: Your Name/Gemini
+ * SawaednaCostApp - Clean Professional Light Theme
+ * Version: 7.0 (Light Theme)
+ * Author: Gemini
+ * Theme Focus: Clean design, High contrast, Readability, Professional deep blue accent.
 */
 
 /* 1. FOUNDATION: Variables & Base Styles */
@@ -10,50 +11,49 @@
 
 :root {
     /* ---------------------------------------------------- */
-    /* == NEW COLORS: Light Sky Blue Theme == */
+    /* == V7.0 Colors: Deep Blue Palette == */
     /* ---------------------------------------------------- */
-    --primary: #007bff;         /* Blue - اللون الأساسي */
-    --primary-hover: #0056b3;
+    --primary: #005B96;         /* Deep Blue - اللون الأساسي */
+    --primary-hover: #003D66;
     --primary-light: #4dabff;
     --primary-dark: #004d99;
     
-    --danger: #dc3545;          /* Red */
-    --warning: #ffc107;         /* Yellow */
-    --info: #17a2b8;            /* Teal */
-    --success: #28a745;         /* Green */
+    --danger: #EF4444;          /* True Red/Danger */
+    --warning: #F59E0B;         /* Orange/Caution */
+    --info: #3B82F6;            /* Sky Blue/Info */
+    --success: #10B981;         /* Emerald Green/Success */
+    --secondary: #6B7280;       /* Neutral Gray */
 
-    --bg-dark: #f0f3f6;         /* الخلفية الرئيسية (Soft Gray) */
-    --bg-surface: #ffffff;      /* خلفية الشريط الجانبي والكاردز (White) */
-    --bg-card: #f8f9fa;         /* خلفية الكاردز الداخلية (Lightest Gray) */
-    --border-color: #e9ecef;    /* لون الحدود (Light Gray) */
+    --bg-dark: #F9FAFB;         /* الخلفية الرئيسية (Very Light Gray) */
+    --bg-surface: #FFFFFF;      /* خلفية الشريط الجانبي والكاردز (White) */
+    --bg-card: #F9FAFB;         /* خلفية الكاردز الداخلية/الصفوف الفردية (Lightest Gray) */
+    --border-color: #E5E7EB;    /* لون الحدود (Light Gray) */
     
-    --text-light: #212529;      /* نص ساطع (Dark) */
-    --text-normal: #343a40;     /* نص عادي (Gray) */
-    --text-muted: #6c757d;      /* نص باهت (Muted Gray) */
+    --text-light: #1F2937;      /* نص داكن جداً */
+    --text-normal: #374151;     /* نص عادي */
+    --text-muted: #6B7280;      /* نص باهت */
 
     --sidebar-width: 260px;
-    --radius: 0.75rem;
-    --radius-sm: 0.5rem;
-    --shadow-md: 0 0.5rem 1rem rgba(0, 0, 0, 0.1); /* ظل خفيف للثيم الفاتح */
-    --shadow-glow: 0 0 10px rgba(0, 123, 255, 0.3);
+    --radius: 0.5rem; /* Slightly smaller radius for modern look */
+    /* Clean, low-opacity shadow */
+    --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -2px rgba(0,0,0,0.05); 
+    --shadow-glow: 0 0 10px rgba(0, 91, 150, 0.2);
     --transition: 0.3s ease;
 
-    /* تأثيرات الإضاءة تصبح ظلاً خفيفاً */
-    --glow-primary: 0 0 5px rgba(0, 123, 255, 0.5);
-    --glow-hover: 0 0 10px rgba(0, 123, 255, 0.7);
+    /* تأثيرات الإضاءة */
+    --glow-primary: 0 0 5px rgba(0, 91, 150, 0.5);
+    --glow-hover: 0 0 10px rgba(0, 91, 150, 0.7);
 }
 
 body {
-    /* تغيير الخلفية للتدرج الفاتح */
-    background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-surface) 100%);
+    background: var(--bg-dark);
     color: var(--text-normal);
     text-align: right;
     direction: rtl;
     font-size: 16px;
-    line-height: 1.7;
+    line-height: 1.65; /* محسّن لسهولة القراءة */
     overflow-x: hidden;
     position: relative;
-    /* إزالة الخلفية المتحركة للحصول على مظهر أنظف وأبسط */
 }
 
 /* إلغاء الخلفية المتحركة */
@@ -64,8 +64,8 @@ body::before {
 h1, h2, h3, h4, h5, h6 {
     font-family: 'Tajawal', sans-serif;
     font-weight: 700;
-    color: var(--text-light); /* نص داكن على خلفية فاتحة */
-    text-shadow: none; /* إزالة تأثير ظل النص */
+    color: var(--text-light);
+    text-shadow: none;
 }
 
 a {
@@ -91,12 +91,10 @@ a:hover {
     /* خلفية بيضاء و ظل خفيف */
     background: var(--bg-surface);
     border-left: 1px solid var(--border-color);
-    box-shadow: 1px 0 10px rgba(0, 0, 0, 0.05);
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.03);
     position: relative;
     overflow: hidden;
     transition: all var(--transition);
-    /* إزالة تأثير الزجاج والحدود الفاقعة */
-    backdrop-filter: none;
     border-left: none;
 }
 
@@ -119,7 +117,7 @@ a:hover {
     text-shadow: none;
 }
 .topbar-brand {
-    color: var(--primary-dark);
+    color: var(--primary-hover);
     font-weight: 700;
     font-size: 1.2rem;
     text-shadow: none;
@@ -142,18 +140,18 @@ a:hover {
 
 .sidebar-link:hover {
     background: var(--bg-card); /* خلفية رمادية فاتحة عند التمرير */
-    color: var(--primary-dark);
+    color: var(--primary);
     text-shadow: none;
     box-shadow: none;
     transform: translateX(0);
 }
 
 .sidebar-link.active {
-    background: var(--primary-light);
+    background: var(--primary);
     color: var(--bg-surface); /* نص أبيض على خلفية ملونة */
-    border-right: 4px solid var(--primary);
+    border-right: 4px solid var(--primary-hover);
     padding-right: calc(1.5rem - 4px);
-    box-shadow: none;
+    box-shadow: 0 4px 10px rgba(0, 91, 150, 0.3);
     font-weight: 700;
 }
 .sidebar-link.active::before {
@@ -183,7 +181,7 @@ a:hover {
     border-right: 1px solid var(--border-color);
 }
 .sidebar-submenu.nested-menu {
-    background: var(--bg-dark);
+    background: #E5E7EB; /* لون أغمق قليلاً للتعشيش */
     border-right: 2px solid var(--primary-light);
 }
 .sidebar-submenu a::before {
@@ -198,34 +196,37 @@ a:hover {
 /* 4. OTHER COMPONENTS (Cards, Tables, etc.) */
 /* ========================================================================== */
 .card {
-    background: var(--bg-card);
+    background: var(--bg-surface);
     border: 1px solid var(--border-color);
+    border-radius: var(--radius);
     box-shadow: var(--shadow-md);
     backdrop-filter: none;
+    transition: box-shadow var(--transition), border-color var(--transition);
 }
 
 .card:hover {
     border-color: var(--primary-light);
-    box-shadow: 0 0 15px rgba(0, 123, 255, 0.1);
-    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1);
+    transform: translateY(0);
 }
 
 .card-header {
-    background: var(--bg-surface) !important;
+    background: var(--bg-card) !important;
     border-bottom: 1px solid var(--border-color);
     color: var(--text-light) !important;
     text-shadow: none;
+    padding: 0.75rem 1.25rem; /* تحسين المسافات */
 }
 
 .btn-primary { 
     background: var(--primary);
     color: #ffffff;
-    box-shadow: 0 4px 10px rgba(0, 123, 255, 0.2);
+    box-shadow: 0 4px 10px rgba(0, 91, 150, 0.2);
     border-color: var(--primary);
 }
 .btn-primary:hover { 
     background: var(--primary-hover);
-    box-shadow: 0 6px 15px rgba(0, 123, 255, 0.4);
+    box-shadow: 0 6px 15px rgba(0, 91, 150, 0.4);
     border-color: var(--primary-hover);
 }
 .btn-outline-secondary {
@@ -237,23 +238,29 @@ a:hover {
     background-color: var(--bg-card);
     border-color: var(--primary-light);
 }
+.btn-dark {
+    background: var(--text-normal);
+    border-color: var(--text-normal) !important;
+    color: #ffffff !important;
+    box-shadow: none;
+}
 
 .table { 
     border-color: var(--border-color);
 }
 .table-dark {
-    /* تغيير أسماء المتغيرات للثيم الفاتح */
-    --bs-table-bg: var(--bg-card);
+    /* تطبيق الثيم الفاتح على الجداول */
+    --bs-table-bg: var(--bg-surface);
     --bs-table-border-color: var(--border-color);
-    --bs-table-striped-bg: #e9ecef;
-    --bs-table-hover-bg: #e2e6ea;
+    --bs-table-striped-bg: var(--bg-card); /* صفوف مخططة بلون الكارد الفاتح */
+    --bs-table-hover-bg: #E5E7EB; /* لون التمرير */
     color: var(--text-normal);
 }
 .table thead th {
     /* ترويسة جدول بسيطة وفاتحة */
-    background: var(--bg-surface) !important;
+    background: #F3F4F6 !important; /* لون أفتح قليلاً من خلفية الصفحة */
     color: var(--text-light);
-    border-bottom: 2px solid var(--primary);
+    border-bottom: 3px solid var(--primary); /* خط سميك بلون أزرق تحت الترويسة */
     text-shadow: none;
 }
 .table-hover > tbody > tr:hover > * {
@@ -271,6 +278,7 @@ a:hover {
     border: 1px solid var(--border-color);
     box-shadow: var(--shadow-md);
     backdrop-filter: none;
+    border-radius: var(--radius);
 }
 
 .password-toggle-icon {
@@ -285,12 +293,13 @@ a:hover {
     background: var(--bg-surface) !important;
     border: 1px solid var(--border-color) !important;
     color: var(--text-normal) !important;
+    border-radius: var(--radius);
 }
 
 .form-control:focus, .form-select:focus {
     background: var(--bg-surface) !important;
     border-color: var(--primary) !important;
-    box-shadow: 0 0 5px rgba(0, 123, 255, 0.4) !important;
+    box-shadow: 0 0 5px rgba(0, 91, 150, 0.4) !important;
     color: var(--text-normal) !important;
 }
 
@@ -299,6 +308,7 @@ a:hover {
 .table-responsive {
     border: 1px solid var(--border-color);
     background: var(--bg-surface);
+    border-radius: var(--radius);
 }
 .table-responsive::-webkit-scrollbar-thumb {
     background: var(--primary-light);
@@ -317,27 +327,31 @@ a:hover {
 .text-danger {
     color: var(--danger) !important;
 }
+.text-light {
+    color: var(--text-light) !important;
+}
 
 /* تحسين الإشعارات والتنبيهات */
 .alert {
     border: 1px solid;
     backdrop-filter: none;
+    border-radius: var(--radius);
 }
 
-.alert-primary {
-    background: #cce5ff;
-    border-color: #b8daff;
-    color: #004085;
+.alert-info {
+    background-color: #EBF5FF;
+    border-color: #B3D7FF;
+    color: var(--info);
+}
+.alert-warning {
+    background-color: #FFF7EB;
+    border-color: #FFDE99;
+    color: var(--warning);
 }
 
 /* ========================================================================== */
-/* == START: V6.0 - FINAL & DEFINITIVE UI OVERHAUL PATCH (Light Theme Adjustments) == */
+/* == V7.0 - FINAL & DEFINITIVE UI OVERHAUL PATCH (Light Theme Adjustments) == */
 /* ========================================================================== */
-
-body[data-bs-theme="light"] .form-control,
-body[data-bs-theme="light"] .form-select {
-    /* تم توحيدها في الأعلى */
-}
 
 .card > .accordion .accordion-button {
     background: var(--bg-surface) !important;
@@ -360,38 +374,38 @@ body[data-bs-theme="light"] .form-select {
     background: var(--danger);
     border-color: var(--danger) !important;
     color: #ffffff !important;
-    box-shadow: 0 0 10px rgba(220, 53, 69, 0.3);
+    box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);
 }
 
 .btn-warning { 
     color: var(--text-light) !important; 
     background: var(--warning);
     border-color: var(--warning) !important;
+    box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3);
 }
 .btn-info {
     background: var(--info);
     border-color: var(--info) !important;
     color: #ffffff !important;
 }
-.btn-dark {
-    background: var(--text-normal);
-    border-color: var(--text-muted) !important;
-    color: #ffffff !important;
-    box-shadow: none;
+
+/* لضمان محاذاة الأرقام والجداول المالية */
+.table td.number-cell, 
+.table td.text-end,
+.table th.text-end {
+    /* تثبيت الخطوط لعرض الأرقام بوضوح */
+    font-family: monospace, 'Tajawal', sans-serif; 
+    color: var(--text-light) !important;
 }
 
-.table td.number-cell, .table td.text-end {
-    color: var(--text-normal) !important;
-}
 .table td a.fw-bold {
-    color: var(--primary-dark) !important;
+    color: var(--primary-hover) !important;
 }
 
-/* إزالة الـ RGBA في الألوان الداكنة التي كانت في الثيم الداكن */
 .form-control:disabled,
 .form-control[readonly],
 .form-select:disabled {
-    background-color: #f0f0f0 !important;
+    background-color: #F3F4F6 !important;
     border-color: var(--border-color) !important;
     color: var(--text-muted) !important;
 }

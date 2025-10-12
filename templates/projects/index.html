@@ -12,16 +12,16 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="mb-0">
         {% if show_archived %}
-            <i class="fas fa-archive fa-fw me-2 text-muted"></i>المشاريع المؤرشفة
+            <i class="fas fa-archive fa-fw me-2 text-danger"></i>المشاريع المؤرشفة
         {% else %}
             <i class="fas fa-project-diagram fa-fw me-2 text-muted"></i>قائمة المشاريع النشطة
         {% endif %}
     </h2>
     
-    <div class="d-flex gap-2">
+    <div class="d-flex flex-wrap gap-2">
         {% if show_archived %}
-            <a href="{{ url_for('project.get_projects') }}" class="btn btn-secondary"
-               data-bs-toggle="tooltip" data-bs-placement="bottom" title="العودة إلى القائمة الرئيسية للمشاريع">
+            <a href="{{ url_for('project.get_projects') }}" class="btn btn-primary"
+               data-bs-toggle="tooltip" data-bs-placement="bottom" title="العودة إلى القائمة الرئيسية للمشاريع النشطة">
                 <i class="fas fa-arrow-left me-1"></i> العودة للنشطة
             </a>
         {% else %}
@@ -30,7 +30,7 @@
                 <i class="fas fa-archive me-1"></i> عرض الأرشيف
             </a>
             {% if current_user.role in ['admin', 'sub-admin'] %}
-            <a href="{{ url_for("project.new_project") }}" class="btn btn-primary"
+            <a href="{{ url_for("project.new_project") }}" class="btn btn-success"
                data-bs-toggle="tooltip" data-bs-placement="bottom" title="إنشاء مشروع جديد في النظام">
                 <i class="fas fa-plus me-1"></i> إضافة مشروع جديد
             </a>
@@ -42,8 +42,8 @@
 <div class="card">
     <div class="card-header">
         <div class="d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">قائمة المشاريع</h5>
-            <input type="search" class="form-control form-control-sm" placeholder="بحث سريع..." style="max-width: 250px;">
+            <h5 class="mb-0"><i class="fas fa-list fa-fw me-1"></i>قائمة المشاريع</h5>
+            <input type="search" class="form-control form-control-sm" placeholder="بحث سريع باسم المشروع..." style="max-width: 250px;">
         </div>
     </div>
     <div class="card-body p-0">
@@ -53,7 +53,7 @@
                     <thead>
                         <tr>
                             <th>اسم المشروع</th>
-                            <th class="d-none d-sm-table-cell">الحالة</th>
+                            <th class="d-none d-sm-table-cell text-center">الحالة</th>
                             {% if current_user.role in ['admin', 'sub-admin'] %}
                             <th class="d-none d-lg-table-cell text-end">التكلفة التعاقدية</th>
                             {% endif %}
@@ -72,8 +72,13 @@
                             <td>
                                 <a href="{{ url_for("project.get_project", project_id=project.id) }}" class="fw-bold">{{ project.name }}</a>
                             </td>
-                            <td class="d-none d-sm-table-cell">
-                                <span class="badge {{ "bg-warning" if project.status == "قيد التنفيذ" else "bg-success" if project.status == "مكتمل" else "bg-info" if project.status == "معلق" else "bg-danger" }}">
+                            <td class="d-none d-sm-table-cell text-center">
+                                <span class="badge 
+                                    {% if project.status == "قيد التنفيذ" %} bg-warning 
+                                    {% elif project.status == "مكتمل" %} bg-success 
+                                    {% elif project.status == "معلق" %} bg-info 
+                                    {% else %} bg-danger 
+                                    {% endif %}">
                                     {{ project.status }}
                                 </span>
                             </td>
@@ -82,7 +87,7 @@
                             {% endif %}
                             <td class="d-none d-sm-table-cell text-end number-cell">{{ "{:,.2f}".format(project.total_actual_cost) }}</td>
                             <td class="d-none d-md-table-cell text-end">
-                                <span class="text-info number-cell">{{ "{:,.2f}".format(project.total_paid_amount) }}</span>
+                                <span class="text-primary number-cell">{{ "{:,.2f}".format(project.total_paid_amount) }}</span>
                             </td>
                             <td class="d-none d-md-table-cell text-end">
                                 <span class="text-danger number-cell">{{ "{:,.2f}".format(project.total_remaining_amount) }}</span>
@@ -95,34 +100,34 @@
                             </td>
                             {% endif %}
                             <td class="text-center">
-                                <div class="btn-group btn-group-sm flex-wrap gap-1">
+                                <div class="btn-group btn-group-sm flex-nowrap">
                                     <a href="{{ url_for("project.get_project", project_id=project.id) }}" class="btn btn-info"
                                        data-bs-toggle="tooltip" data-bs-placement="top" title="مشاهدة جميع التفاصيل">
-                                        <i class="fas fa-eye me-1"></i> عرض
+                                        <i class="fas fa-eye"></i>
                                     </a>
                                     {% if current_user.role in ['admin', 'sub-admin'] %}
                                     <a href="{{ url_for("project.edit_project", project_id=project.id) }}" class="btn btn-warning"
                                        data-bs-toggle="tooltip" data-bs-placement="top" title="تعديل بيانات المشروع">
-                                        <i class="fas fa-edit me-1"></i> تعديل
+                                        <i class="fas fa-edit"></i>
                                     </a>
                                     
                                     <form action="{{ url_for('project.toggle_archive', project_id=project.id, show_archived=show_archived) }}" method="POST" class="d-inline">
                                         {% if project.is_archived %}
-                                            <button type="submit" class="btn btn-secondary"
+                                            <button type="submit" class="btn btn-success"
                                                     data-bs-toggle="tooltip" data-bs-placement="top" title="إلغاء أرشفة المشروع وإعادته للنشطة">
-                                                <i class="fas fa-box-open me-1"></i> إلغاء أرشفة
+                                                <i class="fas fa-box-open"></i>
                                             </button>
                                         {% else %}
                                             <button type="submit" class="btn btn-dark"
                                                     data-bs-toggle="tooltip" data-bs-placement="top" title="أرشفة المشروع لإخفائه من القائمة النشطة">
-                                                <i class="fas fa-archive me-1"></i> أرشفة
+                                                <i class="fas fa-archive"></i>
                                             </button>
                                         {% endif %}
                                     </form>
 
                                     <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteProjectModal-{{ project.id }}"
                                             data-bs-toggle="tooltip" data-bs-placement="top" title="حذف المشروع نهائياً">
-                                        <i class="fas fa-trash me-1"></i> حذف
+                                        <i class="fas fa-trash"></i>
                                     </button>
                                     {% endif %}
                                 </div>
@@ -132,13 +137,13 @@
                         <div class="modal fade" id="deleteProjectModal-{{ project.id }}" tabindex="-1">
                             <div class="modal-dialog modal-dialog-centered">
                                 <div class="modal-content">
-                                    <div class="modal-header">
+                                    <div class="modal-header bg-danger text-white">
                                         <h5 class="modal-title">تأكيد الحذف</h5>
                                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                     </div>
                                     <div class="modal-body">
                                         <p>هل أنت متأكد أنك تريد حذف المشروع <strong>{{ project.name }}</strong>؟</p>
-                                        <p class="text-danger"><i class="fas fa-exclamation-triangle me-2"></i>سيتم حذف جميع البنود والدفعات المرتبطة بهذا المشروع.</p>
+                                        <p class="text-danger"><i class="fas fa-exclamation-triangle me-2"></i>سيتم حذف جميع البنود والدفعات المرتبطة بهذا المشروع ولا يمكن التراجع.</p>
                                     </div>
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>

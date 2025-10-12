@@ -1,57 +1,65 @@
-<div class="card mb-4">
-    <div class="card-header">
-        <h5 class="mb-0"><i class="fas fa-dollar-sign fa-fw me-2"></i>الملخص المالي</h5>
+<div class="row g-3 mb-4">
+    {% if current_user.role in ['admin', 'sub-admin'] %}
+    <div class="col-sm-6 col-lg-6 col-xl-4">
+        <div class="card p-3 h-100 border-start border-info border-5">
+            <p class="text-muted mb-1 small"><i class="fas fa-file-contract fa-fw me-2"></i>التكلفة التعاقدية</p>
+            <h4 class="text-info fw-bold mb-0">{{ "{:,.2f}".format(project.total_contract_cost) }} <span class="small text-muted">ر.س</span></h4>
+        </div>
     </div>
-    <div class="card-body">
-        {% if current_user.role in ['admin', 'sub-admin'] %}
-        <div class="summary-item">
-            <h6 class="text-muted">التكلفة التعاقدية</h6>
-            <h5 class="text-info mb-0">{{ "{:,.2f}".format(project.total_contract_cost) }} ريال</h5>
+    {% endif %}
+    <div class="col-sm-6 col-lg-6 col-xl-4">
+        <div class="card p-3 h-100 border-start border-primary border-5">
+            <p class="text-muted mb-1 small"><i class="fas fa-calculator fa-fw me-2"></i>التكلفة الفعلية</p>
+            <h4 class="text-primary fw-bold mb-0">{{ "{:,.2f}".format(project.total_actual_cost) }} <span class="small text-muted">ر.س</span></h4>
         </div>
-        {% endif %}
-        <div class="summary-item">
-            <h6 class="text-muted">التكلفة الفعلية</h6>
-            <h5 class="text-light mb-0">{{ "{:,.2f}".format(project.total_actual_cost) }} ريال</h5>
-            </div>
-        {% if current_user.role in ['admin', 'sub-admin'] %}
-        <div class="summary-item">
-            <h6 class="text-muted">الوفر / الزيادة</h6>
-            <h5 class="mb-0 {{ "text-success" if project.total_savings >= 0 else "text-danger" }}">
-                {{ "{:,.2f}".format(project.total_savings) }} ريال
-            </h5>
+    </div>
+    {% if current_user.role in ['admin', 'sub-admin'] %}
+    <div class="col-sm-6 col-lg-6 col-xl-4">
+        <div class="card p-3 h-100 border-start {{ "border-success" if project.total_savings >= 0 else "border-danger" }} border-5">
+            <p class="text-muted mb-1 small"><i class="fas fa-coins fa-fw me-2"></i>الوفر / الزيادة</p>
+            <h4 class="mb-0 fw-bold {{ "text-success" if project.total_savings >= 0 else "text-danger" }}">
+                {{ "{:,.2f}".format(project.total_savings) }} <span class="small text-muted">ر.س</span>
+            </h4>
         </div>
-        {% endif %}
-        <div class="summary-item">
-            <h6 class="text-muted">إجمالي المدفوع</h6>
-            <h5 class="text-light mb-0">{{ "{:,.2f}".format(project.total_paid_amount) }} ريال</h5>
+    </div>
+    {% endif %}
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-md-6">
+        <div class="card p-3 h-100 border-start border-success border-5">
+            <p class="text-muted mb-1 small"><i class="fas fa-check-circle fa-fw me-2"></i>إجمالي المدفوع</p>
+            <h4 class="text-success fw-bold mb-0">{{ "{:,.2f}".format(project.total_paid_amount) }} <span class="small text-muted">ر.س</span></h4>
         </div>
-        <div class="summary-item">
-            <h6 class="text-muted">المبلغ المتبقي</h6>
-            <h5 class="text-danger mb-0">{{ "{:,.2f}".format(project.total_remaining_amount) }} ريال</h5>
+    </div>
+    <div class="col-sm-6 col-md-6">
+        <div class="card p-3 h-100 border-start border-danger border-5">
+            <p class="text-muted mb-1 small"><i class="fas fa-hourglass-half fa-fw me-2"></i>المبلغ المتبقي</p>
+            <h4 class="text-danger fw-bold mb-0">{{ "{:,.2f}".format(project.total_remaining_amount) }} <span class="small text-muted">ر.س</span></h4>
         </div>
     </div>
 </div>
 
 <div class="card mb-4">
     <div class="card-header">
-        <h5 class="mb-0"><i class="fas fa-tasks fa-fw me-2"></i>نسب الإنجاز</h5>
+        <h5 class="mb-0"><i class="fas fa-chart-bar fa-fw me-2"></i>مؤشرات الإنجاز</h5>
     </div>
     <div class="card-body">
         <div class="mb-3">
             <div class="d-flex justify-content-between mb-1">
                 <span class="text-muted">نسبة إنجاز البنود</span>
-                <span class="fw-bold">{{ "{:.1f}%".format(project.completion_percentage) }}</span>
+                <span class="fw-bold text-primary">{{ "{:.1f}%".format(project.completion_percentage) }}</span>
             </div>
-            <div class="progress" style="height: 10px;">
+            <div class="progress" style="height: 15px;" data-bs-toggle="tooltip" data-bs-placement="top" title="نسبة البنود المكتملة من الإجمالي">
                 <div class="progress-bar bg-primary" role="progressbar" style="width: {{ project.completion_percentage }}%" aria-valuenow="{{ project.completion_percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
             </div>
         </div>
         <div>
             <div class="d-flex justify-content-between mb-1">
                 <span class="text-muted">نسبة الإنجاز المالي</span>
-                <span class="fw-bold">{{ "{:.1f}%".format(project.financial_completion_percentage) }}</span>
+                <span class="fw-bold text-success">{{ "{:.1f}%".format(project.financial_completion_percentage) }}</span>
             </div>
-            <div class="progress" style="height: 10px;">
+            <div class="progress" style="height: 15px;" data-bs-toggle="tooltip" data-bs-placement="top" title="إجمالي المدفوعات من إجمالي التكلفة الفعلية">
                 <div class="progress-bar bg-success" role="progressbar" style="width: {{ project.financial_completion_percentage }}%" aria-valuenow="{{ project.financial_completion_percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
             </div>
         </div>
