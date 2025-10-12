@@ -76,10 +76,12 @@ class Item(db.Model):
 
     @hybrid_property
     def actual_total_cost(self):
-        manual_cost = 0.0
-        if self.actual_quantity is not None and self.actual_unit_cost is not None:
-            manual_cost = self.actual_quantity * self.actual_unit_cost
-        return manual_cost + (self.actual_details_cost or 0.0)
+        # إذا لا يوجد أي تفاصيل للبند، يكون صفر
+        if not self.cost_details or len(self.cost_details) == 0:
+            return 0.0
+        # إذا فيه تفاصيل، إجمالي التكلفة هو مجموع تفاصيل البند فقط (بدون أي حساب يدوي)
+        return self.actual_details_cost or 0.0
+
     
     @hybrid_property
     def remaining_amount(self):
