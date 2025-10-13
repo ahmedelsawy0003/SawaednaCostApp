@@ -13,7 +13,7 @@
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=1.4">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=1.5">
 </head>
 <body data-bs-theme="light">
 
@@ -21,7 +21,7 @@
         <aside class="sidebar">
             <div class="sidebar-header">
                 <a class="sidebar-brand" href="{{ url_for('project.get_projects') }}">
-                    <i class="fas fa-cogs me-2"></i>
+                    <i class="fas fa-cogs me-2 text-primary"></i>
                     <span>إدارة التكاليف</span>
                 </a>
                 <button class="btn-close d-lg-none" id="close-sidebar-btn"></button>
@@ -38,18 +38,20 @@
                             <i class="fas fa-project-diagram fa-fw me-2"></i> المشاريع
                         </a>
                         <div class="sidebar-submenu">
-                            <a href="{{ url_for('project.get_projects') }}" class="sidebar-submenu-link"><i class="fas fa-eye me-2"></i> عرض المشاريع</a>
+                            <a href="{{ url_for('project.get_projects') }}" class="sidebar-submenu-link"><i class="fas fa-eye me-2"></i> عرض المشاريع النشطة</a>
+                            <a href="{{ url_for('project.get_projects', show_archived=True) }}" class="sidebar-submenu-link"><i class="fas fa-archive me-2"></i> عرض الأرشيف</a>
                             {% if current_user.role in ['admin', 'sub-admin'] %}
-                            <a href="{{ url_for('project.new_project') }}" class="sidebar-submenu-link"><i class="fas fa-plus me-2"></i> إضافة مشروع</a>
-                            <a href="{{ url_for('project.projects_summary') }}" class="sidebar-submenu-link"><i class="fas fa-chart-pie me-2"></i> الملخص المالي</a>
+                            <a href="{{ url_for('project.new_project') }}" class="sidebar-submenu-link"><i class="fas fa-plus me-2"></i> إضافة مشروع جديد</a>
+                            <a href="{{ url_for('project.projects_summary') }}" class="sidebar-submenu-link"><i class="fas fa-chart-pie me-2"></i> الملخص المالي الإجمالي</a>
                             {% endif %}
+                            
                             <hr class="sidebar-divider">
-                            <a href="#" class="sidebar-submenu-link sidebar-toggler nested"><i class="fas fa-list me-2"></i> قائمة المشاريع</a>
+                            <a href="#" class="sidebar-submenu-link sidebar-toggler nested"><i class="fas fa-folder-open me-2"></i> المشاريع التي يمكنني الوصول إليها</a>
                             <div class="sidebar-submenu nested-menu">
                                 {% for project in sidebar_projects %}
                                     <a href="{{ url_for('project.get_project', project_id=project.id) }}" class="sidebar-submenu-link" title="{{ project.name }}">{{ project.name | truncate(20) }}</a>
                                 {% else %}
-                                    <span class="sidebar-submenu-link text-muted">لا توجد مشاريع.</span>
+                                    <span class="sidebar-submenu-link text-muted">لا توجد مشاريع نشطة.</span>
                                 {% endfor %}
                             </div>
                         </div>
@@ -57,10 +59,10 @@
 
                     <li class="sidebar-item">
                         <a href="#" class="sidebar-link sidebar-toggler">
-                            <i class="fas fa-file-invoice-dollar fa-fw me-2"></i> المستخلصات
+                            <i class="fas fa-file-invoice-dollar fa-fw me-2"></i> المستخلصات والفواتير
                         </a>
                         <div class="sidebar-submenu">
-                            <a href="#" class="sidebar-submenu-link sidebar-toggler nested"><i class="fas fa-eye me-2"></i>اختر مشروعاً للعرض</a>
+                            <a href="#" class="sidebar-submenu-link sidebar-toggler nested"><i class="fas fa-eye me-2"></i>عرض مستخلصات المشروع</a>
                             <div class="sidebar-submenu nested-menu">
                                 {% for project in sidebar_projects %}
                                     <a href="{{ url_for('invoice.get_invoices_by_project', project_id=project.id) }}" class="sidebar-submenu-link" title="{{ project.name }}">{{ project.name | truncate(20) }}</a>
@@ -69,7 +71,7 @@
                                 {% endfor %}
                             </div>
                             <hr class="sidebar-divider">
-                            <a href="#" class="sidebar-submenu-link sidebar-toggler nested"><i class="fas fa-plus me-2"></i>اختر مشروعاً للإضافة إليه</a>
+                            <a href="#" class="sidebar-submenu-link sidebar-toggler nested"><i class="fas fa-plus me-2"></i>إضافة مستخلص جديد</a>
                             <div class="sidebar-submenu nested-menu">
                                 {% for project in sidebar_projects %}
                                     <a href="{{ url_for('invoice.new_invoice', project_id=project.id) }}" class="sidebar-submenu-link" title="{{ project.name }}">{{ project.name | truncate(20) }}</a>
@@ -93,14 +95,15 @@
                         </a>
                     </li>
                     {% endif %}
+                    
                     <li class="sidebar-item">
                         <a href="#" class="sidebar-link sidebar-toggler">
-                            <i class="fas fa-hard-hat fa-fw me-2"></i> المقاولون
+                            <i class="fas fa-hard-hat fa-fw me-2"></i> المقاولون / الموردون
                         </a>
                         <div class="sidebar-submenu">
-                            <a href="{{ url_for('contractor.get_contractors') }}" class="sidebar-submenu-link"><i class="fas fa-eye me-2"></i> عرض المقاولين</a>
+                            <a href="{{ url_for('contractor.get_contractors') }}" class="sidebar-submenu-link"><i class="fas fa-eye me-2"></i> عرض جميع المقاولين</a>
                              {% if current_user.role in ['admin', 'sub-admin'] %}
-                            <a href="{{ url_for('contractor.new_contractor') }}" class="sidebar-submenu-link"><i class="fas fa-plus me-2"></i> إضافة مقاول</a>
+                            <a href="{{ url_for('contractor.new_contractor') }}" class="sidebar-submenu-link"><i class="fas fa-plus me-2"></i> إضافة مقاول جديد</a>
                              {% endif %}
                             <hr class="sidebar-divider">
                             <a href="#" class="sidebar-submenu-link sidebar-toggler nested"><i class="fas fa-list me-2"></i> قائمة المقاولين</a>
@@ -117,7 +120,7 @@
                     {% if current_user.role == 'admin' %}
                     <li class="sidebar-item">
                         <a href="{{ url_for('auth.admin_dashboard') }}" class="sidebar-link">
-                            <i class="fas fa-user-shield fa-fw me-2"></i> لوحة التحكم
+                            <i class="fas fa-user-shield fa-fw me-2 text-danger"></i> لوحة تحكم المسؤول
                         </a>
                     </li>
                     {% endif %}
@@ -126,13 +129,13 @@
                  {% if current_user.is_authenticated %}
                     <div class="dropdown">
                         <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fas fa-user-circle fa-fw me-2 fs-4"></i>
-                            <strong>{{ current_user.username }}</strong>
+                            <i class="fas fa-user-circle fa-fw me-2 fs-4 text-primary"></i>
+                            <strong class="text-dark">{{ current_user.username }}</strong>
                         </a>
-                        <ul class="dropdown-menu dropdown-menu-dark text-small shadow" aria-labelledby="dropdownUser1">
-                            <li><a class="dropdown-item" href="{{ url_for('auth.profile') }}">ملفي الشخصي</a></li>
+                        <ul class="dropdown-menu dropdown-menu-light text-small shadow text-end" aria-labelledby="dropdownUser1" dir="rtl">
+                            <li><a class="dropdown-item" href="{{ url_for('auth.profile') }}"><i class="fas fa-user-cog me-2"></i>ملفي الشخصي</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}">تسجيل الخروج</a></li>
+                            <li><a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}"><i class="fas fa-sign-out-alt me-2"></i>تسجيل الخروج</a></li>
                         </ul>
                     </div>
                 {% endif %}
@@ -164,7 +167,7 @@
                 {% for category, message in messages %}
                     <div class="toast" role="alert" aria-live="assertive" aria-atomic="true">
                         <div class="toast-header">
-                            <strong class="me-auto">تنبيه</strong>
+                            <strong class="me-auto"><i class="fas fa-bell me-1"></i> تنبيه</strong>
                             <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
                         </div>
                         <div class="toast-body">
@@ -177,7 +180,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{{ url_for('static', filename='js/script.js') }}?v=1.4"></script>
+    <script src="{{ url_for('static', filename='js/script.js') }}?v=1.5"></script>
     {% block scripts %}
     <script>
     document.addEventListener('DOMContentLoaded', function() {

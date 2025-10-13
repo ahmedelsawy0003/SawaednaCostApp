@@ -4,10 +4,13 @@
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1><i class="fas fa-money-bill-wave fa-fw me-2 text-muted"></i>سجل الدفعات الشامل</h1>
+    <h1><i class="fas fa-cash-register fa-fw me-2 text-muted"></i>سجل الدفعات الشامل</h1>
 </div>
 
 <div class="card mb-4">
+    <div class="card-header bg-dark text-white">
+        <h5 class="mb-0"><i class="fas fa-filter me-2"></i>خيارات البحث والفلترة</h5>
+    </div>
     <div class="card-body">
         <form method="GET" action="{{ url_for('payment.get_all_payments') }}">
             <div class="row g-3 align-items-end">
@@ -34,16 +37,16 @@
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label">من تاريخ</label>
+                    <label class="form-label">من تاريخ الدفعة</label>
                     <input type="date" name="start_date" class="form-control" value="{{ filters.start_date or '' }}">
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label">إلى تاريخ</label>
+                    <label class="form-label">إلى تاريخ الدفعة</label>
                     <input type="date" name="end_date" class="form-control" value="{{ filters.end_date or '' }}">
                 </div>
                 <div class="col-md-1">
                     <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-info w-100" title="تطبيق الفلتر"><i class="fas fa-filter"></i></button>
+                        <button type="submit" class="btn btn-primary w-100" title="تطبيق الفلتر"><i class="fas fa-filter"></i></button>
                         <a href="{{ url_for('payment.get_all_payments') }}" class="btn btn-secondary w-100" title="مسح الفلاتر"><i class="fas fa-times"></i></a>
                     </div>
                 </div>
@@ -53,6 +56,9 @@
 </div>
 
 <div class="card">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-list-alt me-1"></i>قائمة الدفعات المسجلة</h5>
+    </div>
     <div class="card-body p-0">
         {% if payments %}
             <div class="table-responsive">
@@ -66,8 +72,8 @@
                             <th>بيان الدفعة</th>
                             <th>رقم المستخلص</th>
                             <th class="text-end">المبلغ</th>
-                            <th class="text-center">الإجراءات</th>
-                            <th class="text-center">عرض البنود</th>
+                            <th class="text-center" style="width: 100px;">إدارة</th>
+                            <th class="text-center" style="width: 100px;">البنود</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -78,8 +84,12 @@
                             <td>{{ payment.invoice.project.name }}</td>
                             <td>{{ payment.invoice.contractor.name }}</td>
                             <td>{{ payment.description or '-' }}</td>
-                            <td><a href="{{ url_for('invoice.show_invoice', invoice_id=payment.invoice_id) }}">{{ payment.invoice.invoice_number }}</a></td>
-                            <td class="text-end text-success fw-bold">{{ "{:,.2f}".format(payment.amount) }} ريال</td>
+                            <td>
+                                <a href="{{ url_for('invoice.show_invoice', invoice_id=payment.invoice_id) }}">
+                                    {{ payment.invoice.invoice_number }}
+                                </a>
+                            </td>
+                            <td class="text-end text-success fw-bold number-cell">{{ "{:,.2f}".format(payment.amount) }} ريال</td>
                             <td class="text-center">
                                 <a href="{{ url_for('invoice.edit_payment', payment_id=payment.id) }}" class="btn btn-sm btn-warning" title="تعديل الدفعة">
                                     <i class="fas fa-edit"></i>
@@ -96,8 +106,9 @@
                                             data-payment-date="{{ payment.payment_date.strftime('%Y-%m-%d') }}"
                                             data-payment-description="{{ payment.description or '-' }}"
                                             data-distributions="{{ payment.distributions_json | tojson }}"
-                                            data-dist-url="{{ url_for('payment.get_payment_distributions', payment_id=payment.id) }}">
-                                        <i class="fas fa-search"></i>
+                                            data-dist-url="{{ url_for('payment.get_payment_distributions', payment_id=payment.id) }}"
+                                            title="عرض تفاصيل توزيع الدفعة على البنود">
+                                        <i class="fas fa-sitemap"></i>
                                     </button>
                                 {% else %}
                                     -
@@ -120,25 +131,35 @@
 <div class="modal fade" id="paymentItemsModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">تفاصيل الدفعة</h5>
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title"><i class="fas fa-sitemap me-2"></i>تفاصيل توزيع الدفعة</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <p><strong>مبلغ الدفعة:</strong> <span id="modal-payment-amount"></span> ريال</p>
-                <p><strong>تاريخ الدفعة:</strong> <span id="modal-payment-date"></span></p>
-                <p><strong>الوصف:</strong> <span id="modal-payment-description"></span></p>
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <p class="mb-0"><strong>المبلغ:</strong> <span id="modal-payment-amount" class="text-success fw-bold number-cell"></span> ريال</p>
+                    </div>
+                    <div class="col-md-4">
+                        <p class="mb-0"><strong>التاريخ:</strong> <span id="modal-payment-date"></span></p>
+                    </div>
+                    <div class="col-md-4">
+                        <p class="mb-0"><strong>الوصف:</strong> <span id="modal-payment-description"></span></p>
+                    </div>
+                </div>
+                
                 <hr>
-                <h6>توزيع المبلغ على البنود</h6>
-                <div class="table-responsive">
+                <h6>توزيع المبلغ على البنود المفوترة</h6>
+                <div class="table-responsive border rounded">
                     <table class="table table-sm table-striped table-hover mb-0">
-                        <thead class="table-light">
+                        <thead class="bg-light">
                             <tr>
                                 <th>وصف البند</th>
                                 <th class="text-end">المبلغ الموزع</th>
                             </tr>
                         </thead>
-                        <tbody id="modal-items-list"></tbody>
+                        <tbody id="modal-items-list">
+                            </tbody>
                     </table>
                 </div>
             </div>

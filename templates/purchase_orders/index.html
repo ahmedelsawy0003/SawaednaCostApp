@@ -8,11 +8,14 @@
 </div>
 
 <div class="card mb-4">
+    <div class="card-header bg-dark text-white">
+        <h5 class="mb-0"><i class="fas fa-filter me-2"></i>خيارات البحث والفلترة</h5>
+    </div>
     <div class="card-body">
         <form method="GET" action="{{ url_for('po.get_all_purchase_orders') }}">
             <div class="row g-3 align-items-end">
                 <div class="col-md-5">
-                    <label class="form-label">بحث عام</label>
+                    <label class="form-label">بحث عام (رقم الأمر، الوصف، المقاول)</label>
                     <input type="search" name="search" class="form-control" placeholder="رقم أمر الشراء، الوصف، المقاول..." value="{{ filters.search or '' }}">
                 </div>
                 <div class="col-md-4">
@@ -26,8 +29,8 @@
                 </div>
                 <div class="col-md-3">
                     <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-info w-100" title="تطبيق الفلتر"><i class="fas fa-filter"></i> تطبيق</button>
-                        <a href="{{ url_for('po.get_all_purchase_orders') }}" class="btn btn-secondary w-100" title="مسح الفلاتر"><i class="fas fa-times"></i> مسح</a>
+                        <button type="submit" class="btn btn-primary w-100" title="تطبيق الفلتر"><i class="fas fa-search me-1"></i> تطبيق</button>
+                        <a href="{{ url_for('po.get_all_purchase_orders') }}" class="btn btn-secondary w-100" title="مسح الفلاتر"><i class="fas fa-times me-1"></i> مسح</a>
                     </div>
                 </div>
             </div>
@@ -36,6 +39,9 @@
 </div>
 
 <div class="card">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-list-alt me-1"></i>قائمة الأوامر المسجلة</h5>
+    </div>
     <div class="card-body p-0">
         {% if records %}
             <div class="table-responsive">
@@ -43,7 +49,7 @@
                     <thead>
                         <tr>
                             <th>رقم أمر الشراء (PO)</th>
-                            <th>النوع</th>
+                            <th class="text-center">النوع / المصدر</th>
                             <th>المشروع</th>
                             <th>المقاول/المورد</th>
                             <th>الوصف</th>
@@ -55,19 +61,17 @@
                         {% for record in records %}
                         <tr>
                             <td class="fw-bold">{{ record.po_number }}</td>
-                            <td>
-                                <span class="badge {% if record.type == 'CostDetail' %} bg-success {% else %} bg-primary {% endif %}">
+                            <td class="text-center">
+                                <span class="badge {% if record.type == 'CostDetail' %} bg-success {% else %} bg-primary {% endif %}" data-bs-toggle="tooltip" title="{{ 'هذا الأمر مرتبط بتفصيل تكلفة داخل بند مشروع' if record.type == 'CostDetail' else 'هذا الأمر مرتبط بمستخلص أو فاتورة مقاول/مورد' }}">
                                     {{ 'تفصيل تكلفة / أمر عمل' if record.type == 'CostDetail' else 'مستخلص / فاتورة' }}
                                 </span>
                             </td>
                             <td>{{ record.project_name }}</td>
                             <td>{{ record.contractor_name }}</td>
                             <td>{{ record.description }}</td>
-                            <td class="text-end fw-bold">{{ "{:,.2f}".format(record.amount) }} ريال</td>
+                            <td class="text-end fw-bold number-cell text-info">{{ "{:,.2f}".format(record.amount) }} ريال</td>
                             <td class="text-center">
-                                <a href="{{ record.link }}" class="btn btn-sm btn-info" title="عرض التفاصيل">
-                                    <i class="fas fa-eye"></i>
-                                </a>
+                                <a href="{{ record.link }}" class="btn btn-sm btn-info" title="عرض التفاصيل"><i class="fas fa-eye"></i></a>
                             </td>
                         </tr>
                         {% endfor %}

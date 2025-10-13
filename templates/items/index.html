@@ -8,33 +8,45 @@
         <span class="text-muted fw-normal">المشروع:</span> {{ project.name }}
     </h2>
     <div>
-        <a href="{{ url_for("project.get_project", project_id=project.id) }}" class="btn btn-secondary">
+        <a href="{{ url_for("project.get_project", project_id=project.id) }}" class="btn btn-secondary" data-bs-toggle="tooltip" title="العودة لصفحة المشروع">
             <i class="fas fa-arrow-left me-1"></i> العودة للمشروع
         </a>
-        <a href="{{ url_for("item.new_item", project_id=project.id) }}" class="btn btn-primary">
+        <a href="{{ url_for("item.new_item", project_id=project.id) }}" class="btn btn-primary" data-bs-toggle="tooltip" title="إضافة بند يدوي جديد">
             <i class="fas fa-plus me-1"></i> إضافة بند جديد
         </a>
     </div>
 </div>
 
-{# Filter and bulk edit sections remain the same #}
 <div class="card mb-4">
     <div class="accordion" id="filterAccordion">
         <div class="accordion-item">
             <h2 class="accordion-header">
-                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFilter" aria-expanded="false" aria-controls="collapseFilter">
-                    <i class="fas fa-filter me-2"></i>خيارات البحث والفلترة
+                <button class="accordion-button collapsed bg-primary text-white" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFilter" aria-expanded="false" aria-controls="collapseFilter">
+                    <i class="fas fa-filter me-2"></i>خيارات البحث والفلترة المتقدمة
                 </button>
             </h2>
-            <div id="collapseFilter" class="accordion-collapse collapse" data-bs-parent="#filterAccordion">
+            <div id="collapseFilter" class="accordion-collapse collapse {% if filters.search_number or filters.search_description or filters.status or filters.contractor %}show{% endif %}" data-bs-parent="#filterAccordion">
                 <div class="accordion-body">
                     <form method="GET" action="{{ url_for('item.get_items_by_project', project_id=project.id) }}">
                         <div class="row g-3 align-items-end">
-                            <div class="col-md-3"><label class="form-label">بحث برقم البند</label><input type="text" name="search_number" class="form-control" value="{{ filters.search_number or '' }}"></div>
-                            <div class="col-md-3"><label class="form-label">بحث بالوصف</label><input type="text" name="search_description" class="form-control" value="{{ filters.search_description or '' }}"></div>
-                            <div class="col-md-2"><label class="form-label">الحالة</label><select name="status" class="form-select"><option value="">الكل</option><option value="نشط" {% if filters.status == 'نشط' %}selected{% endif %}>نشط</option><option value="مكتمل" {% if filters.status == 'مكتمل' %}selected{% endif %}>مكتمل</option><option value="معلق" {% if filters.status == 'معلق' %}selected{% endif %}>معلق</option></select></div>
+                            <div class="col-md-3"><label class="form-label">رقم البند</label><input type="text" name="search_number" class="form-control" value="{{ filters.search_number or '' }}"></div>
+                            <div class="col-md-3"><label class="form-label">الوصف</label><input type="text" name="search_description" class="form-control" value="{{ filters.search_description or '' }}"></div>
+                            <div class="col-md-2">
+                                <label class="form-label">الحالة</label>
+                                <select name="status" class="form-select">
+                                    <option value="">الكل</option>
+                                    <option value="نشط" {% if filters.status == 'نشط' %}selected{% endif %}>نشط</option>
+                                    <option value="مكتمل" {% if filters.status == 'مكتمل' %}selected{% endif %}>مكتمل</option>
+                                    <option value="معلق" {% if filters.status == 'معلق' %}selected{% endif %}>معلق</option>
+                                </select>
+                            </div>
                             <div class="col-md-2"><label class="form-label">المقاول</label><input type="text" name="contractor" class="form-control" value="{{ filters.contractor or '' }}"></div>
-                            <div class="col-md-2"><div class="d-flex gap-2"><button type="submit" class="btn btn-info w-100"><i class="fas fa-search"></i> بحث</button><a href="{{ url_for('item.get_items_by_project', project_id=project.id) }}" class="btn btn-secondary w-100"><i class="fas fa-times"></i> مسح</a></div></div>
+                            <div class="col-md-2">
+                                <div class="d-flex gap-2">
+                                    <button type="submit" class="btn btn-primary w-100"><i class="fas fa-search"></i> بحث</button>
+                                    <a href="{{ url_for('item.get_items_by_project', project_id=project.id) }}" class="btn btn-secondary w-100"><i class="fas fa-times"></i> مسح</a>
+                                </div>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -49,12 +61,13 @@
       data-update-url="{{ url_for('item.bulk_update_items', project_id=project.id) }}"
       data-delete-url="{{ url_for('item.bulk_delete_items', project_id=project.id) }}"
       data-duplicate-url="{{ url_for('item.bulk_duplicate_items', project_id=project.id) }}">
-	  <div class="card mb-4">
+	  
+    <div class="card mb-4">
         <div class="accordion" id="bulkEditAccordion">
             <div class="accordion-item">
                 <h2 class="accordion-header">
-                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseBulkEdit" aria-expanded="false" aria-controls="collapseBulkEdit">
-                        <i class="fas fa-edit me-2"></i>الإجراءات الجماعية للبنود المحددة (<span id="selected-count-display">0</span>)
+                    <button class="accordion-button collapsed bg-info text-white" type="button" data-bs-toggle="collapse" data-bs-target="#collapseBulkEdit" aria-expanded="false" aria-controls="collapseBulkEdit">
+                        <i class="fas fa-users-cog me-2"></i>الإجراءات الجماعية للبنود المحددة (<span id="selected-count-display">0</span>)
                     </button>
                 </h2>
                 <div id="collapseBulkEdit" class="accordion-collapse collapse" data-bs-parent="#bulkEditAccordion">
@@ -62,13 +75,11 @@
                         <div class="row align-items-end g-3">
                             <div class="col-md-3"><label for="bulk-status" class="form-label">تغيير حالة المحدد</label><select name="bulk_status" id="bulk-status" class="form-select"><option value="">-- اختر --</option><option value="نشط">نشط</option><option value="مكتمل">مكتمل</option><option value="معلق">معلق</option></select></div>
                             <div class="col-md-4"><label for="bulk-contractor" class="form-label">تغيير مقاول المحدد</label><input type="text" name="bulk_contractor" id="bulk-contractor" class="form-control" placeholder="اتركه فارغاً لعدم التغيير"></div>
-                            <div class="col-md-2"><button type="submit" class="btn btn-warning w-100" id="bulk-update-btn"><i class="fas fa-save me-1"></i> تطبيق التعديلات</button></div>
-                            <div class="col-md-2">
-                                <button type="button" class="btn btn-info w-100" id="bulk-duplicate-btn" data-bs-toggle="modal" data-bs-target="#bulkDuplicateConfirmModal" disabled>
+                            <div class="col-md-5 d-flex gap-2">
+                                <button type="submit" class="btn btn-warning w-100" id="bulk-update-btn" disabled><i class="fas fa-save me-1"></i> تطبيق التعديلات</button>
+                                <button type="button" class="btn btn-success w-100" id="bulk-duplicate-btn" data-bs-toggle="modal" data-bs-target="#bulkDuplicateConfirmModal" disabled>
                                     <i class="fas fa-copy me-1"></i> تكرار
                                 </button>
-                            </div>
-                            <div class="col-md-2">
                                 <button type="button" class="btn btn-danger w-100" id="bulk-delete-btn" data-bs-toggle="modal" data-bs-target="#bulkDeleteConfirmModal" disabled>
                                     <i class="fas fa-trash me-1"></i> حذف
                                 </button>
@@ -82,7 +93,7 @@
 
     <div class="card">
         <div class="card-header">
-            <h5 class="mb-0">قائمة البنود</h5>
+            <h5 class="mb-0"><i class="fas fa-list-alt me-1"></i>قائمة البنود التفصيلية</h5>
         </div>
         <div class="card-body p-0">
             {% if items %}
@@ -94,15 +105,15 @@
                                 <th>رقم البند</th>
                                 <th>الوصف</th>
                                 {% if current_user.role in ['admin', 'sub-admin'] %}
-                                <th>التكلفة التعاقدية</th>
+                                <th class="text-end">التكلفة التعاقدية</th>
                                 {% endif %}
-                                <th>التكلفة الفعلية</th>
-                                <th>إجمالي المدفوعات</th>
-                                <th>المبلغ المتبقي</th>
+                                <th class="text-end">التكلفة الفعلية</th>
+                                <th class="text-end">إجمالي المدفوعات</th>
+                                <th class="text-end">المبلغ المتبقي</th>
                                 {% if current_user.role in ['admin', 'sub-admin'] %}
-                                <th>الوفر / الزيادة</th>
+                                <th class="text-end">الوفر / الزيادة</th>
                                 {% endif %}
-                                <th>الحالة</th>
+                                <th class="text-center">الحالة</th>
                                 <th class="text-center">الإجراءات</th>
                             </tr>
                         </thead>
@@ -111,12 +122,12 @@
                             <tr>
                                 <td><input class="form-check-input item-checkbox" type="checkbox" name="item_ids" value="{{ item.id }}"></td>
                                 <td>{{ item.item_number }}</td>
-                                <td>{{ item.description }}</td>
+                                <td>{{ item.short_description }}</td>
                                 {% if current_user.role in ['admin', 'sub-admin'] %}
                                 <td class="number-cell text-end">{{ "{:,.2f}".format(item.contract_total_cost) }}</td>
                                 {% endif %}
-                                <td class="number-cell text-end">{{ "{:,.2f}".format(item.actual_total_cost) }}</td>
-                                <td class="number-cell text-end"><span class="text-info">{{ "{:,.2f}".format(item.paid_amount) }}</span></td>
+                                <td class="number-cell text-end text-primary">{{ "{:,.2f}".format(item.actual_total_cost) }}</td>
+                                <td class="number-cell text-end"><span class="text-success">{{ "{:,.2f}".format(item.paid_amount) }}</span></td>
                                 <td class="number-cell text-end"><span class="text-danger">{{ "{:,.2f}".format(item.remaining_amount) }}</span></td>
                                 {% if current_user.role in ['admin', 'sub-admin'] %}
                                 <td class="number-cell text-end">
@@ -125,13 +136,17 @@
                                     </span>
                                 </td>
                                 {% endif %}
-                                <td>
-                                    <span class="badge {{ "bg-warning" if item.status == "نشط" else "bg-success" if item.status == "مكتمل" else "bg-info" }}">
+                                <td class="text-center">
+                                    <span class="badge 
+                                        {% if item.status == "نشط" %} bg-warning 
+                                        {% elif item.status == "مكتمل" %} bg-success 
+                                        {% else %} bg-info 
+                                        {% endif %}">
                                         {{ item.status }}
                                     </span>
                                 </td>
                                 <td class="text-center">
-                                    <div class="btn-group btn-group-sm">
+                                    <div class="btn-group btn-group-sm flex-nowrap">
                                         <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#paymentsModal-{{ item.id }}" title="عرض الدفعات">
                                             <i class="fas fa-money-bill-wave"></i>
                                         </button>
@@ -158,7 +173,7 @@
 <div class="modal fade" id="deleteItemModal-{{ item.id }}" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header"><h5 class="modal-title">تأكيد الحذف</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-header bg-danger text-white"><h5 class="modal-title">تأكيد الحذف</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
             <div class="modal-body">
                 <p>هل أنت متأكد أنك تريد حذف البند <strong>{{ item.item_number }} - {{ item.description }}</strong>؟</p>
                 <p class="text-danger"><i class="fas fa-exclamation-triangle me-2"></i>لا يمكن التراجع عن هذا الإجراء.</p>
@@ -177,7 +192,7 @@
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">سجل الدفعات للبند: {{ item.item_number }}</h5>
+                <h5 class="modal-title"><i class="fas fa-cash-register me-2"></i>سجل الدفعات للبند: {{ item.item_number }}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
@@ -187,7 +202,7 @@
                 {% if payments %}
                     <div class="table-responsive">
                         <table class="table table-sm table-striped table-hover">
-                           <thead class="table-light">
+                           <thead class="bg-light">
                                 <tr>
                                     <th>تاريخ الدفعة</th>
                                     <th>رقم المستخلص</th>
@@ -229,6 +244,7 @@
     </div>
 </div>
 {% endfor %}
+
 <div class="modal fade" id="bulkDeleteConfirmModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -251,17 +267,17 @@
 <div class="modal fade" id="bulkDuplicateConfirmModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header bg-info text-white">
+            <div class="modal-header bg-success text-white">
                 <h5 class="modal-title">تأكيد التكرار الجماعي</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <p>هل أنت متأكد أنك تريد تكرار البنود المحددة؟</p>
-                <p class="text-info"><i class="fas fa-info-circle me-2"></i>سيتم إنشاء نسخة جديدة من كل بند محدد مع إضافة "-نسخة" إلى رقم البند.</p>
+                <p class="text-info"><i class="fas fa-info-circle me-2"></i>سيتم إنشاء نسخة جديدة من كل بند محدد مع إضافة لاحقة لرقم البند.</p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                <button type="button" class="btn btn-info" id="confirm-bulk-duplicate-btn">نعم، قم بالتكرار</button>
+                <button type="button" class="btn btn-success" id="confirm-bulk-duplicate-btn">نعم، قم بالتكرار</button>
             </div>
         </div>
     </div>
