@@ -4,7 +4,10 @@
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1>إضافة مقاول جديد</h1>
+    <h2 class="mb-0">
+        <i class="fas fa-plus-circle fa-fw me-2 text-primary"></i>
+        إضافة مقاول / مورد جديد
+    </h2>
     <a href="{{ url_for("contractor.get_contractors") }}" class="btn btn-secondary">
         <i class="fas fa-arrow-right me-1"></i> العودة لقائمة المقاولين
     </a>
@@ -12,7 +15,7 @@
 
 <div class="card">
     <div class="card-header bg-primary text-white">
-        <h3 class="mb-0">بيانات المقاول</h3>
+        <h4 class="mb-0"><i class="fas fa-id-card-alt me-2"></i>بيانات المقاول/المورد</h4>
     </div>
     <div class="card-body">
         <form method="POST" action="{{ url_for("contractor.new_contractor") }}" novalidate>
@@ -24,11 +27,15 @@
                     <div class="text-danger small mt-1">{{ error }}</div>
                 {% endfor %}
             </div>
-            <div class="row">
+            
+            <hr class="my-4">
+            <h5 class="text-muted mb-3"><i class="fas fa-address-book me-2"></i>معلومات الاتصال</h5>
+            <div class="row g-3">
                 <div class="col-md-4">
                     <div class="mb-3">
                         {{ form.contact_person.label(class="form-label") }}
                         {{ form.contact_person(class="form-control") }}
+                        <div class="form-text">اسم الشخص المسؤول عن التواصل.</div>
                     </div>
                 </div>
                 <div class="col-md-4">
@@ -47,11 +54,11 @@
                     </div>
                 </div>
             </div>
-            <div class="mb-3">
+            <div class="mb-4">
                 {{ form.notes.label(class="form-label") }}
                 {{ form.notes(class="form-control", rows="4") }}
             </div>
-            {{ form.submit(class="btn btn-primary") }}
+            {{ form.submit(class="btn btn-success btn-lg w-100") }}
         </form>
     </div>
 </div>

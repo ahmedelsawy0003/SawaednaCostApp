@@ -4,30 +4,52 @@
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1>
-        تعديل بند في المستخلص <a href="{{ url_for('invoice.show_invoice', invoice_id=invoice_item.invoice_id) }}">{{ invoice_item.invoice.invoice_number }}</a>
-    </h1>
+    <h2 class="mb-0">
+        <i class="fas fa-edit fa-fw me-2 text-muted"></i>
+        <span class="text-muted fw-normal">تعديل البند في المستخلص:</span> 
+        <a href="{{ url_for('invoice.show_invoice', invoice_id=invoice_item.invoice_id) }}">{{ invoice_item.invoice.invoice_number }}</a>
+    </h2>
     <a href="{{ url_for('invoice.show_invoice', invoice_id=invoice_item.invoice_id) }}" class="btn btn-secondary">
         <i class="fas fa-arrow-right me-1"></i> العودة للمستخلص
     </a>
 </div>
 
 <div class="card">
-    <div class="card-header bg-primary text-white">
-        <h3 class="mb-0">تفاصيل البند</h3>
+    <div class="card-header bg-warning text-dark">
+        <h4 class="mb-0"><i class="fas fa-tasks me-2"></i>تفاصيل البند</h4>
     </div>
     <div class="card-body">
-        <p><strong>البند:</strong> {{ invoice_item.description }}</p>
-        <p><strong>سعر الوحدة:</strong> {{ "{:,.2f}".format(invoice_item.unit_price) }} ريال</p>
-        <hr>
-        <form method="POST" action="{{ url_for('invoice.edit_item_from_invoice', invoice_item_id=invoice_item.id) }}">
-            <div class="mb-3">
-                <label for="quantity" class="form-label">الكمية الجديدة</label>
-                <input type="number" step="0.01" class="form-control" id="quantity" name="quantity" value="{{ invoice_item.quantity }}" required>
+        <div class="row">
+            <div class="col-md-6">
+                <p><strong>وصف البند:</strong> {{ invoice_item.description }}</p>
+                <p><strong>سعر الوحدة:</strong> <span class="fw-bold number-cell">{{ "{:,.2f}".format(invoice_item.unit_price) }} ريال</span></p>
             </div>
+             <div class="col-md-6">
+                 <p><strong>الكمية الحالية:</strong> <span class="fw-bold">{{ invoice_item.quantity }}</span></p>
+                 <p><strong>الإجمالي الحالي:</strong> <span class="fw-bold number-cell text-primary">{{ "{:,.2f}".format(invoice_item.total_price) }} ريال</span></p>
+            </div>
+        </div>
+        
+        <hr class="my-4">
+        
+        <form method="POST" action="{{ url_for('invoice.edit_item_from_invoice', invoice_item_id=invoice_item.id) }}">
+            <div class="mb-4">
+                <label for="quantity" class="form-label fs-5">الكمية الجديدة المطلوبة</label>
+                <input type="number" step="0.01" class="form-control form-control-lg" id="quantity" name="quantity" value="{{ invoice_item.quantity }}" required min="0.01">
+                <div class="form-text">سيؤدي تعديل الكمية إلى إعادة حساب الإجمالي تلقائياً.</div>
+            </div>
+            
+            {% if invoice_item.distributions %}
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                لا يمكن تعديل كمية هذا البند لوجود دفعات مسجلة عليه.
+            </div>
+            <button type="submit" class="btn btn-warning" disabled>حفظ التعديلات</button>
+            {% else %}
             <button type="submit" class="btn btn-primary">
                 <i class="fas fa-save me-1"></i> حفظ التعديلات
             </button>
+            {% endif %}
         </form>
     </div>
 </div>

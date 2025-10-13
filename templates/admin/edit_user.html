@@ -4,7 +4,10 @@
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1>تعديل المستخدم: {{ user.username }}</h1>
+    <h2 class="mb-0">
+        <i class="fas fa-user-edit fa-fw me-2 text-muted"></i>
+        <span class="text-muted fw-normal">تعديل المستخدم:</span> {{ user.username }}
+    </h2>
     <a href="{{ url_for('auth.admin_dashboard') }}" class="btn btn-secondary">
         <i class="fas fa-arrow-right me-1"></i> العودة للوحة التحكم
     </a>
@@ -12,46 +15,83 @@
 
 <div class="card">
     <div class="card-header bg-primary text-white">
-        <h3 class="mb-0">بيانات المستخدم</h3>
+        <h4 class="mb-0"><i class="fas fa-id-card-alt me-2"></i>بيانات المستخدم الأساسية</h4>
     </div>
     <div class="card-body">
         <form method="POST" action="{{ url_for('auth.edit_user', user_id=user.id) }}">
-            <div class="mb-3">
-                <label for="username" class="form-label">اسم المستخدم</label>
-                <input type="text" class="form-control" id="username" name="username" value="{{ user.username }}" required>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">اسم المستخدم</label>
+                        <input type="text" class="form-control" id="username" name="username" value="{{ user.username }}" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="email" class="form-label">البريد الإلكتروني</label>
+                        <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}" required>
+                    </div>
+                </div>
             </div>
-            <div class="mb-3">
-                <label for="email" class="form-label">البريد الإلكتروني</label>
-                <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}" required>
-            </div>
-            <hr>
+            
             <div class="mb-3">
                 <label for="password" class="form-label">كلمة المرور الجديدة (اختياري)</label>
-                <input type="password" class="form-control" id="password" name="password" placeholder="اتركه فارغاً لعدم التغيير">
+                <div class="input-group">
+                    <input type="password" class="form-control" id="password" name="password" placeholder="اتركه فارغاً لعدم التغيير">
+                    <span class="input-group-text p-0 border-0 bg-transparent">
+                        <i class="fas fa-eye password-toggle-icon px-3" id="togglePassword"></i>
+                    </span>
+                </div>
                 <div class="form-text">إذا تركت هذا الحقل فارغاً، لن يتم تغيير كلمة المرور الحالية.</div>
             </div>
             
-            <hr>
-            <div class="mb-3">
-                <label class="form-label">صلاحيات الوصول للمشاريع</label>
+            <hr class="mt-4 mb-3">
+            
+            <div class="mb-4">
+                <h5 class="text-primary mb-3"><i class="fas fa-sitemap me-2"></i>صلاحيات الوصول للمشاريع</h5>
+                <p class="text-muted small">يمكنك تحديد المشاريع التي يستطيع هذا المستخدم الوصول إليها وعرض بياناتها.</p>
                 {% if projects %}
-                    {% for project in projects %}
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="projects" value="{{ project.id }}" id="project-{{ project.id }}"
-                                   {% if project in user.projects %}checked{% endif %}>
-                            <label class="form-check-label" for="project-{{ project.id }}">
-                                {{ project.name }}
-                            </label>
-                        </div>
-                    {% endfor %}
+                    <div class="row">
+                        {% for project in projects %}
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="projects" value="{{ project.id }}" id="project-{{ project.id }}"
+                                           {% if project in user.projects %}checked{% endif %}>
+                                    <label class="form-check-label" for="project-{{ project.id }}">
+                                        {{ project.name }}
+                                    </label>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
                 {% else %}
-                    <p class="text-muted">لا توجد مشاريع لإسنادها حالياً.</p>
+                    <div class="alert alert-info text-center">لا توجد مشاريع لإسنادها حالياً.</div>
                 {% endif %}
             </div>
             <button type="submit" class="btn btn-primary">
-                <i class="fas fa-save me-1"></i> تحديث البيانات
+                <i class="fas fa-save me-1"></i> تحديث بيانات المستخدم
             </button>
         </form>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // Password Toggle Functionality (مكرر من script.js ليعمل داخل هذا القالب بشكل مستقل)
+    const togglePassword = document.querySelector("#togglePassword");
+    const passwordInput = document.querySelector("#password");
+
+    if (togglePassword && passwordInput) {
+        togglePassword.addEventListener("click", function () {
+            const type = passwordInput.getAttribute("type") === "password" ? "text" : "password";
+            passwordInput.setAttribute("type", type);
+            
+            this.classList.toggle("fa-eye");
+            this.classList.toggle("fa-eye-slash");
+        });
+    }
+});
+</script>
 {% endblock %}

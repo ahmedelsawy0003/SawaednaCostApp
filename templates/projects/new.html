@@ -4,7 +4,9 @@
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1>إضافة مشروع جديد</h1>
+    <h2 class="mb-0">
+        <i class="fas fa-plus-circle fa-fw me-2 text-primary"></i>إضافة مشروع جديد
+    </h2>
     <a href="{{ url_for("project.get_projects") }}" class="btn btn-secondary">
         <i class="fas fa-arrow-right me-1"></i> العودة للمشاريع
     </a>
@@ -12,10 +14,9 @@
 
 <div class="card">
     <div class="card-header bg-primary text-white">
-        <h3 class="mb-0">بيانات المشروع</h3>
+        <h4 class="mb-0"><i class="fas fa-list-alt me-2"></i>بيانات المشروع الأساسية</h4>
     </div>
     <div class="card-body">
-        {# --- START: النموذج الجديد --- #}
         <form method="POST" action="{{ url_for("project.new_project") }}" novalidate>
             {{ form.hidden_tag() }}
             <div class="row">
@@ -38,6 +39,7 @@
                     <div class="mb-3">
 						{{ form.manager_id.label(class="form-label") }}
 						{{ form.manager_id(class="form-select") }}
+                        <div class="form-text">المدير المسؤول عن متابعة المشروع في النظام.</div>
 					</div>
                 </div>
                 <div class="col-md-6">
@@ -51,20 +53,19 @@
                     </div>
                     <div class="mb-3">
                         {{ form.spreadsheet_id.label(class="form-label") }}
-                        {{ form.spreadsheet_id(class="form-control") }}
+                        {{ form.spreadsheet_id(class="form-control" , data-bs-toggle="tooltip", data-bs-placement="top", title="يستخدم لربط بيانات المشروع بجداول Google Sheets للتصدير والاستيراد. يجب أن يكون فريدًا.") }}
                         <div class="form-text">يمكنك العثور على معرّف جدول البيانات في رابط Google Sheet الخاص بك</div>
                     </div>
                 </div>
             </div>
-            <div class="mb-3">
+            <div class="mb-4">
                 {{ form.notes.label(class="form-label") }}
                 {{ form.notes(class="form-control", rows="4") }}
             </div>
             
-            {{ form.submit(class="btn btn-primary") }}
+            {{ form.submit(class="btn btn-success btn-lg w-100") }}
 
         </form>
-        {# --- END: النموذج الجديد --- #}
     </div>
 </div>
 {% endblock %}

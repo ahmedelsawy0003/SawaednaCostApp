@@ -4,30 +4,38 @@
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1><i class="fas fa-chart-line fa-fw me-2 text-muted"></i>الملخص المالي للمشاريع</h1>
+    <h1><i class="fas fa-chart-line fa-fw me-2 text-muted"></i>الملخص المالي لجميع المشاريع النشطة</h1>
 </div>
 
 <div class="card mb-4">
     <div class="card-header bg-primary text-white">
-        <h3 class="mb-0">الإجماليات الكلية لجميع المشاريع النشطة</h3>
+        <h4 class="mb-0"><i class="fas fa-calculator me-2"></i>الإجماليات الكلية للمحفظة</h4>
     </div>
     <div class="card-body">
-        <div class="row text-center">
-            <div class="col">
-                <h5>التكلفة التعاقدية</h5>
-                <p class="fs-4 text-info">{{ "{:,.2f}".format(totals.contract_cost) }} ريال</p>
+        <div class="row text-center g-3">
+            <div class="col-md-3">
+                <div class="p-3 border rounded h-100 bg-light">
+                    <h5 class="text-muted small">التكلفة التعاقدية</h5>
+                    <p class="fs-4 text-info fw-bold number-cell">{{ "{:,.2f}".format(totals.contract_cost) }} <span class="small text-muted">ر.س</span></p>
+                </div>
             </div>
-            <div class="col">
-                <h5>التكلفة الفعلية</h5>
-                <p class="fs-4 text-light">{{ "{:,.2f}".format(totals.actual_cost) }} ريال</p>
+            <div class="col-md-3">
+                <div class="p-3 border rounded h-100 border-primary">
+                    <h5 class="text-muted small">التكلفة الفعلية</h5>
+                    <p class="fs-4 text-primary fw-bold number-cell">{{ "{:,.2f}".format(totals.actual_cost) }} <span class="small text-muted">ر.س</span></p>
+                </div>
             </div>
-            <div class="col">
-                <h5>إجمالي المدفوع</h5>
-                <p class="fs-4 text-success">{{ "{:,.2f}".format(totals.paid_amount) }} ريال</p>
+            <div class="col-md-3">
+                <div class="p-3 border rounded h-100 border-success">
+                    <h5 class="text-muted small">إجمالي المدفوع</h5>
+                    <p class="fs-4 text-success fw-bold number-cell">{{ "{:,.2f}".format(totals.paid_amount) }} <span class="small text-muted">ر.س</span></p>
+                </div>
             </div>
-            <div class="col">
-                <h5>إجمالي المتبقي</h5>
-                <p class="fs-4 text-danger">{{ "{:,.2f}".format(totals.remaining_amount) }} ريال</p>
+            <div class="col-md-3">
+                <div class="p-3 border rounded h-100 border-danger">
+                    <h5 class="text-muted small">إجمالي المتبقي</h5>
+                    <p class="fs-4 text-danger fw-bold number-cell">{{ "{:,.2f}".format(totals.remaining_amount) }} <span class="small text-muted">ر.س</span></p>
+                </div>
             </div>
         </div>
     </div>
@@ -35,7 +43,7 @@
 
 <div class="card">
     <div class="card-header">
-        <h5 class="mb-0">تفاصيل كل مشروع على حدة</h5>
+        <h5 class="mb-0"><i class="fas fa-list-alt me-1"></i>تفاصيل كل مشروع على حدة</h5>
     </div>
     <div class="card-body p-0">
         <div class="table-responsive">
@@ -56,7 +64,7 @@
                             <a href="{{ url_for('project.get_project', project_id=project.id) }}" class="fw-bold">{{ project.name }}</a>
                         </td>
                         <td class="number-cell text-end text-info">{{ "{:,.2f}".format(project.total_contract_cost) }}</td>
-                        <td class="number-cell text-end">{{ "{:,.2f}".format(project.total_actual_cost) }}</td>
+                        <td class="number-cell text-end text-primary">{{ "{:,.2f}".format(project.total_actual_cost) }}</td>
                         <td class="number-cell text-end text-success">{{ "{:,.2f}".format(project.total_paid_amount) }}</td>
                         <td class="number-cell text-end text-danger">{{ "{:,.2f}".format(project.total_remaining_amount) }}</td>
                     </tr>

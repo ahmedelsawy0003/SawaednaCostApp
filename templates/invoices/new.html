@@ -4,7 +4,10 @@
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1>إضافة مستخلص جديد للمشروع: {{ project.name }}</h1>
+    <h2 class="mb-0">
+        <i class="fas fa-plus-circle fa-fw me-2 text-primary"></i>
+        <span class="text-muted fw-normal">إضافة مستخلص جديد للمشروع:</span> {{ project.name }}
+    </h2>
     <a href="{{ url_for('invoice.get_invoices_by_project', project_id=project.id) }}" class="btn btn-secondary">
         <i class="fas fa-arrow-right me-1"></i> العودة للمستخلصات
     </a>
@@ -12,18 +15,18 @@
 
 <div class="card">
     <div class="card-header bg-primary text-white">
-        <h3 class="mb-0">البيانات الأساسية للمستخلص</h3>
+        <h4 class="mb-0"><i class="fas fa-file-invoice-dollar me-2"></i>البيانات الأساسية للمستخلص</h4>
     </div>
     <div class="card-body">
         <form method="POST" action="{{ url_for('invoice.new_invoice', project_id=project.id) }}" novalidate>
             {{ form.hidden_tag() }}
-            <div class="row">
+            <div class="row g-3">
                 <div class="col-md-6">
                     <div class="mb-3">
                         {{ form.invoice_number.label(class="form-label") }}
                         {# START: This line is modified to pre-fill the suggested number #}
                         {{ form.invoice_number(class="form-control", value=next_invoice_number) }}
-                        <div class="form-text">هذا رقم مقترح، يمكنك تعديله إذا لزم الأمر.</div>
+                        <div class="form-text">هذا رقم مقترح بناءً على آخر مستخلص، يمكنك تعديله إذا لزم الأمر.</div>
                         {# END: Modification #}
                         {% for error in form.invoice_number.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
                     </div>
@@ -36,7 +39,7 @@
                     </div>
                 </div>
             </div>
-            <div class="row">
+            <div class="row g-3">
                 <div class="col-md-6">
                     <div class="mb-3">
                         {{ form.contractor_id.label(class="form-label") }}
@@ -52,25 +55,29 @@
                     </div>
                 </div>
             </div>
-             <div class="row">
+             <hr class="my-3">
+             <h5 class="text-muted mb-3"><i class="fas fa-file-contract me-2"></i>مرجعيات المستخلص (اختياري)</h5>
+             <div class="row g-3">
                 <div class="col-md-6">
                     <div class="mb-3">
                         {{ form.purchase_order_number.label(class="form-label") }}
                         {{ form.purchase_order_number(class="form-control") }}
+                        <div class="form-text">رقم أمر الشراء المرتبط بهذا المستخلص.</div>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="mb-3">
                         {{ form.disbursement_order_number.label(class="form-label") }}
                         {{ form.disbursement_order_number(class="form-control") }}
+                        <div class="form-text">رقم أمر الصرف/المصادقة (إن وجد).</div>
                     </div>
                 </div>
             </div>
-            <div class="mb-3">
+            <div class="mb-4">
                 {{ form.notes.label(class="form-label") }}
                 {{ form.notes(class="form-control", rows="3") }}
             </div>
-            {{ form.submit(class="btn btn-primary") }}
+            {{ form.submit(class="btn btn-success btn-lg w-100") }}
         </form>
     </div>
 </div>
