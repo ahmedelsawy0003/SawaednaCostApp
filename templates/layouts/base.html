@@ -6,7 +6,7 @@
     <title>Sawaedna Cost - {% block title %}{% endblock %}</title>
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" integrity="sha384-dpuaG1suBy+9cI7hz536lW1NDyWjG7O6UaWdY3eR5W7z5V8yG7eB3C8R3O2K94f" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLMD/O303u+Ndu4m33U+B/rU32k1A9vJ2a7R3o3a6w4E8w5B3g7L0J3+jQG5z5y2g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLMD/O303u+Ndu4m33U+B/rU32k1A9vJ2a7R3o3a6w4E8w5B3g7L0J3+jG5z5y2g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     
     {% block head_styles %}{% endblock %}
@@ -16,7 +16,8 @@
     <div class="d-flex" id="wrapper">
         <div class="sidebar" id="sidebar-wrapper">
             <div class="sidebar-heading text-center py-4 primary-bg text-white fs-4 fw-bold text-uppercase border-bottom">
-                <i class="fas fa-building me-2"></i> سواعدنا
+                <i class="fas fa-cogs me-2 text-primary"></i>
+                <span>إدارة التكاليف</span>
             </div>
             
             <div class="list-group list-group-flush my-3">
@@ -26,7 +27,7 @@
                     <a href="{{ url_for('auth.profile') }}">
                         <i class="fas fa-user-circle fa-2x me-2 text-primary"></i>
                         <span class="fw-bold d-block text-truncate text-dark">{{ current_user.username | truncate(15) }}</span>
-                        <span class="text-muted small d-block">{{ current_user.role_arabic }}</span>
+                        <span class="text-muted small d-block">{{ current_user.role }}</span>
                     </a>
                     {% else %}
                         <i class="fas fa-user-circle fa-2x me-2 text-secondary"></i>
@@ -53,7 +54,7 @@
 
                     <hr class="sidebar-divider">
 
-                    {# 2. إدارة المشاريع وبنودها (القائمة المنسدلة الجديدة) #}
+                    {# 2. إدارة المشاريع وبنودها #}
                     <li class="sidebar-item">
                         <a href="#" class="sidebar-link sidebar-toggler">
                             <i class="fas fa-project-diagram fa-fw me-2"></i> المشاريع النشطة ({{ sidebar_projects|length }})
@@ -127,12 +128,7 @@
                     
                     <hr class="sidebar-divider">
 
-                    {# 5. إدارة البنود والخدمات #}
-                    <li class="sidebar-item">
-                        <a href="{{ url_for('item.get_items') }}" class="sidebar-link {{ 'active' if 'items' in request.path }}">
-                            <i class="fas fa-clipboard-list fa-fw me-2"></i> إدارة البنود والخدمات
-                        </a>
-                    </li>
+                    {# NOTE: تم إزالة الرابط item.get_items الذي تسبب في خطأ BuildError #}
 
                     {# 6. لوحة تحكم المسؤول #}
                     {% if current_user.role == 'admin' %}
@@ -150,7 +146,9 @@
         <div id="page-content-wrapper">
             <nav class="navbar navbar-expand-lg navbar-light bg-transparent py-4 px-4">
                 <div class="d-flex align-items-center">
-                    <i class="fas fa-stream primary-text fs-4 me-3" id="menu-toggle"></i>
+                    <button class="btn btn-outline-secondary d-lg-none" id="open-sidebar-btn" data-bs-toggle="tooltip" title="فتح القائمة الجانبية">
+                        <i class="fas fa-bars"></i>
+                    </button>
                     <h2 class="fs-2 m-0">{% block header_title %}{% endblock %}</h2>
                 </div>
 
@@ -214,24 +212,38 @@
         var el = document.getElementById("wrapper");
         var toggleButton = document.getElementById("menu-toggle");
 
-        toggleButton.onclick = function () {
-            el.classList.toggle("toggled");
-        };
+        // The logic for opening/closing the sidebar on mobile
+        const sidebar = document.getElementById('sidebar-wrapper');
+        const openSidebarBtn = document.getElementById('open-sidebar-btn');
+        const closeSidebarBtn = document.getElementById('close-sidebar-btn');
+        const overlay = document.querySelector('.overlay');
 
-        // Sidebar toggler for submenus (added for the new structure)
+        if (openSidebarBtn) {
+            openSidebarBtn.addEventListener('click', () => {
+                sidebar.classList.add('show');
+                if (overlay) overlay.classList.add('show');
+            });
+        }
+        if (closeSidebarBtn) {
+            closeSidebarBtn.addEventListener('click', () => {
+                sidebar.classList.remove('show');
+                if (overlay) overlay.classList.remove('show');
+            });
+        }
+
+        // Sidebar toggler for submenus (from script.js functionality)
         document.querySelectorAll('.sidebar-toggler').forEach(function(toggler) {
             toggler.addEventListener('click', function(e) {
                 e.preventDefault();
-                // Find the next sibling which is the submenu
                 let submenu = this.nextElementSibling;
                 
-                // Only toggle if it is actually a submenu div
                 if (submenu && submenu.classList.contains('sidebar-submenu')) {
-                    // Toggle the visibility class (you might need to define this class in your CSS)
-                    submenu.classList.toggle('show');
-                    
-                    // Optional: Toggle an icon rotation class on the toggler itself
-                    this.querySelector('i:last-child')?.classList.toggle('fa-rotate-90');
+                    this.classList.toggle('is-active');
+                    if (submenu.style.display === 'block') {
+                        submenu.style.display = 'none';
+                    } else {
+                        submenu.style.display = 'block';
+                    }
                 }
             });
         });
