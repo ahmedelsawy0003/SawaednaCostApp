@@ -3,41 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}SawaednaCostApp{% endblock %}</title>
+    <title>Sawaedna Cost - {% block title %}{% endblock %}</title>
     
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" integrity="sha384-dpuaG1suBy+9cI7hz536lW1NDyWjG7O6UaWdY3eR5W7z5V8yG7eB3C8R3O2K94f" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLMD/O303u+Ndu4m33U+B/rU32k1A9vJ2a7R3o3a6w4E8w5B3g7L0J3+jQG5z5y2g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
-    
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=1.7">
+    {% block head_styles %}{% endblock %}
 </head>
-<body data-bs-theme="light">
-
-    <div class="page-wrapper">
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <a class="sidebar-brand" href="{{ url_for('project.get_projects') }}">
-                    <i class="fas fa-cogs me-2 text-primary"></i>
-                    <span>إدارة التكاليف</span>
-                </a>
-                <button class="btn-close d-lg-none" id="close-sidebar-btn"></button>
+<body>
+    
+    <div class="d-flex" id="wrapper">
+        <div class="sidebar" id="sidebar-wrapper">
+            <div class="sidebar-heading text-center py-4 primary-bg text-white fs-4 fw-bold text-uppercase border-bottom">
+                <i class="fas fa-building me-2"></i> سواعدنا
             </div>
+            
+            <div class="list-group list-group-flush my-3">
+                
+                <div class="sidebar-user-info p-3 mb-3 border-bottom">
+                    {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('auth.profile') }}">
+                        <i class="fas fa-user-circle fa-2x me-2 text-primary"></i>
+                        <span class="fw-bold d-block text-truncate text-dark">{{ current_user.username | truncate(15) }}</span>
+                        <span class="text-muted small d-block">{{ current_user.role_arabic }}</span>
+                    </a>
+                    {% else %}
+                        <i class="fas fa-user-circle fa-2x me-2 text-secondary"></i>
+                        <span class="text-muted d-block">لم يتم تسجيل الدخول</span>
+                    {% endif %}
+                </div>
+
                 <ul class="list-unstyled sidebar-menu-list">
                     
                     {# 1. لوحة التحكم والإجماليات #}
                     <li class="sidebar-item">
-                        <a href="{{ url_for('project.get_projects') }}" class="sidebar-link">
+                        <a href="{{ url_for('project.get_projects') }}" class="sidebar-link {{ 'active' if 'projects' in request.path and not show_archived and 'summary' not in request.path }}">
                             <i class="fas fa-home fa-fw me-2"></i> لوحة التحكم (الرئيسية)
                         </a>
                     </li>
                     
                     {% if current_user.role in ['admin', 'sub-admin'] %}
                     <li class="sidebar-item">
-                        <a href="{{ url_for('project.projects_summary') }}" class="sidebar-link">
+                        <a href="{{ url_for('project.projects_summary') }}" class="sidebar-link {{ 'active' if 'summary' in request.path }}">
                             <i class="fas fa-chart-pie fa-fw me-2"></i> الملخص المالي الإجمالي
                         </a>
                     </li>
@@ -45,26 +53,27 @@
 
                     <hr class="sidebar-divider">
 
-                    {# 2. إدارة المشاريع #}
+                    {# 2. إدارة المشاريع وبنودها (القائمة المنسدلة الجديدة) #}
                     <li class="sidebar-item">
                         <a href="#" class="sidebar-link sidebar-toggler">
-                            <i class="fas fa-project-diagram fa-fw me-2"></i> المشاريع
+                            <i class="fas fa-project-diagram fa-fw me-2"></i> المشاريع النشطة ({{ sidebar_projects|length }})
                         </a>
                         <div class="sidebar-submenu">
-                            <a href="{{ url_for('project.get_projects') }}" class="sidebar-submenu-link"><i class="fas fa-eye me-2"></i> عرض المشاريع النشطة</a>
                             {% if current_user.role in ['admin', 'sub-admin'] %}
                             <a href="{{ url_for('project.new_project') }}" class="sidebar-submenu-link"><i class="fas fa-plus me-2 text-success"></i> إضافة مشروع جديد</a>
-                            <a href="{{ url_for('project.get_projects', show_archived=True) }}" class="sidebar-submenu-link"><i class="fas fa-archive me-2"></i> المشاريع المؤرشفة</a>
+                            <a href="{{ url_for('project.get_projects', show_archived=True) }}" class="sidebar-submenu-link"><i class="fas fa-archive me-2"></i> عرض المشاريع المؤرشفة</a>
+                            <hr class="sidebar-divider">
                             {% endif %}
                             
                             {% if sidebar_projects %}
-                                <hr class="sidebar-divider">
-                                <a href="#" class="sidebar-submenu-link sidebar-toggler nested"><i class="fas fa-folder-open me-2"></i> المشاريع المسندة لك</a>
+                                <a href="#" class="sidebar-submenu-link sidebar-toggler nested"><i class="fas fa-folder-open me-2"></i> المشاريع للوصول السريع</a>
                                 <div class="sidebar-submenu nested-menu">
                                     {% for project in sidebar_projects %}
                                         <a href="{{ url_for('project.get_project', project_id=project.id) }}" class="sidebar-submenu-link" title="{{ project.name }}"><i class="fas fa-dot-circle fa-fw me-2 text-muted small"></i> {{ project.name | truncate(20) }}</a>
                                     {% endfor %}
                                 </div>
+                            {% else %}
+                                <span class="sidebar-submenu-link text-muted">لا توجد مشاريع مسندة حالياً.</span>
                             {% endif %}
                         </div>
                     </li>
@@ -96,7 +105,7 @@
                     {# 4. المقاولون / الموردون #}
                     <li class="sidebar-item">
                         <a href="#" class="sidebar-link sidebar-toggler">
-                            <i class="fas fa-hard-hat fa-fw me-2"></i> المقاولون / الموردون
+                            <i class="fas fa-hard-hat fa-fw me-2"></i> المقاولون / الموردون ({{ sidebar_contractors|length }})
                         </a>
                         <div class="sidebar-submenu">
                             <a href="{{ url_for('contractor.get_contractors') }}" class="sidebar-submenu-link"><i class="fas fa-eye me-2"></i> عرض جميع المقاولين</a>
@@ -116,93 +125,125 @@
                         </div>
                     </li>
                     
+                    <hr class="sidebar-divider">
+
+                    {# 5. إدارة البنود والخدمات #}
+                    <li class="sidebar-item">
+                        <a href="{{ url_for('item.get_items') }}" class="sidebar-link {{ 'active' if 'items' in request.path }}">
+                            <i class="fas fa-clipboard-list fa-fw me-2"></i> إدارة البنود والخدمات
+                        </a>
+                    </li>
+
+                    {# 6. لوحة تحكم المسؤول #}
                     {% if current_user.role == 'admin' %}
                     <li class="sidebar-item">
-                        <a href="{{ url_for('auth.admin_dashboard') }}" class="sidebar-link">
+                        <a href="{{ url_for('auth.admin_dashboard') }}" class="sidebar-link {{ 'active' if 'admin/dashboard' in request.path }}">
                             <i class="fas fa-user-shield fa-fw me-2 text-danger"></i> لوحة تحكم المسؤول
                         </a>
                     </li>
                     {% endif %}
-                </ul>
-            <div class="sidebar-footer">
-                 {% if current_user.is_authenticated %}
-                    <div class="dropdown w-100">
-                        <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle p-2" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fas fa-user-circle fa-fw me-2 fs-4 text-primary"></i>
-                            <strong class="text-dark">{{ current_user.username }}</strong>
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-light text-small shadow text-end" aria-labelledby="dropdownUser1" dir="rtl">
-                            <li><a class="dropdown-item" href="{{ url_for('auth.profile') }}"><i class="fas fa-user-cog me-2"></i>ملفي الشخصي</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}"><i class="fas fa-sign-out-alt me-2"></i>تسجيل الخروج</a></li>
-                        </ul>
-                    </div>
-                {% endif %}
-            </div>
-        </aside>
 
-        <div class="main-content-wrapper">
-            <header class="topbar">
-                <button class="btn btn-outline-secondary d-lg-none" id="open-sidebar-btn" data-bs-toggle="tooltip" title="فتح القائمة الجانبية">
-                    <i class="fas fa-bars"></i>
-                </button>
-                <h5 class="topbar-title d-none d-md-block">برنامج إدارة تكاليف المشاريع - سواعدنا للمقاولات</h5>
-                 <a class="topbar-brand d-md-none" href="{{ url_for('project.get_projects') }}">
-                    <i class="fas fa-cogs me-2"></i>
-                    <span>إدارة التكاليف</span>
-                </a>
-            </header>
-            <main class="main-content">
-                <div class="container-fluid">
-                    {% block content %}{% endblock %}
+                </ul>
+
+            </div>
+        </div>
+        <div id="page-content-wrapper">
+            <nav class="navbar navbar-expand-lg navbar-light bg-transparent py-4 px-4">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-stream primary-text fs-4 me-3" id="menu-toggle"></i>
+                    <h2 class="fs-2 m-0">{% block header_title %}{% endblock %}</h2>
                 </div>
-            </main>
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                    aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                        {% if current_user.is_authenticated %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle second-text fw-bold" href="#" id="navbarDropdown"
+                                role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-user me-2"></i>
+                                {{ current_user.username }}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-start" aria-labelledby="navbarDropdown">
+                                <li><a class="dropdown-item" href="{{ url_for('auth.profile') }}"><i class="fas fa-cog me-2"></i> الملف الشخصي</a></li>
+                                {% if current_user.role == 'admin' %}
+                                    <li><a class="dropdown-item" href="{{ url_for('auth.register') }}"><i class="fas fa-user-plus me-2"></i> إضافة مستخدم</a></li>
+                                {% endif %}
+                                <li><a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}"><i class="fas fa-sign-out-alt me-2"></i> تسجيل الخروج</a></li>
+                            </ul>
+                        </li>
+                        {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link second-text fw-bold" href="{{ url_for('auth.login') }}"><i class="fas fa-sign-in-alt me-2"></i> تسجيل الدخول</a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </nav>
+
+            <div class="container-fluid px-4">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        <div class="flashes mb-3">
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category == 'error' and 'danger' or category }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endwith %}
+
+                {% block content %}{% endblock %}
+            </div>
+            
         </div>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawR/hFmBdS+U6p+5026wQ6CgH2f5T0YxNlY=" crossorigin="anonymous"></script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 
-    {# --- START: تحسين عرض التنبيهات (Toasts) --- #}
-    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1080;">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="toast align-items-center text-white bg-{{ category|replace('warning', 'warning text-dark')|replace('error', 'danger') }}" role="alert" aria-live="assertive" aria-atomic="true">
-                        <div class="d-flex">
-                             <div class="toast-body">
-                                <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-triangle' if category == 'warning' else 'info-circle' }} me-2"></i>
-                                <strong>{{ 'نجاح!' if category == 'success' else 'تنبيه!' if category == 'warning' else 'خطأ!' if category == 'danger' else 'معلومة' }}:</strong> {{ message }}
-                            </div>
-                            <button type="button" class="btn-close me-2 m-auto {% if category == 'warning' %}btn-close-dark{% endif %}" data-bs-dismiss="toast" aria-label="Close"></button>
-                        </div>
-                    </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-    </div>
-    {# --- END: تحسين عرض التنبيهات (Toasts) --- #}
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{{ url_for('static', filename='js/script.js') }}?v=1.7"></script>
-    {% block scripts %}
     <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // تفعيل Tooltip لجميع العناصر التي تحمل خاصية data-bs-toggle="tooltip"
+        // Toggle script for sidebar
+        var el = document.getElementById("wrapper");
+        var toggleButton = document.getElementById("menu-toggle");
+
+        toggleButton.onclick = function () {
+            el.classList.toggle("toggled");
+        };
+
+        // Sidebar toggler for submenus (added for the new structure)
+        document.querySelectorAll('.sidebar-toggler').forEach(function(toggler) {
+            toggler.addEventListener('click', function(e) {
+                e.preventDefault();
+                // Find the next sibling which is the submenu
+                let submenu = this.nextElementSibling;
+                
+                // Only toggle if it is actually a submenu div
+                if (submenu && submenu.classList.contains('sidebar-submenu')) {
+                    // Toggle the visibility class (you might need to define this class in your CSS)
+                    submenu.classList.toggle('show');
+                    
+                    // Optional: Toggle an icon rotation class on the toggler itself
+                    this.querySelector('i:last-child')?.classList.toggle('fa-rotate-90');
+                }
+            });
+        });
+
+        // Initialize tooltips (important for the fix in new.html)
         var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
         var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl)
+          return new bootstrap.Tooltip(tooltipTriggerEl)
         })
-        
-        // إظهار جميع التوستات المضافة حديثاً
-        var toastElList = [].slice.call(document.querySelectorAll('.toast'));
-        var toastList = toastElList.map(function (toastEl) {
-            var toast = new bootstrap.Toast(toastEl, {
-                autohide: true,
-                delay: 5000
-            });
-            toast.show();
-            return toast;
-        });
-    });
     </script>
-    {% endblock %}
+    
+    {% block scripts %}{% endblock %}
+
 </body>
 </html>
