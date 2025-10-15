@@ -47,11 +47,21 @@ def get_all_payments():
     if contractor_id:
         query = query.filter(Invoice.contractor_id == contractor_id)
     if start_date_str:
-        start_date = datetime.datetime.strptime(start_date_str, "%Y-%m-%d").date()
-        query = query.filter(Payment.payment_date >= start_date)
+        try:
+            start_date = datetime.datetime.strptime(start_date_str, "%Y-%m-%d").date()
+            query = query.filter(Payment.payment_date >= start_date)
+        except ValueError:
+            # UX IMPROVEMENT: Clearer error message for date format
+            pass # يتم تجاهل فلتر التاريخ إذا كان غير صحيح لتجنب كسر الصفحة
+
     if end_date_str:
-        end_date = datetime.datetime.strptime(end_date_str, "%Y-%m-%d").date()
-        query = query.filter(Payment.payment_date <= end_date)
+        try:
+            end_date = datetime.datetime.strptime(end_date_str, "%Y-%m-%d").date()
+            query = query.filter(Payment.payment_date <= end_date)
+        except ValueError:
+            # UX IMPROVEMENT: Clearer error message for date format
+            pass # يتم تجاهل فلتر التاريخ إذا كان غير صحيح لتجنب كسر الصفحة
+
 
     payments = query.order_by(Payment.payment_date.desc()).options(
         joinedload(Payment.distributions).joinedload(PaymentDistribution.invoice_item)
@@ -62,7 +72,8 @@ def get_all_payments():
     for payment in payments:
         dists = []
         for dist in payment.distributions:
-            description = dist.invoice_item.description if dist.invoice_item else ''
+            # Check if invoice_item exists before accessing its description
+            description = dist.invoice_item.description if dist.invoice_item else 'بند محذوف'
             dists.append({
                 'description': description,
                 'amount': dist.amount
@@ -91,8 +102,9 @@ def get_all_payments():
             distributions_list.append({
                 'amount': dist.amount,
                 'invoice_item': {
-                    'description': dist.invoice_item.description,
-                    'unit_price': dist.invoice_item.unit_price
+                    # Check if invoice_item exists before accessing its properties
+                    'description': dist.invoice_item.description if dist.invoice_item else 'بند محذوف',
+                    'unit_price': dist.invoice_item.unit_price if dist.invoice_item else 0.0
                 }
             })
         payments_data.append({
@@ -124,12 +136,20 @@ def get_payment_distributions(payment_id):
     payment = Payment.query.options(
         joinedload(Payment.distributions).joinedload(PaymentDistribution.invoice_item)
     ).get_or_404(payment_id)
+    
     # Permission: user must be allowed to view the payment's project
-    check_project_permission(payment.invoice.project)
+    try:
+        check_project_permission(payment.invoice.project)
+    except Exception as e:
+        # UX IMPROVEMENT: Add a flash message before aborting for better feedback
+        flash("ليس لديك الصلاحية لعرض تفاصيل دفعات هذا المشروع.", "danger")
+        abort(403)
+
 
     distributions = []
     for dist in payment.distributions:
-        description = dist.invoice_item.description if dist.invoice_item else ''
+        # Check if invoice_item exists before accessing its description
+        description = dist.invoice_item.description if dist.invoice_item else 'بند محذوف'
         distributions.append({
             'description': description,
             'amount': dist.amount

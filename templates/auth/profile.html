@@ -3,16 +3,40 @@
 {% block title %}ملفي الشخصي{% endblock %}
 
 {% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">
+        <i class="fas fa-user-circle fa-fw me-2 text-primary"></i>ملفي الشخصي
+    </h2>
+</div>
+
 <div class="card">
     <div class="card-header bg-primary text-white">
-        <h1 class="mb-0">ملفي الشخصي</h1>
+        <h4 class="mb-0"><i class="fas fa-id-card me-2"></i>بيانات الحساب الأساسية</h4>
     </div>
     <div class="card-body">
-        <p><strong>اسم المستخدم:</strong> {{ current_user.username }}</p>
-        <p><strong>البريد الإلكتروني:</strong> {{ current_user.email }}</p>
-        <p><strong>الدور:</strong> {{ current_user.role }}</p>
-        <a href="{{ url_for("auth.logout") }}" class="btn btn-danger">تسجيل الخروج</a>
+        <ul class="list-unstyled mb-4">
+            <li class="mb-2"><strong>اسم المستخدم:</strong> <span class="fw-bold text-primary">{{ current_user.username }}</span></li>
+            <li class="mb-2"><strong>البريد الإلكتروني:</strong> <span class="text-muted">{{ current_user.email }}</span></li>
+            <li><strong>الدور والصلاحية:</strong> 
+                <span class="badge 
+                    {% if current_user.role == 'admin' %} bg-danger 
+                    {% elif current_user.role == 'sub-admin' %} bg-info 
+                    {% else %} bg-secondary 
+                    {% endif %}">
+                    {{ current_user.role }}
+                </span>
+            </li>
+        </ul>
+        
+        <hr>
+        
+        <p class="text-muted small mb-3">
+             <i class="fas fa-info-circle me-1"></i> لتغيير اسم المستخدم، البريد الإلكتروني، أو كلمة المرور، يرجى التواصل مع مسؤول النظام.
+        </p>
+        
+        <a href="{{ url_for("auth.logout") }}" class="btn btn-danger btn-lg">
+            <i class="fas fa-sign-out-alt me-1"></i> تسجيل الخروج
+        </a>
     </div>
 </div>
 {% endblock %}
-

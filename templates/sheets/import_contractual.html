@@ -3,8 +3,11 @@
 {% block title %}استيراد بنود من Google Sheets{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1>استيراد بنود للمشروع: {{ project.name }}</h1>
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <h2 class="mb-0">
+        <i class="fas fa-file-import fa-fw me-2 text-primary"></i>
+        <span class="text-muted fw-normal">استيراد بنود للمشروع:</span> {{ project.name }}
+    </h2>
     <a href="{{ url_for("project.get_project", project_id=project.id) }}" class="btn btn-secondary">
         <i class="fas fa-arrow-right me-1"></i> العودة لتفاصيل المشروع
     </a>
@@ -12,40 +15,48 @@
 
 <div class="card">
     <div class="card-header bg-primary text-white">
-        <h3 class="mb-0">استيراد بنود المشروع</h3>
+        <h4 class="mb-0"><i class="fas fa-file-excel me-2"></i>خطوات استيراد البنود التعاقدية</h4>
     </div>
     <div class="card-body">
-        <p class="lead">هذه الصفحة تقوم باستيراد البنود التعاقدية وتقوم تلقائياً بحساب القيم الفعلية المبدئية.</p>
+        <p class="lead">تساعدك هذه الأداة في استيراد جدول البنود التعاقدية مباشرةً من ملف Google Sheets المربوط بالمشروع. سيتم تحديث البنود الموجودة مسبقاً أو إضافة بنود جديدة.</p>
+        
+        <div class="alert alert-warning">
+            <h5 class="alert-heading text-dark"><i class="fas fa-exclamation-triangle me-2"></i>تنبيه هام!</h5>
+            <p class="mb-1">بعد الاستيراد، سيتم تلقائياً تعيين **الكمية الفعلية** مساوية للكمية التعاقدية.</p>
+            <p class="mb-0">وسيتم تعيين **تكلفة الوحدة الفعلية** بنسبة **70%** من تكلفة الوحدة التعاقدية (يمكنك تعديل كلتا القيمتين لاحقاً في صفحة البند).</p>
+        </div>
+        
         <div class="alert alert-info">
-            <h5 class="alert-heading"><i class="fas fa-info-circle me-2"></i>إرشادات هامة</h5>
-            <p>يرجى التأكد من أن ملف Google Sheets يحتوي على أعمدة بالأسماء التالية (أو ما يماثلها في المعنى):</p>
+            <h5 class="alert-heading"><i class="fas fa-cogs me-2"></i>الأعمدة المطلوبة للتعرف عليها (إلزامية)</h5>
+            <p class="mb-1">يجب أن تتأكد من أن الصف الأول (العناوين) في ورقة العمل (Sheet) يحتوي على أعمدة تحمل أحد الأسماء التالية لكل حقل:</p>
             <ul>
-                <li><strong>لـ "رقم البند" (إلزامي):</strong> <code>رقم البند</code>, <code>الرقم التسلسلي</code>, <code>رقم</code>, <code>مسلسل</code></li>
-                <li><strong>لـ "الوصف" (إلزامي):</strong> <code>الوصف</code>, <code>وصف البند</code>, <code>البيان</code> (سيتم دمجه مع عمود <code>اسم البند</code> إن وجد)</li>
-                <li><strong>لـ "الوحدة" (إلزامي):</strong> <code>الوحدة</code>, <code>وحدة القياس</code></li>
-                <li><strong>لـ "الكمية" (إلزامي):</strong> <code>الكمية</code>, <code>الكمية التعاقدية</code></li>
-                <li><strong>لـ "السعر" (إلزامي):</strong> <code>السعر</code>, <code>التكلفة</code>, <code>سعر افرادى</code>, <code>السعر التعاقدي</code>, <code>التكلفة التعاقدية</code></li>
+                <li><strong class="text-primary">رقم البند:</strong> (مثل: <code>رقم البند</code>, <code>مسلسل</code>, <code>الرقم التسلسلي</code>)</li>
+                <li><strong class="text-primary">الوصف:</strong> (مثل: <code>الوصف</code>, <code>البيان</code>, <code>وصف البند</code>)</li>
+                <li><strong class="text-primary">الوحدة:</strong> (مثل: <code>الوحدة</code>, <code>وحدة القياس</code>)</li>
+                <li><strong class="text-primary">الكمية:</strong> (مثل: <code>الكمية</code>, <code>الكمية التعاقدية</code>)</li>
+                <li><strong class="text-primary">سعر الوحدة:</strong> (مثل: <code>السعر</code>, <code>التكلفة الإفرادية</code>, <code>سعر افرادى</code>)</li>
             </ul>
         </div>
+        
         <hr>
+        
         <form method="POST" action="{{ url_for("sheets.import_items", project_id=project.id) }}">
-            <div class="mb-3">
-                <label for="sheet_name" class="form-label">اختر ورقة العمل (الشيت) المراد استيرادها</label>
-                {# --- START: التعديل الرئيسي هنا --- #}
+            <div class="mb-4">
+                <label for="sheet_name" class="form-label fs-5">1. اختر ورقة العمل (Sheet) المراد استيرادها</label>
                 <select class="form-select" id="sheet_name" name="sheet_name" required>
-                    <option value="" selected disabled>-- اختر من القائمة --</option>
+                    <option value="" selected disabled>-- اختر ورقة عمل من ملف Google Sheets المربوط --</option>
                     {% if sheet_names %}
                         {% for name in sheet_names %}
                             <option value="{{ name }}">{{ name }}</option>
                         {% endfor %}
                     {% else %}
-                        <option value="" disabled>لا توجد أوراق عمل متاحة في هذا الملف.</option>
+                        <option value="" disabled>لا توجد أوراق عمل متاحة في هذا الملف. يرجى التأكد من ربط معرّف Sheets الصحيح.</option>
                     {% endif %}
                 </select>
-                {# --- END: التعديل الرئيسي --- #}
+                <div class="form-text">سيتم استيراد البيانات من الصف الثاني وما يليه (بعد صف العناوين).</div>
             </div>
-            <button type="submit" class="btn btn-primary">
-                <i class="fas fa-file-import me-1"></i> بدء عملية الاستيراد
+            <button type="submit" class="btn btn-success btn-lg w-100">
+                <i class="fas fa-file-import me-1"></i> 2. بدء عملية الاستيراد الآن
             </button>
         </form>
     </div>

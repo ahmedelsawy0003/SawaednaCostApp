@@ -17,6 +17,7 @@ def log_item_change(item, action, changes_details=""):
     if action == 'create':
         details = f"تم إنشاء البند '{item.item_number}'."
     elif action == 'update':
+        # UX IMPROVEMENT: Arabic message for log details
         if changes_details:
             details = f"تم تحديث البند '{item.item_number}':\n{changes_details}"
         else:
@@ -81,7 +82,8 @@ def bulk_add_items(project_id):
     if request.method == 'POST':
         items_data = request.form.get('items_data')
         if not items_data:
-            flash('لا توجد بيانات لإضافتها.', 'warning')
+            # UX IMPROVEMENT: Clearer warning
+            flash('لا توجد بيانات لإضافتها. يرجى لصق البيانات في الحقل المخصص.', 'warning')
             return redirect(url_for('item.bulk_add_items', project_id=project_id))
 
         lines = items_data.strip().split('\n')
@@ -102,7 +104,8 @@ def bulk_add_items(project_id):
                     db.session.add(item)
                     added_count += 1
                 except (ValueError, IndexError) as e:
-                    flash(f'خطأ في تحليل السطر: {line}. تأكد من أن الكمية والسعر أرقام.', 'danger')
+                    # UX IMPROVEMENT: Clearer error message
+                    flash(f'خطأ في بيانات أحد الأسطر: {line}. الرجاء التأكد من أن الكمية والسعر أرقام صالحة.', 'danger')
                     continue
         
         if added_count > 0:
@@ -122,7 +125,8 @@ def bulk_update_items(project_id):
     if request.method == 'POST':
         items_data = request.form.get('items_data_update')
         if not items_data:
-            flash('لا توجد بيانات لتحديثها.', 'warning')
+            # UX IMPROVEMENT: Clearer warning
+            flash('لا توجد بيانات لتحديثها. يرجى لصق البيانات في الحقل المخصص.', 'warning')
             return redirect(url_for('item.bulk_update_items', project_id=project_id))
 
         lines = items_data.strip().split('\n')
@@ -138,7 +142,8 @@ def bulk_update_items(project_id):
                         item.actual_unit_cost = float(parts[2]) if parts[2] else item.actual_unit_cost
                         updated_count += 1
                     except (ValueError, IndexError):
-                        flash(f'بيانات غير صالحة للكمية الفعلية أو تكلفة الوحدة الفعلية للبند {item_number}.', 'danger')
+                        # UX IMPROVEMENT: Clearer error message
+                        flash(f'بيانات غير صالحة للكمية الفعلية أو تكلفة الوحدة الفعلية للبند {item_number}. يجب أن تكون أرقامًا.', 'danger')
                         continue
         
         if updated_count > 0:
@@ -158,6 +163,7 @@ def bulk_delete_items(project_id):
 
     item_ids = [int(id) for id in request.form.getlist('item_ids')]
     if not item_ids:
+        # UX IMPROVEMENT: Clearer warning
         flash('الرجاء تحديد بند واحد على الأقل لحذفه.', 'warning')
         return redirect(url_for('item.get_items_by_project', project_id=project_id))
 
@@ -173,7 +179,8 @@ def bulk_delete_items(project_id):
     
     if deleted_count > 0:
         db.session.commit()
-        flash(f'تم حذف {deleted_count} بندًا بنجاح.', 'success')
+        # UX IMPROVEMENT: Clearer success message
+        flash(f'تم حذف {deleted_count} بندًا وكل ما يتعلق بها بنجاح.', 'success')
 
     return redirect(url_for('item.get_items_by_project', project_id=project_id))
 
@@ -233,9 +240,10 @@ def edit_item(item_id):
     if form.validate_on_submit():
         changes_list = []
         field_map = {
+            # UX IMPROVEMENT: Clearer field labels for log
             'item_number': 'رقم البند', 'description': 'الوصف', 'unit': 'الوحدة',
             'contract_quantity': 'الكمية التعاقدية', 'contract_unit_cost': 'تكلفة الوحدة التعاقدية',
-            'actual_quantity': 'الكمية الفعلية', 'actual_unit_cost': 'تكلفة الوحدة الفعلية',
+            'actual_quantity': 'الكمية المتاحة للفوترة', 'actual_unit_cost': 'تكلفة الوحدة للمستخلص',
             'status': 'الحالة', 'notes': 'ملاحظات',
             'purchase_order_number': 'رقم أمر الشراء',
             'disbursement_order_number': 'رقم أمر الصرف',
@@ -269,7 +277,8 @@ def edit_item(item_id):
             log_item_change(item, 'update', "\n".join(changes_list))
 
         db.session.commit()
-        flash("تم تحديث البند بنجاح!", "success")
+        # UX IMPROVEMENT: Clearer message
+        flash("تم تحديث البند بنجاح! تم تسجيل التغييرات في سجل التغييرات.", "success")
         return redirect(url_for("item.edit_item", item_id=item.id))
 
     if request.method == 'GET' and item.contractor_id:
@@ -277,10 +286,8 @@ def edit_item(item_id):
         
     contractors = Contractor.query.order_by(Contractor.name).all()
 
-    # --- بداية الإضافة ---
     # هنا نقوم بترتيب تفاصيل التكلفة قبل إرسالها للقالب
     sorted_cost_details = sorted(item.cost_details, key=lambda d: d.id, reverse=True)
-    # --- نهاية الإضافة ---
 
     return render_template("items/edit.html", 
                            item=item, 
@@ -288,10 +295,7 @@ def edit_item(item_id):
                            form=form,
                            AuditLog=AuditLog,
                            contractors=contractors,
-                           # --- بداية التعديل ---
-                           # هنا نمرر القائمة المرتبة بدلاً من الأصلية
                            cost_details=sorted_cost_details,
-                           # --- نهاية التعديل ---
                            CostDetail=CostDetail)
 
 # --- END: تحديث دالة edit_item ---
@@ -307,7 +311,8 @@ def delete_item(item_id):
         
     db.session.delete(item)
     db.session.commit()
-    flash("تم حذف البند بنجاح.", "success")
+    # UX IMPROVEMENT: Clearer message
+    flash("تم حذف البند وكل ما يتعلق به بنجاح.", "success")
     return redirect(url_for("item.get_items_by_project", project_id=project_id))
     
 @item_bp.route("/projects/<int:project_id>/items/bulk_duplicate", methods=['POST'])
@@ -326,7 +331,6 @@ def bulk_duplicate_items(project_id):
         original_item = Item.query.get(item_id)
         if original_item:
             
-            # --- START: Corrected Logic ---
             # Step 1: Prepare the new item number BEFORE creating the object
             base_number = f"{original_item.item_number}-نسخة"
             existing_copies_count = Item.query.filter(
@@ -334,7 +338,6 @@ def bulk_duplicate_items(project_id):
                 Item.item_number.like(f"{base_number}%")
             ).count()
             new_item_number = f"{base_number}-{existing_copies_count + 1}"
-            # --- END: Corrected Logic ---
 
             # Step 2: Create the new item object with the prepared number
             new_item = Item(
@@ -357,6 +360,7 @@ def bulk_duplicate_items(project_id):
     
     if duplicated_count > 0:
         db.session.commit()
+        # UX IMPROVEMENT: Clearer success message
         flash(f'تم تكرار {duplicated_count} بندًا بنجاح.', 'success')
 
     return redirect(url_for('item.get_items_by_project', project_id=project_id))

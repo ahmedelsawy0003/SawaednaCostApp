@@ -51,7 +51,8 @@ def get_invoices_by_project(project_id):
             end_date = datetime.datetime.strptime(end_date_str, "%Y-%m-%d").date()
             query = query.filter(Invoice.invoice_date.between(start_date, end_date))
         except ValueError:
-            flash("صيغة التاريخ غير صالحة.", "warning")
+            # UX IMPROVEMENT: Clearer error message for date format
+            flash("تنسيق التاريخ المدخل غير صحيح. يرجى استخدام صيغة YYYY-MM-DD.", "warning")
             
     if sort_by == 'invoice_number':
         order_column = Invoice.invoice_number
@@ -137,6 +138,7 @@ def delete_invoice(invoice_id):
         abort(403)
     db.session.delete(invoice)
     db.session.commit()
+    # UX IMPROVEMENT: Clearer message
     flash(f"تم حذف المستخلص رقم '{invoice.invoice_number}' وكل ما يتعلق به بنجاح.", "success")
     return redirect(url_for("invoice.get_invoices_by_project", project_id=project_id))
 
@@ -222,19 +224,22 @@ def add_item_to_invoice(invoice_id):
             flash("يجب أن تكون الكمية أكبر من صفر.", "danger")
             return redirect(url_for('invoice.show_invoice', invoice_id=invoice_id))
     except ValueError:
-        flash("الكمية المدخلة غير صالحة.", "danger")
+        # UX IMPROVEMENT: Clarify error
+        flash("الكمية المدخلة غير صالحة. يرجى إدخال قيمة رقمية صحيحة.", "danger")
         return redirect(url_for('invoice.show_invoice', invoice_id=invoice_id))
     if selected_id_str.startswith('item_'):
         item_id = int(selected_id_str.split('_')[1])
         item = Item.query.get_or_404(item_id)
         max_quantity = item.actual_quantity
         if max_quantity is None or max_quantity <= 0:
-            flash(f"لا يمكن فوترة البند '{item.item_number}' لعدم وجود 'كمية فعلية' مسجلة له.", "danger")
+            # UX IMPROVEMENT: Clearer message
+            flash(f"لا يمكن فوترة البند '{item.item_number}' لعدم وجود 'كمية فعلية متاحة للفوترة' مسجلة له.", "danger")
             return redirect(url_for('invoice.show_invoice', invoice_id=invoice_id))
         previously_invoiced_qty = db.session.query(func.sum(InvoiceItem.quantity)).filter(InvoiceItem.item_id == item.id, InvoiceItem.cost_detail_id.is_(None)).scalar() or 0.0
         if (previously_invoiced_qty + new_quantity) > max_quantity:
             remaining_qty = max_quantity - previously_invoiced_qty
-            flash(f"كمية البند الرئيسي تتجاوز الحد المسموح. المتبقي: {remaining_qty:.2f}", "danger")
+            # UX IMPROVEMENT: Show remaining qty
+            flash(f"كمية البند الرئيسي تتجاوز الحد المسموح. الكمية المتبقية المتاحة: {remaining_qty:.2f}", "danger")
             return redirect(url_for('invoice.show_invoice', invoice_id=invoice_id))
         new_invoice_item = InvoiceItem(quantity=new_quantity, item=item)
         flash_message = f"تمت إضافة البند الرئيسي '{item.item_number}' للمستخلص."
@@ -245,7 +250,8 @@ def add_item_to_invoice(invoice_id):
         previously_invoiced_qty = db.session.query(func.sum(InvoiceItem.quantity)).filter(InvoiceItem.cost_detail_id == detail_id).scalar() or 0.0
         if (previously_invoiced_qty + new_quantity) > max_quantity:
             remaining_qty = max_quantity - previously_invoiced_qty
-            flash(f"كمية تفصيل التكلفة تتجاوز الحد المسموح. المتبقي: {remaining_qty:.2f}", "danger")
+            # UX IMPROVEMENT: Show remaining qty
+            flash(f"كمية تفصيل التكلفة تتجاوز الحد المسموح. الكمية المتبقية المتاحة: {remaining_qty:.2f}", "danger")
             return redirect(url_for('invoice.show_invoice', invoice_id=invoice_id))
         new_invoice_item = InvoiceItem(quantity=new_quantity, cost_detail=cost_detail)
         flash_message = f"تمت إضافة تفصيل التكلفة '{cost_detail.description}' للمستخلص."
@@ -274,7 +280,8 @@ def add_payment_to_invoice(invoice_id):
     try:
         payment_date = datetime.datetime.strptime(payment_date_str, "%Y-%m-%d").date()
     except (ValueError, TypeError):
-        flash("صيغة التاريخ المدخلة غير صالحة.", "danger")
+        # UX IMPROVEMENT: Clearer message
+        flash("صيغة التاريخ المدخلة غير صالحة. يرجى استخدام صيغة YYYY-MM-DD.", "danger")
         return redirect(url_for('invoice.show_invoice', invoice_id=invoice_id))
 
     distributions = []
@@ -289,18 +296,21 @@ def add_payment_to_invoice(invoice_id):
                 if amount > 0:
                     invoice_item = InvoiceItem.query.get(invoice_item_id)
                     if not invoice_item or invoice_item.invoice_id != invoice_id:
+                        # UX IMPROVEMENT: Clearer message
                         flash(f"تم العثور على بند غير صالح في الدفعة (ID: {invoice_item_id}).", "danger")
                         return redirect(url_for('invoice.show_invoice', invoice_id=invoice_id))
 
                     if amount > round(invoice_item.remaining_amount, 2) + 0.001:
-                        flash(f"المبلغ المدفوع للبند '{invoice_item.description[:30]}...' يتجاوز المبلغ المتبقي.", "danger")
+                        # UX IMPROVEMENT: Clearer message and show limit
+                        flash(f"المبلغ المدفوع للبند '{invoice_item.description[:30]}...' يتجاوز المبلغ المتبقي (الحد الأقصى المتبقي: {invoice_item.remaining_amount:.2f} ر.س).", "danger")
                         return redirect(url_for('invoice.show_invoice', invoice_id=invoice_id))
 
                     distributions.append({'invoice_item': invoice_item, 'amount': amount})
                     total_payment_amount += amount
             
             except (ValueError, TypeError):
-                flash("تم إدخال قيمة غير صالحة لأحد البنود.", "danger")
+                # UX IMPROVEMENT: Clarify error
+                flash("تم إدخال قيمة غير صالحة لأحد البنود. يجب إدخال أرقام فقط.", "danger")
                 return redirect(url_for('invoice.show_invoice', invoice_id=invoice_id))
 
     if not distributions:
@@ -365,7 +375,8 @@ def edit_payment(payment_id):
                     max_allowed = invoice_item.remaining_amount + old_amount_for_item
                     
                     if amount > round(max_allowed, 2) + 0.001:
-                        flash(f"المبلغ للبند '{invoice_item.description[:30]}...' يتجاوز المتبقي.", "danger")
+                        # UX IMPROVEMENT: Clearer message and show limit
+                        flash(f"المبلغ للبند '{invoice_item.description[:30]}...' يتجاوز الحد الأقصى المسموح ({max_allowed:.2f} ر.س).", "danger")
                         dists_dict = {dist.invoice_item_id: dist.amount for dist in payment.distributions}
                         return render_template("invoices/edit_payment.html", payment=payment, invoice=invoice, dists=dists_dict)
 
@@ -393,7 +404,8 @@ def edit_payment(payment_id):
             return redirect(url_for('invoice.show_invoice', invoice_id=invoice.id))
 
         except (ValueError, TypeError) as e:
-            flash(f"البيانات المدخلة غير صالحة. {e}", "danger")
+            # UX IMPROVEMENT: Clarify error
+            flash(f"البيانات المدخلة غير صالحة. يرجى التأكد من إدخال قيم رقمية صحيحة.", "danger")
     
     dists_dict = {dist.invoice_item_id: dist.amount for dist in payment.distributions}
     return render_template("invoices/edit_payment.html", payment=payment, invoice=invoice, dists=dists_dict)
@@ -418,7 +430,8 @@ def delete_item_from_invoice(invoice_item_id):
     check_project_permission(invoice.project)
 
     if invoice_item.distributions:
-        flash("لا يمكن حذف بند تم توزيع دفعات عليه. يجب حذف الدفعات المرتبطة أولاً.", "danger")
+        # UX IMPROVEMENT: Clearer message
+        flash("لا يمكن حذف بند تم توزيع دفعات عليه. يجب حذف الدفعات المرتبطة أولاً من سجل الدفعات.", "danger")
         return redirect(url_for('invoice.show_invoice', invoice_id=invoice.id))
     
     invoice_id = invoice.id
@@ -453,6 +466,7 @@ def edit_item_from_invoice(invoice_item_id):
             flash("تم تحديث كمية البند بنجاح.", "success")
             return redirect(url_for('invoice.show_invoice', invoice_id=invoice.id))
         except (ValueError, TypeError):
-            flash("الكمية المدخلة غير صالحة.", "danger")
+            # UX IMPROVEMENT: Clarify error
+            flash("الكمية المدخلة غير صالحة. يرجى إدخال قيمة رقمية صحيحة.", "danger")
     
     return render_template("invoices/edit_invoice_item.html", invoice_item=invoice_item)

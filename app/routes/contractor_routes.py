@@ -23,9 +23,16 @@ def get_contractors():
         if not allowed_project_ids:
             contractors = []
         else:
-            contractors = Contractor.query.join(Invoice).join(Project).filter(
+            # يجب السماح بعرض المقاولين المرتبطين بالبنود أيضاً، لذا يجب إضافة join إلى Item أيضاً
+            contractors_from_invoices = Contractor.query.join(Invoice).join(Project).filter(
                 Project.id.in_(allowed_project_ids)
-            ).distinct().order_by(Contractor.name).all()
+            )
+            contractors_from_items = Contractor.query.join(Item).join(Project).filter(
+                Project.id.in_(allowed_project_ids)
+            )
+            
+            # دمج النتائج وفرزها
+            contractors = contractors_from_invoices.union(contractors_from_items).distinct().order_by(Contractor.name).all()
     else:
         contractors = Contractor.query.order_by(Contractor.name).all()
     
@@ -49,7 +56,8 @@ def new_contractor():
         )
         db.session.add(new_contractor)
         db.session.commit()
-        flash('تمت إضافة المقاول بنجاح!', 'success')
+        # UX IMPROVEMENT: Clearer success message
+        flash(f'تمت إضافة المقاول "{new_contractor.name}" بنجاح! يمكن الآن إسناد البنود والمستخلصات إليه.', 'success')
         return redirect(url_for('contractor.get_contractors'))
     
     return render_template("contractors/new.html", form=form)
@@ -66,7 +74,8 @@ def edit_contractor(contractor_id):
     if form.validate_on_submit():
         form.populate_obj(contractor)
         db.session.commit()
-        flash('تم تحديث بيانات المقاول بنجاح!', 'success')
+        # UX IMPROVEMENT: Clearer success message
+        flash(f'تم تحديث بيانات المقاول "{contractor.name}" بنجاح!', 'success')
         return redirect(url_for('contractor.get_contractors'))
 
     return render_template("contractors/edit.html", form=form, contractor=contractor)
@@ -80,13 +89,16 @@ def delete_contractor(contractor_id):
         
     contractor = Contractor.query.get_or_404(contractor_id)
     
-    if contractor.invoices:
-        flash('لا يمكن حذف هذا المقاول لوجود مستخلصات مرتبطة به. يجب حذف المستخلصات أولاً.', 'danger')
-        return redirect(url_for('contractor.get_contractors'))
+    # Check for linked invoices or items
+    if contractor.invoices.count() > 0 or contractor.items.count() > 0 or contractor.cost_details.count() > 0:
+        # UX IMPROVEMENT: Clearer error message specifying the reason
+        flash('لا يمكن حذف هذا المقاول لوجود مستخلصات، أو بنود، أو تفاصيل تكلفة مرتبطة به. يرجى حذف الارتباطات أولاً.', 'danger')
+        return redirect(url_for('contractor.show_contractor', contractor_id=contractor_id))
         
     db.session.delete(contractor)
     db.session.commit()
-    flash(f"تم حذف المقاول '{contractor.name}' بنجاح.", "success")
+    # UX IMPROVEMENT: Clearer success message
+    flash(f"تم حذف المقاول '{contractor.name}' وكل ما يتعلق به بنجاح.", "success")
     return redirect(url_for('contractor.get_contractors'))
 
 @contractor_bp.route("/<int:contractor_id>")

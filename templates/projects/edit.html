@@ -3,8 +3,8 @@
 {% block title %}تعديل المشروع - {{ project.name }}{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1>تعديل المشروع: {{ project.name }}</h1>
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <h1><i class="fas fa-edit fa-fw me-2 text-primary"></i>تعديل المشروع: {{ project.name }}</h1>
     <a href="{{ url_for("project.get_project", project_id=project.id) }}" class="btn btn-secondary">
         <i class="fas fa-arrow-right me-1"></i> العودة للمشروع
     </a>
@@ -12,7 +12,7 @@
 
 <div class="card">
     <div class="card-header bg-primary text-white">
-        <h3 class="mb-0"><i class="fas fa-edit me-2"></i>بيانات المشروع</h3>
+        <h3 class="mb-0"><i class="fas fa-list-alt me-2"></i>بيانات المشروع الأساسية</h3>
     </div>
     <div class="card-body">
         <form method="POST" action="{{ url_for("project.edit_project", project_id=project.id) }}" novalidate>
@@ -25,10 +25,12 @@
                         {% for error in form.name.errors %}
                             <div class="text-danger small mt-1">{{ error }}</div>
                         {% endfor %}
+                        <div class="form-text">الاسم الكامل للمشروع.</div>
                     </div>
                     <div class="mb-3">
                         {{ form.location.label(class="form-label") }}
                         {{ form.location(class="form-control") }}
+                        <div class="form-text">موقع المشروع الجغرافي (اختياري).</div>
                     </div>
                     <div class="mb-3">
                         {{ form.status.label(class="form-label") }}
@@ -37,6 +39,7 @@
                     <div class="mb-3">
 						{{ form.manager_id.label(class="form-label") }}
 						{{ form.manager_id(class="form-select") }}
+                        <div class="form-text">المستخدم المسؤول عن متابعة المشروع في النظام.</div>
 					</div>
                     </div>
                 <div class="col-md-6">
@@ -51,16 +54,18 @@
                     <div class="mb-3">
                         {{ form.spreadsheet_id.label(class="form-label") }}
                         {{ form.spreadsheet_id(class="form-control", data-bs-toggle="tooltip", data-bs-placement="top", title="يستخدم لربط بيانات المشروع بجداول Google Sheets للتصدير والاستيراد. يجب أن يكون فريدًا.") }}
-                        <div class="form-text">يمكنك العثور على معرّف جدول البيانات في رابط Google Sheet الخاص بك</div>
+                        <div class="form-text">
+                            **معرّف Google Sheet:** يمكنك العثور عليه في رابط ملف Google Sheet الخاص بك (الجزء بين /d/ و /edit).
+                        </div>
                     </div>
                 </div>
             </div>
             <div class="mb-3">
                 {{ form.notes.label(class="form-label") }}
-                {{ form.notes(class="form-control", rows="4") }}
+                {{ form.notes(class="form-control", rows="4", placeholder="ملاحظات هامة حول المشروع أو تفاصيل العقد") }}
             </div>
             
-            {{ form.submit(class="btn btn-primary", value="حفظ التعديلات") }}
+            {{ form.submit(class="btn btn-primary btn-lg w-100", value="حفظ التعديلات") }}
 
         </form>
     </div>

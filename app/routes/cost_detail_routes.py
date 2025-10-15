@@ -43,7 +43,8 @@ def add_cost_detail(item_id):
         disbursement_order = sanitize_input(request.form.get("disbursement_order_number"))
 
         if not all([description, quantity_str, unit_cost_str]):
-            flash("الوصف، الكمية، وتكلفة الوحدة هي حقول مطلوبة.", "danger")
+            # UX IMPROVEMENT: Clearer error message
+            flash("الوصف، الكمية، وتكلفة الوحدة هي حقول مطلوبة لإضافة تفصيل التكلفة.", "danger")
             return redirect(url_for("item.edit_item", item_id=item_id))
 
         quantity = float(quantity_str)
@@ -52,6 +53,11 @@ def add_cost_detail(item_id):
         vat_percent = float(vat_percent_str) if vat_percent_str else 0.0
         # --- END: معالجة قيمة الضريبة ---
         contractor_id = int(contractor_id_str) if contractor_id_str else None
+        
+        if quantity < 0 or unit_cost < 0 or vat_percent < 0:
+             flash("الرجاء إدخال قيم موجبة للكمية والتكلفة والضريبة.", "danger")
+             return redirect(url_for("item.edit_item", item_id=item_id))
+
 
         new_detail = CostDetail(
             item_id=item.id,
@@ -68,13 +74,15 @@ def add_cost_detail(item_id):
         )
         db.session.add(new_detail)
         
+        # UX IMPROVEMENT: Arabic message for audit log
         log_details = f"تمت إضافة تفصيل تكلفة جديد: '{description}' (الكمية: {quantity}, التكلفة: {unit_cost}, الضريبة: {vat_percent}%)"
         log_cost_detail_change(item_id, 'create', log_details)
 
         db.session.commit()
-        flash("تمت إضافة تفصيل التكلفة بنجاح!", "success")
+        flash("تمت إضافة تفصيل التكلفة بنجاح! تم تحديث التكلفة الفعلية للبند.", "success")
 
     except (ValueError, TypeError):
+        # UX IMPROVEMENT: Clearer error message
         flash("الرجاء إدخال قيم رقمية صالحة للكمية والتكلفة والضريبة.", "danger")
     
     return redirect(url_for("item.edit_item", item_id=item_id))
@@ -108,13 +116,19 @@ def edit_cost_detail(detail_id):
             detail.purchase_order_number = sanitize_input(request.form.get("purchase_order_number"))
             detail.disbursement_order_number = sanitize_input(request.form.get("disbursement_order_number"))
             
+            if detail.quantity < 0 or detail.unit_cost < 0 or detail.vat_percent < 0:
+                 flash("الرجاء إدخال قيم موجبة للكمية والتكلفة والضريبة.", "danger")
+                 # Re-render the form with existing data if validation fails
+                 contractors = Contractor.query.order_by(Contractor.name).all()
+                 return render_template("cost_details/edit.html", detail=detail, contractors=contractors)
+            
             changes = []
             if old_desc != detail.description:
                 changes.append(f"وصف التفصيل تغير من '{old_desc}' إلى '{detail.description}'")
             if old_qty != detail.quantity:
                 changes.append(f"كمية التفصيل '{detail.description}' تغيرت من {old_qty} إلى {detail.quantity}")
             if old_cost != detail.unit_cost:
-                changes.append(f"تكلفة التفصيل '{detail.description}' تغيرت من {old_cost} إلى {detail.unit_cost}")
+                changes.append(f"تكلفة الوحدة لتفصيل '{detail.description}' تغيرت من {old_cost} إلى {detail.unit_cost}")
             # --- START: تسجيل تغيير الضريبة ---
             if old_vat != detail.vat_percent:
                 changes.append(f"ضريبة التفصيل '{detail.description}' تغيرت من {old_vat}% إلى {detail.vat_percent}%")
@@ -124,10 +138,11 @@ def edit_cost_detail(detail_id):
                 log_cost_detail_change(detail.item_id, 'update', "\n".join(changes))
 
             db.session.commit()
-            flash("تم تحديث تفصيل التكلفة بنجاح.", "success")
+            flash("تم تحديث تفصيل التكلفة بنجاح. تم تحديث التكلفة الفعلية للبند.", "success")
             return redirect(url_for("item.edit_item", item_id=detail.item_id))
 
         except (ValueError, TypeError):
+            # UX IMPROVEMENT: Clearer error message
             flash("الرجاء إدخال قيم رقمية صالحة للكمية والتكلفة والضريبة.", "danger")
     
     contractors = Contractor.query.order_by(Contractor.name).all()
@@ -141,11 +156,13 @@ def delete_cost_detail(detail_id):
     item_id = detail.item_id
     check_project_permission(detail.item.project)
 
-    log_details = f"تم حذف تفصيل التكلفة: '{detail.description}'"
+    # UX IMPROVEMENT: Detailed log message
+    log_details = f"تم حذف تفصيل التكلفة: '{detail.description}' (الكمية: {detail.quantity}, التكلفة: {detail.unit_cost}, الضريبة: {detail.vat_percent}%)"
     log_cost_detail_change(item_id, 'delete', log_details)
 
     db.session.delete(detail)
     db.session.commit()
-    flash("تم حذف تفصيل التكلفة بنجاح.", "success")
+    # UX IMPROVEMENT: Clearer success message
+    flash("تم حذف تفصيل التكلفة بنجاح. تم تحديث التكلفة الفعلية للبند.", "success")
     
     return redirect(url_for("item.edit_item", item_id=item_id))

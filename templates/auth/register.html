@@ -6,53 +6,56 @@
 <div class="auth-container">
     <div class="card auth-card shadow-lg p-4">
         <div class="card-body">
-            <h2 class="card-title text-center mb-4">تسجيل حساب جديد</h2>
+            <h2 class="card-title text-center mb-4 text-primary">إنشاء حساب جديد</h2>
             
-            {# --- START: تعديل النموذج --- #}
             <form method="POST" novalidate>
                 {{ form.hidden_tag() }}
 
                 <div class="mb-3">
                     {{ form.username.label(class="form-label") }}
-                    {{ form.username(class="form-control", id="username") }}
+                    {{ form.username(class="form-control", id="username", placeholder="اسم المستخدم المطلوب") }}
                     {% for error in form.username.errors %}
                         <div class="text-danger small mt-1">{{ error }}</div>
                     {% endfor %}
+                    <div class="form-text">يجب أن يكون الاسم بين 4 و 25 حرفاً.</div>
                 </div>
                 
                 <div class="mb-3">
                     {{ form.email.label(class="form-label") }}
-                    {{ form.email(class="form-control", id="email") }}
+                    {{ form.email(class="form-control", id="email", placeholder="example@domain.com") }}
                     {% for error in form.email.errors %}
                         <div class="text-danger small mt-1">{{ error }}</div>
                     {% endfor %}
+                    <div class="form-text">البريد الإلكتروني للتواصل وإدارة الحساب.</div>
                 </div>
 
                 <div class="mb-3">
                     {{ form.password.label(class="form-label") }}
-                    <div class="password-container">
-                        {{ form.password(class="form-control", id="password") }}
-                        <i class="fas fa-eye password-toggle-icon" id="togglePassword"></i>
+                    <div class="input-group">
+                        {{ form.password(class="form-control", id="password", placeholder="كلمة المرور") }}
+                         <span class="input-group-text p-0 border-0 bg-transparent">
+                            <i class="fas fa-eye password-toggle-icon px-3" id="togglePassword"></i>
+                        </span>
                     </div>
                      {% for error in form.password.errors %}
                         <div class="text-danger small mt-1">{{ error }}</div>
                     {% endfor %}
+                    <div class="form-text">يجب أن تتكون كلمة المرور من 6 أحرف أو أكثر.</div>
                 </div>
                 
-                <div class="mb-3">
+                <div class="mb-4">
                     {{ form.confirm_password.label(class="form-label") }}
-                    {{ form.confirm_password(class="form-control", id="confirm_password") }}
+                    {{ form.confirm_password(class="form-control", id="confirm_password", placeholder="إعادة إدخال كلمة المرور") }}
                     {% for error in form.confirm_password.errors %}
                         <div class="text-danger small mt-1">{{ error }}</div>
                     {% endfor %}
                 </div>
 
-                {{ form.submit(class="btn btn-primary w-100") }}
+                {{ form.submit(class="btn btn-primary btn-lg w-100", value="تسجيل الحساب الآن") }}
             </form>
-            {# --- END: تعديل النموذج --- #}
 
             <p class="text-center mt-3">
-                لديك حساب بالفعل؟ <a href="{{ url_for("auth.login") }}">تسجيل الدخول</a>
+                لديك حساب بالفعل؟ <a href="{{ url_for("auth.login") }}" class="fw-bold">تسجيل الدخول</a>
             </p>
         </div>
     </div>

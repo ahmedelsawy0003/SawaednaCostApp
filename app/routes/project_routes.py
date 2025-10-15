@@ -89,7 +89,8 @@ def new_project():
         
         db.session.add(new_project)
         db.session.commit()
-        flash("تم إضافة المشروع بنجاح!", "success")
+        # UX IMPROVEMENT: Clearer success message
+        flash("تم إضافة المشروع بنجاح! يمكنك الآن إدارة بنوده.", "success")
         return redirect(url_for("project.get_projects"))
     
     return render_template("projects/new.html", form=form)
@@ -118,7 +119,8 @@ def edit_project(project_id):
         project.manager_id = manager_id_val if manager_id_val != 0 else None
 
         db.session.commit()
-        flash("تم تحديث المشروع بنجاح!", "success")
+        # UX IMPROVEMENT: Clearer success message
+        flash("تم تحديث بيانات المشروع بنجاح!", "success")
         return redirect(url_for("project.get_project", project_id=project.id))
 
     if request.method == 'GET':
@@ -136,7 +138,8 @@ def delete_project(project_id):
         
     db.session.delete(project)
     db.session.commit()
-    flash("تم حذف المشروع بنجاح!", "success")
+    # UX IMPROVEMENT: Clearer success message
+    flash(f"تم حذف المشروع '{project.name}' وكل ما يتعلق به بنجاح.", "success")
     return redirect(url_for("project.get_projects"))
 
 
@@ -151,9 +154,11 @@ def toggle_archive(project_id):
     db.session.commit()
 
     if project.is_archived:
-        flash(f"تمت أرشفة المشروع '{project.name}' بنجاح.", "success")
+        # UX IMPROVEMENT: Clearer archive message
+        flash(f"تمت أرشفة المشروع '{project.name}' بنجاح. يمكنك إيجاده في قائمة الأرشيف.", "success")
     else:
-        flash(f"تم إلغاء أرشفة المشروع '{project.name}' بنجاح.", "info")
+        # UX IMPROVEMENT: Clearer unarchive message
+        flash(f"تم إلغاء أرشفة المشروع '{project.name}' بنجاح. عاد للقائمة النشطة.", "info")
         
     show_archived = request.args.get('show_archived', 'false')
     return redirect(url_for("project.get_projects", show_archived=show_archived))
@@ -181,7 +186,10 @@ def projects_summary():
     if current_user.role not in ['admin', 'sub-admin']:
         abort(403)
 
-    projects = Project.query.filter_by(is_archived=False).all()
+    # Eagerly load the calculated column for better performance on summary page
+    projects = Project.query.filter_by(is_archived=False).options(
+        undefer(Project.total_paid_amount)
+    ).all()
     
     grand_totals = {
         'contract_cost': sum(p.total_contract_cost for p in projects),

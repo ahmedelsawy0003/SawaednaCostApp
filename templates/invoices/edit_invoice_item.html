@@ -3,10 +3,10 @@
 {% block title %}تعديل بند المستخلص{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
     <h2 class="mb-0">
-        <i class="fas fa-edit fa-fw me-2 text-muted"></i>
-        <span class="text-muted fw-normal">تعديل البند في المستخلص:</span> 
+        <i class="fas fa-edit fa-fw me-2 text-primary"></i>
+        <span class="text-muted fw-normal">تعديل بند المستخلص رقم:</span> 
         <a href="{{ url_for('invoice.show_invoice', invoice_id=invoice_item.invoice_id) }}">{{ invoice_item.invoice.invoice_number }}</a>
     </h2>
     <a href="{{ url_for('invoice.show_invoice', invoice_id=invoice_item.invoice_id) }}" class="btn btn-secondary">
@@ -14,37 +14,51 @@
     </a>
 </div>
 
-<div class="card">
+<div class="card mb-4">
     <div class="card-header bg-warning text-dark">
-        <h4 class="mb-0"><i class="fas fa-tasks me-2"></i>تفاصيل البند</h4>
+        <h4 class="mb-0"><i class="fas fa-tasks me-2"></i>تفاصيل البند المُراد تعديله</h4>
     </div>
     <div class="card-body">
         <div class="row">
-            <div class="col-md-6">
-                <p><strong>وصف البند:</strong> {{ invoice_item.description }}</p>
-                <p><strong>سعر الوحدة:</strong> <span class="fw-bold number-cell">{{ "{:,.2f}".format(invoice_item.unit_price) }} ريال</span></p>
+            <div class="col-md-12 mb-3">
+                <p><strong>وصف البند:</strong> <span class="fw-bold">{{ invoice_item.description }}</span></p>
+                <hr>
             </div>
-             <div class="col-md-6">
-                 <p><strong>الكمية الحالية:</strong> <span class="fw-bold">{{ invoice_item.quantity }}</span></p>
-                 <p><strong>الإجمالي الحالي:</strong> <span class="fw-bold number-cell text-primary">{{ "{:,.2f}".format(invoice_item.total_price) }} ريال</span></p>
+            <div class="col-md-4">
+                <p><strong>سعر الوحدة الحالي:</strong> <span class="fw-bold number-cell text-success">{{ "{:,.2f}".format(invoice_item.unit_price) }} ريال</span></p>
+            </div>
+             <div class="col-md-4">
+                 <p><strong>الكمية المسجلة حالياً:</strong> <span class="fw-bold text-primary">{{ invoice_item.quantity }}</span></p>
+            </div>
+            <div class="col-md-4">
+                 <p><strong>الإجمالي الحالي للبند:</strong> <span class="fw-bold number-cell text-info">{{ "{:,.2f}".format(invoice_item.total_price) }} ريال</span></p>
             </div>
         </div>
+    </div>
+</div>
         
-        <hr class="my-4">
-        
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h4 class="mb-0"><i class="fas fa-edit me-2"></i>تعديل الكمية</h4>
+    </div>
+    <div class="card-body">
         <form method="POST" action="{{ url_for('invoice.edit_item_from_invoice', invoice_item_id=invoice_item.id) }}">
             <div class="mb-4">
-                <label for="quantity" class="form-label fs-5">الكمية الجديدة المطلوبة</label>
+                <label for="quantity" class="form-label fs-5">الكمية المنجزة الجديدة</label>
                 <input type="number" step="0.01" class="form-control form-control-lg" id="quantity" name="quantity" value="{{ invoice_item.quantity }}" required min="0.01">
-                <div class="form-text">سيؤدي تعديل الكمية إلى إعادة حساب الإجمالي تلقائياً.</div>
+                <div class="form-text">سيؤدي تعديل الكمية إلى إعادة حساب إجمالي البند تلقائياً في المستخلص.</div>
             </div>
             
             {% if invoice_item.distributions %}
-            <div class="alert alert-danger">
-                <i class="fas fa-exclamation-triangle me-2"></i>
-                لا يمكن تعديل كمية هذا البند لوجود دفعات مسجلة عليه.
+            <div class="alert alert-danger p-4">
+                <h5 class="alert-heading"><i class="fas fa-lock me-2"></i>لا يمكن التعديل</h5>
+                <p class="mb-0">
+                    لا يمكن تعديل كمية هذا البند لوجود **دفعات مسجلة** عليه مسبقاً.
+                    <br>
+                    لتتمكن من التعديل، يجب عليك أولاً **حذف** الدفعات المرتبطة بهذا البند من صفحة المستخلص.
+                </p>
             </div>
-            <button type="submit" class="btn btn-warning" disabled>حفظ التعديلات</button>
+            <button type="submit" class="btn btn-primary" disabled>حفظ التعديلات</button>
             {% else %}
             <button type="submit" class="btn btn-primary">
                 <i class="fas fa-save me-1"></i> حفظ التعديلات

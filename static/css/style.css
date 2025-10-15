@@ -409,3 +409,32 @@ a:hover {
     border-color: var(--border-color) !important;
     color: var(--text-muted) !important;
 }
+
+/* --- START: Custom UX Enhancements --- */
+/* إضافة فئة لتعطيل الانتقال مؤقتاً (مستخدمة في الإجراءات الجماعية/الطي) */
+.no-transition {
+    transition: none !important;
+}
+
+/* ضمان خلفية نظيفة لحاوية كلمة المرور */
+.input-group, .password-container {
+    background: var(--bg-surface);
+}
+
+/* ضمان محاذاة أيقونات الشريط الجانبي والنص بشكل صحيح */
+.sidebar-submenu-link .fa-fw {
+    width: 1.25em; /* ضمان عرض ثابت للاتساق */
+}
+
+/* التأكد من أن روابط رؤوس الجداول تظهر بوضوح */
+.table thead th a {
+    color: var(--text-light); /* وراثة لون النص الأساسي */
+    font-weight: 700;
+}
+
+.table thead th a:hover {
+    color: var(--primary);
+    text-decoration: underline;
+}
+
+/* --- END: Custom UX Enhancements --- */

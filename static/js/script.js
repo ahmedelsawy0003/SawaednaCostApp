@@ -44,32 +44,32 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
     
-    // Toast Functionality for Flash Messages
-    const toastElList = document.querySelectorAll('.toast');
-    [...toastElList].map(toastEl => {
-        const toast = new bootstrap.Toast(toastEl, {
-            autohide: true,
-            delay: 5000
-        });
-        toast.show();
-        return toast;
-    });
+    // Toast Functionality for Flash Messages (Handled in base.html script block now for better control)
+    // Removed old toast initialization here.
+
 
     // Password Toggle Functionality
+    // This is the single source of truth for password toggling across all pages
     const togglePassword = document.querySelector("#togglePassword");
     const passwordInput = document.querySelector("#password");
-
+    // Handle the password field in the register/edit_user template which might have a different ID (confirm_password)
+    const confirmPasswordInput = document.querySelector("#confirm_password");
+    
     if (togglePassword && passwordInput) {
         togglePassword.addEventListener("click", function () {
             const type = passwordInput.getAttribute("type") === "password" ? "text" : "password";
             passwordInput.setAttribute("type", type);
+            // Also update the confirm password if it exists on the page
+            if (confirmPasswordInput) {
+                confirmPasswordInput.setAttribute("type", type);
+            }
             
             this.classList.toggle("fa-eye");
             this.classList.toggle("fa-eye-slash");
         });
     }
 
-    // Bulk actions section
+    // Bulk actions section for item index page
     const bulkEditForm = document.getElementById('bulk-edit-form');
     if(bulkEditForm) {
         const selectAllCheckbox = document.getElementById('select-all');
@@ -79,6 +79,10 @@ document.addEventListener("DOMContentLoaded", function() {
         const bulkUpdateBtn = document.getElementById('bulk-update-btn');
         const bulkDeleteBtn = document.getElementById('bulk-delete-btn');
         const bulkDuplicateBtn = document.getElementById('bulk-duplicate-btn');
+        
+        // New spans for dynamic counts on buttons
+        const bulkDeleteCountDisplay = document.getElementById('bulk-delete-count-display');
+        const bulkDuplicateCountDisplay = document.getElementById('bulk-duplicate-count');
 
         const bulkDeleteCount = document.getElementById('bulk-delete-count');
         const confirmBulkDeleteBtn = document.getElementById('confirm-bulk-delete-btn');
@@ -89,6 +93,8 @@ document.addEventListener("DOMContentLoaded", function() {
             
             if (selectedCountDisplay) selectedCountDisplay.textContent = count;
             if (bulkDeleteCount) bulkDeleteCount.textContent = count;
+            if (bulkDeleteCountDisplay) bulkDeleteCountDisplay.textContent = count;
+            if (bulkDuplicateCountDisplay) bulkDuplicateCountDisplay.textContent = count;
 
             const hasSelection = count > 0;
             if (bulkUpdateBtn) bulkUpdateBtn.disabled = !hasSelection;
@@ -138,35 +144,36 @@ document.addEventListener("DOMContentLoaded", function() {
             });
         }
         
+        // Initial setup for bulk actions
         if(selectAllCheckbox) {
             updateSelectedState();
         }
     }
 
-// START: Show Payment Items Modal
+    // START: Show Payment Items Modal
     const paymentItemsModal = document.getElementById('paymentItemsModal');
     if (paymentItemsModal) {
         paymentItemsModal.addEventListener('show.bs.modal', function(event) {
             const button = event.relatedTarget;
+            // Get data from button attributes
             const paymentId = button.getAttribute('data-payment-id');
             const paymentAmount = button.getAttribute('data-payment-amount');
             const paymentDate = button.getAttribute('data-payment-date');
             const paymentDescription = button.getAttribute('data-payment-description');
 
-            const modalTitle = paymentItemsModal.querySelector('.modal-title');
+            // Get modal elements
             const modalAmount = paymentItemsModal.querySelector('#modal-payment-amount');
             const modalDate = paymentItemsModal.querySelector('#modal-payment-date');
             const modalDescription = paymentItemsModal.querySelector('#modal-payment-description');
             const modalItemsList = paymentItemsModal.querySelector('#modal-items-list');
             
+            // Set basic info
             modalAmount.textContent = parseFloat(paymentAmount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             modalDate.textContent = paymentDate;
-            modalDescription.textContent = paymentDescription;
-            modalItemsList.innerHTML = '<tr><td colspan="2" class="text-center text-muted">جاري التحميل...</td></tr>';
+            modalDescription.textContent = paymentDescription === 'null' ? '-' : paymentDescription;
+            modalItemsList.innerHTML = '<tr><td colspan="2" class="text-center text-muted">جاري تحميل تفاصيل التوزيع...</td></tr>';
             
-            // Try to read pre-serialized distributions from button or row; else fetch from API
-            const paymentRow = button.closest('tr');
-            const distributionsJsonAttr = button.getAttribute('data-distributions') || (paymentRow ? paymentRow.getAttribute('data-distributions') : '');
+            const distributionsJsonAttr = button.getAttribute('data-distributions');
             const distApiUrl = button.getAttribute('data-dist-url');
 
             const renderRows = (list) => {
@@ -174,31 +181,44 @@ document.addEventListener("DOMContentLoaded", function() {
                 if (list && list.length > 0) {
                     list.forEach(dist => {
                         const row = document.createElement('tr');
+                        const description = dist.description || (dist.invoice_item ? dist.invoice_item.description : 'غير محدد');
+                        const amount = parseFloat(dist.amount);
+
                         row.innerHTML = `
-                            <td>${dist.description}</td>
-                            <td class="text-end fw-bold text-success">${parseFloat(dist.amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ريال</td>
+                            <td>${description}</td>
+                            <td class="text-end fw-bold text-success number-cell">${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ر.س</td>
                         `;
                         modalItemsList.appendChild(row);
                     });
                 } else {
-                    modalItemsList.innerHTML = '<tr><td colspan="2" class="text-center">لا توجد بنود مرتبطة بهذه الدفعة.</td></tr>';
+                    modalItemsList.innerHTML = '<tr><td colspan="2" class="text-center text-muted">لم يتم العثور على توزيعات لهذه الدفعة.</td></tr>';
                 }
             };
 
+            // Attempt to use embedded data first
             if (distributionsJsonAttr && distributionsJsonAttr.trim() !== '') {
                 let parsed = [];
-                try { parsed = JSON.parse(distributionsJsonAttr); } catch (e) { parsed = []; }
+                try { 
+                    // Using JSON.parse to correctly handle the Python tojson output
+                    parsed = JSON.parse(distributionsJsonAttr); 
+                } catch (e) { 
+                    console.error("Error parsing embedded JSON data:", e);
+                    parsed = []; 
+                }
                 renderRows(parsed);
-            } else {
-                const url = distApiUrl || `/payments/${paymentId}/distributions.json`;
-                fetch(url, { credentials: 'same-origin' })
+            } 
+            // Fallback to API call if no embedded data is available
+            else if (distApiUrl) {
+                fetch(distApiUrl, { credentials: 'same-origin' })
                     .then(r => r.ok ? r.json() : Promise.reject())
                     .then(data => {
                         renderRows(data.distributions || []);
                     })
                     .catch(() => {
-                        renderRows([]);
+                        modalItemsList.innerHTML = '<tr><td colspan="2" class="text-center text-danger"><i class="fas fa-times-circle me-1"></i> فشل تحميل البيانات من الخادم.</td></tr>';
                     });
+            } else {
+                 renderRows([]);
             }
         });
     }

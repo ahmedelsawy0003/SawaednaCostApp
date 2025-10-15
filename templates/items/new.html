@@ -3,7 +3,7 @@
 {% block title %}إضافة بند جديد للمشروع - {{ project.name }}{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
     <h2 class="mb-0">
         <i class="fas fa-plus-circle fa-fw me-2 text-primary"></i>
         <span class="text-muted fw-normal">إضافة بند جديد للمشروع:</span> {{ project.name }}
@@ -15,7 +15,7 @@
 
 <div class="card">
     <div class="card-header bg-primary text-white">
-        <h4 class="mb-0"><i class="fas fa-list-alt me-2"></i>بيانات البند</h4>
+        <h4 class="mb-0"><i class="fas fa-list-alt me-2"></i>بيانات البند الأساسية</h4>
     </div>
     <div class="card-body">
         <form method="POST" action="{{ url_for("item.new_item", project_id=project.id) }}" novalidate>
@@ -24,53 +24,59 @@
                 <div class="col-md-6">
                     <div class="mb-3">
                         {{ form.item_number.label(class="form-label") }}
-                        {{ form.item_number(class="form-control") }}
+                        {{ form.item_number(class="form-control", placeholder="مثال: 01-A-101") }}
                         {% for error in form.item_number.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                        <div class="form-text">رقم البند يجب أن يكون فريداً داخل هذا المشروع.</div>
                     </div>
                     <div class="mb-3">
                         {{ form.description.label(class="form-label") }}
-                        {{ form.description(class="form-control", rows="3") }}
+                        {{ form.description(class="form-control", rows="3", placeholder="وصف تفصيلي للعمل أو المادة") }}
                         {% for error in form.description.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
                     </div>
                     <div class="mb-3">
                         {{ form.unit.label(class="form-label") }}
-                        {{ form.unit(class="form-control") }}
+                        {{ form.unit(class="form-control", placeholder="مثال: م2، طن، عدد") }}
                     </div>
                     <div class="mb-3">
                         {{ form.contractor_id.label(class="form-label") }}
                         {{ form.contractor_id(class="form-select") }}
+                        <div class="form-text">المقاول الرئيسي أو المورد المسؤول عن هذا البند (اختياري).</div>
                     </div>
                 </div>
                 
                 <div class="col-md-6">
-                     <h5 class="text-primary mb-3">البيانات التعاقدية (المرجعية)</h5>
+                     <h5 class="text-info mb-3"><i class="fas fa-bookmark me-1"></i> البيانات التعاقدية (المرجعية)</h5>
                     {% if current_user.role in ['admin', 'sub-admin'] %}
                     <div class="row g-3">
                         <div class="col-6 mb-3">
                             {{ form.contract_quantity.label(class="form-label") }}
-                            {{ form.contract_quantity(class="form-control") }}
+                            {{ form.contract_quantity(class="form-control", placeholder="0.00") }}
                             {% for error in form.contract_quantity.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                            <div class="form-text">الكمية المتفق عليها في العقد.</div>
                         </div>
                         <div class="col-6 mb-3">
                             {{ form.contract_unit_cost.label(class="form-label") }}
-                            {{ form.contract_unit_cost(class="form-control") }}
+                            {{ form.contract_unit_cost(class="form-control", placeholder="0.00") }}
                             {% for error in form.contract_unit_cost.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                            <div class="form-text">سعر الوحدة المتفق عليه.</div>
                         </div>
                     </div>
                     {% endif %}
                     
                     <hr class="mt-4 mb-3">
-                    <h5 class="text-success mb-3">البيانات الفعلية (للفوترة)</h5>
+                    <h5 class="text-success mb-3"><i class="fas fa-calculator me-1"></i> البيانات الفعلية (للفوترة)</h5>
                     <div class="row g-3">
                         <div class="col-6 mb-3">
                             {{ form.actual_quantity.label(class="form-label") }}
-                            {{ form.actual_quantity(class="form-control") }}
+                            {{ form.actual_quantity(class="form-control", placeholder="0.00") }}
                             {% for error in form.actual_quantity.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                            <div class="form-text">الكمية القصوى المتاحة للفوترة في المستخلصات.</div>
                         </div>
                         <div class="col-6 mb-3">
                             {{ form.actual_unit_cost.label(class="form-label") }}
-                            {{ form.actual_unit_cost(class="form-control") }}
+                            {{ form.actual_unit_cost(class="form-control", placeholder="0.00") }}
                             {% for error in form.actual_unit_cost.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                            <div class="form-text">سعر الوحدة الذي سيتم استخدامه في المستخلص.</div>
                         </div>
                     </div>
                     
@@ -87,23 +93,25 @@
                 <div class="col-md-6">
                      <div class="mb-3">
                         {{ form.purchase_order_number.label(class="form-label") }}
-                        {{ form.purchase_order_number(class="form-control") }}
+                        {{ form.purchase_order_number(class="form-control", placeholder="مثال: PO-001") }}
+                        <div class="form-text">رقم أمر الشراء (اختياري).</div>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="mb-3">
                         {{ form.disbursement_order_number.label(class="form-label") }}
-                        {{ form.disbursement_order_number(class="form-control") }}
+                        {{ form.disbursement_order_number(class="form-control", placeholder="مثال: DO-001") }}
+                        <div class="form-text">رقم أمر الصرف (اختياري).</div>
                     </div>
                 </div>
             </div>
             
             <div class="mb-4">
                 {{ form.notes.label(class="form-label") }}
-                {{ form.notes(class="form-control", rows="3") }}
+                {{ form.notes(class="form-control", rows="3", placeholder="ملاحظات إضافية حول البند") }}
             </div>
             
-            {{ form.submit(class="btn btn-primary btn-lg w-100") }}
+            {{ form.submit(class="btn btn-success btn-lg w-100", value="حفظ البند وبدء إدارة تكاليفه") }}
         </form>
     </div>
 </div>

@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, url_for
+from flask import Blueprint, render_template, request, url_for, flash
 from app.models.cost_detail import CostDetail
 from app.models.invoice import Invoice
 from app.models.item import Item
@@ -32,7 +32,8 @@ def get_all_purchase_orders():
     if current_user.role not in ['admin', 'sub-admin']:
         allowed_project_ids = [p.id for p in current_user.projects]
         if not allowed_project_ids:
-            # يجب أن يكون هذا مسارًا جديدًا يجب إنشاؤه
+            # UX IMPROVEMENT: Add a guiding flash message instead of a silent empty list
+            flash("ليس لديك صلاحية الوصول لأي مشاريع مسندة إليك، لذا لا يمكن عرض أي أوامر شراء حالياً.", "warning")
             return render_template("purchase_orders/index.html", records=[], projects=[], filters={})
 
         cost_detail_query = cost_detail_query.join(CostDetail.item).filter(

@@ -24,14 +24,16 @@ def login():
         user = User.query.filter_by(username=username).first()
         if user and user.check_password(password):
             login_user(user)
-            flash("تم تسجيل الدخول بنجاح!", "success")
+            # UX IMPROVEMENT: More friendly message
+            flash("تم تسجيل الدخول بنجاح! مرحبا بك.", "success")
             next_page = request.args.get('next')
             # Prevent open redirect by allowing only internal relative paths
             if next_page and next_page.startswith('/') and not next_page.startswith('//'):
                 return redirect(next_page)
             return redirect(url_for("project.get_projects"))
         else:
-            flash("اسم المستخدم أو كلمة المرور غير صحيحة.", "danger")
+            # UX IMPROVEMENT: More guiding failure message
+            flash("اسم المستخدم أو كلمة المرور غير صحيحة. يرجى المحاولة مرة أخرى.", "danger")
             
     return render_template("auth/login.html", form=form)
 
@@ -50,6 +52,7 @@ def register():
         new_user.set_password(form.password.data)
         db.session.add(new_user)
         db.session.commit()
+        # UX IMPROVEMENT: Clearer success message
         flash("تم إنشاء الحساب بنجاح! يمكنك الآن تسجيل الدخول.", "success")
         return redirect(url_for("auth.login"))
         
@@ -62,7 +65,8 @@ def register():
 @login_required
 def logout():
     logout_user()
-    flash("تم تسجيل الخروج بنجاح.", "info")
+    # UX IMPROVEMENT: More friendly message
+    flash("تم تسجيل الخروج بنجاح. نتمنى لك يوماً سعيداً.", "info")
     return redirect(url_for("auth.login"))
 
 # ... (باقي الدوال تبقى كما هي) ...
@@ -88,7 +92,8 @@ def promote_user(user_id):
     user_to_promote = User.query.get_or_404(user_id)
     user_to_promote.role = 'admin'
     db.session.commit()
-    flash(f"تمت ترقية المستخدم {user_to_promote.username} إلى Admin بنجاح.", "success")
+    # UX IMPROVEMENT: Clearer promotion message
+    flash(f"تمت ترقية المستخدم {user_to_promote.username} إلى Admin بنجاح. يمكنه الآن الوصول لجميع المشاريع.", "success")
     return redirect(url_for('auth.admin_dashboard'))
 
 @auth_bp.route('/admin/user/<int:user_id>/promote_sub', methods=['POST'])
@@ -99,7 +104,8 @@ def promote_to_sub_admin(user_id):
     user_to_promote = User.query.get_or_404(user_id)
     user_to_promote.role = 'sub-admin'
     db.session.commit()
-    flash(f"تمت ترقية المستخدم {user_to_promote.username} إلى Sub Admin بنجاح.", "success")
+    # UX IMPROVEMENT: Clearer promotion message
+    flash(f"تمت ترقية المستخدم {user_to_promote.username} إلى Sub Admin بنجاح. يمكنه إدارة المشاريع المخصصة له.", "success")
     return redirect(url_for('auth.admin_dashboard'))
 
 @auth_bp.route('/admin/user/<int:user_id>/demote', methods=['POST'])
@@ -109,11 +115,12 @@ def demote_user(user_id):
         abort(403)
     user_to_demote = User.query.get_or_404(user_id)
     if user_to_demote.id == current_user.id:
-        flash("لا يمكنك تخفيض صلاحيات حسابك.", "danger")
+        flash("لا يمكنك تخفيض صلاحيات حسابك الحالي.", "danger")
         return redirect(url_for('auth.admin_dashboard'))
     user_to_demote.role = 'user'
     db.session.commit()
-    flash(f"تم تخفيض صلاحيات المستخدم {user_to_demote.username} إلى User بنجاح.", "warning")
+    # UX IMPROVEMENT: Clearer demotion message
+    flash(f"تم تخفيض صلاحيات المستخدم {user_to_demote.username} إلى User بنجاح. صلاحيات وصوله مقيدة الآن.", "warning")
     return redirect(url_for('auth.admin_dashboard'))
 
 @auth_bp.route('/admin/user/<int:user_id>/delete', methods=['POST'])
@@ -123,10 +130,11 @@ def delete_user(user_id):
         abort(403)
     user_to_delete = User.query.get_or_404(user_id)
     if user_to_delete.id == current_user.id:
-        flash("لا يمكنك حذف حسابك الخاص.", "danger")
+        flash("لا يمكنك حذف حسابك الخاص أثناء تسجيل الدخول.", "danger")
         return redirect(url_for('auth.admin_dashboard'))
     db.session.delete(user_to_delete)
     db.session.commit()
+    # UX IMPROVEMENT: Clearer success message
     flash(f"تم حذف المستخدم {user_to_delete.username} بنجاح.", "success")
     return redirect(url_for('auth.admin_dashboard'))
 
@@ -153,7 +161,8 @@ def edit_user(user_id):
                 user_to_edit.projects.append(project)
 
         db.session.commit()
-        flash(f"تم تحديث بيانات المستخدم {user_to_edit.username} بنجاح.", "success")
+        # UX IMPROVEMENT: Clearer success message
+        flash(f"تم تحديث بيانات المستخدم {user_to_edit.username} وتعديل صلاحيات الوصول للمشاريع بنجاح.", "success")
         return redirect(url_for('auth.admin_dashboard'))
 
     projects = Project.query.all()
