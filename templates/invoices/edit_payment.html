@@ -3,10 +3,10 @@
 {% block title %}تعديل الدفعة - {{ payment.id }}{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
     <h2 class="mb-0">
-        <i class="fas fa-edit fa-fw me-2 text-muted"></i>
-        <span class="text-muted fw-normal">تعديل الدفعة للمستخلص:</span> 
+        <i class="fas fa-edit fa-fw me-2 text-primary"></i>
+        <span class="text-muted fw-normal">تعديل الدفعة رقم {{ payment.id }} للمستخلص:</span> 
         <a href="{{ url_for('invoice.show_invoice', invoice_id=payment.invoice_id) }}">{{ payment.invoice.invoice_number }}</a>
     </h2>
     <a href="{{ url_for('invoice.show_invoice', invoice_id=payment.invoice_id) }}" class="btn btn-secondary">
@@ -22,7 +22,7 @@
         <form id="paymentForm" method="POST" action="{{ url_for('invoice.edit_payment', payment_id=payment.id) }}">
             <div class="alert alert-info">
                 <i class="fas fa-info-circle me-1"></i>
-                لضمان دقة الحسابات، المبلغ الأقصى الذي يمكن دفعه للبند الواحد هو: (المبلغ المتبقي الحالي) + (المبلغ المدفوع في هذه الدفعة سابقاً).
+                يمكنك تعديل المبلغ المدفوع لكل بند. **الحد الأقصى** المسموح به لكل بند هو: (المبلغ المتبقي الحالي في المستخلص) + (المبلغ الذي كان مدفوعًا لهذا البند في هذه الدفعة سابقاً).
             </div>
             <div class="row mb-3 g-3">
                 <div class="col-md-6">
@@ -31,25 +31,27 @@
                 </div>
                 <div class="col-md-6">
                     <label for="description" class="form-label">الوصف (اختياري)</label>
-                    <input type="text" class="form-control" id="description" name="description" value="{{ payment.description or '' }}">
+                    <input type="text" class="form-control" id="description" name="description" value="{{ payment.description or '' }}" placeholder="وصف الدفعة أو مرجعها">
                 </div>
             </div>
             
-            <h5 class="mt-4 text-primary"><i class="fas fa-sliders-h me-1"></i> توزيع مبلغ الدفعة على البنود</h5>
+            <h5 class="mt-4 text-primary"><i class="fas fa-sliders-h me-1"></i> توزيع مبلغ الدفعة على بنود المستخلص</h5>
             <div class="table-responsive">
                 <table class="table table-sm table-bordered">
                     <thead class="table-light">
                         <tr>
                             <th>البند</th>
-                            <th class="text-end" style="width: 200px;">الحد الأقصى للدفع (متاح + حالي)</th>
-                            <th style="width: 150px;">المبلغ المدفوع</th>
+                            <th class="text-end" style="width: 200px;" data-bs-toggle="tooltip" title="الحد الأقصى المسموح لك بدفعه لهذا البند في هذه العملية (المتبقي + المبلغ الحالي في هذه الدفعة)">الحد الأقصى للدفع (ر.س)</th>
+                            <th style="width: 150px;">المبلغ المدفوع (ر.س)</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for inv_item in invoice.items %}
                             {% set current_dist_amount = dists.get(inv_item.id, 0) %}
+                            {# Maximum allowed = Remaining amount + Current amount for this item in THIS payment #}
                             {% set max_allowed = inv_item.remaining_amount + current_dist_amount %}
                             
+                            {# Only display items that were paid or have remaining balance #}
                             {% if max_allowed > 0 or current_dist_amount > 0 %}
                             <tr>
                                 <td>{{ inv_item.description | truncate(70) }}</td>
@@ -60,7 +62,7 @@
                                            name="dist_item_{{ inv_item.id }}" 
                                            step="0.01" 
                                            min="0"
-                                           max="{{ max_allowed }}"
+                                           max="{{ '%.2f'|format(max_allowed) }}" {# Pass the float value formatted to 2 decimals #}
                                            value="{{ '%.2f'|format(current_dist_amount) if current_dist_amount > 0 else '' }}"
                                            placeholder="0.00">
                                 </td>
@@ -73,7 +75,7 @@
             <div class="mt-4 d-flex justify-content-between">
                  <div>
                     <strong class="text-muted">إجمالي الدفعة الكلي: </strong>
-                    <span id="totalPaymentAmount" class="fw-bold text-success fs-5 number-cell">0.00</span> <span class="text-muted">ريال</span>
+                    <span id="totalPaymentAmount" class="fw-bold text-success fs-5 number-cell">0.00</span> <span class="text-muted">ر.س</span>
                 </div>
                 <div>
                     <button type="submit" id="submitPaymentBtn" class="btn btn-primary" disabled>
@@ -101,8 +103,14 @@ document.addEventListener("DOMContentLoaded", function() {
                 const value = parseFloat(input.value) || 0;
                 total += value;
             });
+            
+            // تحديث العرض باستخدام التنسيق المناسب
             totalAmountDisplay.textContent = total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            submitBtn.disabled = total <= 0;
+            
+            // تمكين/تعطيل زر الإرسال بناءً على الإجمالي (أكبر من صفر)
+            // نستخدم قيمة المبلغ الأصلي للدفع كمرجع إذا لم يتم إدخال شيء
+            const hasPositiveTotal = total > 0;
+            submitBtn.disabled = !hasPositiveTotal;
         }
 
         distInputs.forEach(input => {

@@ -4,19 +4,19 @@
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1><i class="fas fa-file-contract fa-fw me-2 text-muted"></i>سجل أوامر الشراء/المقاولات الشامل</h1>
+    <h1><i class="fas fa-file-contract fa-fw me-2 text-primary"></i>سجل أوامر الشراء/المقاولات الشامل</h1>
 </div>
 
 <div class="card mb-4">
     <div class="card-header bg-dark text-white">
-        <h5 class="mb-0"><i class="fas fa-filter me-2"></i>خيارات البحث والفلترة</h5>
+        <h5 class="mb-0"><i class="fas fa-filter me-2"></i>خيارات البحث والتصفية المتقدمة</h5>
     </div>
     <div class="card-body">
         <form method="GET" action="{{ url_for('po.get_all_purchase_orders') }}">
             <div class="row g-3 align-items-end">
                 <div class="col-md-5">
                     <label class="form-label">بحث عام (رقم الأمر، الوصف، المقاول)</label>
-                    <input type="search" name="search" class="form-control" placeholder="رقم أمر الشراء، الوصف، المقاول..." value="{{ filters.search or '' }}">
+                    <input type="search" name="search" class="form-control" placeholder="رقم أمر الشراء، الوصف، المقاول..." value="{{ filters.search or '' }}" data-bs-toggle="tooltip" title="ابحث برقم أمر الشراء (PO)، أو وصف البند، أو اسم المقاول/المورد.">
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">المشروع</label>
@@ -40,7 +40,7 @@
 
 <div class="card">
     <div class="card-header">
-        <h5 class="mb-0"><i class="fas fa-list-alt me-1"></i>قائمة الأوامر المسجلة</h5>
+        <h5 class="mb-0"><i class="fas fa-list-alt me-1"></i>قائمة الأوامر المسجلة ({{ records|length }})</h5>
     </div>
     <div class="card-body p-0">
         {% if records %}
@@ -48,13 +48,13 @@
                 <table class="table table-dark table-hover table-striped mb-0">
                     <thead>
                         <tr>
-                            <th>رقم أمر الشراء (PO)</th>
-                            <th class="text-center">النوع / المصدر</th>
+                            <th style="width: 15%;">رقم أمر الشراء (PO)</th>
+                            <th class="text-center" style="width: 15%;">النوع / المصدر</th>
                             <th>المشروع</th>
                             <th>المقاول/المورد</th>
                             <th>الوصف</th>
-                            <th class="text-end">المبلغ الإجمالي</th>
-                            <th class="text-center">الإجراءات</th>
+                            <th class="text-end" style="width: 15%;">المبلغ الإجمالي (ر.س)</th>
+                            <th class="text-center" style="width: 10%;">الإجراءات</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -62,14 +62,14 @@
                         <tr>
                             <td class="fw-bold">{{ record.po_number }}</td>
                             <td class="text-center">
-                                <span class="badge {% if record.type == 'CostDetail' %} bg-success {% else %} bg-primary {% endif %}" data-bs-toggle="tooltip" title="{{ 'هذا الأمر مرتبط بتفصيل تكلفة داخل بند مشروع' if record.type == 'CostDetail' else 'هذا الأمر مرتبط بمستخلص أو فاتورة مقاول/مورد' }}">
+                                <span class="badge {% if record.type == 'CostDetail' %} bg-success {% else %} bg-primary {% endif %}" data-bs-toggle="tooltip" title="{{ 'أمر مرتبط بتفصيل تكلفة داخل بند مشروع (أمر عمل/شراء مباشر)' if record.type == 'CostDetail' else 'أمر مرتبط بمستخلص أو فاتورة مقاول/مورد' }}">
                                     {{ 'تفصيل تكلفة / أمر عمل' if record.type == 'CostDetail' else 'مستخلص / فاتورة' }}
                                 </span>
                             </td>
                             <td>{{ record.project_name }}</td>
                             <td>{{ record.contractor_name }}</td>
                             <td>{{ record.description }}</td>
-                            <td class="text-end fw-bold number-cell text-info">{{ "{:,.2f}".format(record.amount) }} ريال</td>
+                            <td class="text-end fw-bold number-cell text-info">{{ "{:,.2f}".format(record.amount) }}</td>
                             <td class="text-center">
                                 <a href="{{ record.link }}" class="btn btn-sm btn-info" title="عرض التفاصيل"><i class="fas fa-eye"></i></a>
                             </td>
@@ -79,9 +79,17 @@
                 </table>
             </div>
         {% else %}
-            <div class="alert alert-info m-3 text-center">
-                <i class="fas fa-info-circle me-2"></i>
-                لا توجد أوامر شراء مطابقة لمعايير البحث الحالية.
+            <div class="alert alert-info m-3 text-center p-4">
+                <h4 class="alert-heading"><i class="fas fa-search-minus me-2"></i> لا توجد أوامر شراء مطابقة!</h4>
+                <p class="mb-0">
+                    لم يتم العثور على أوامر شراء مطابقة لمعايير البحث الحالية.
+                    <br>
+                    **يرجى التأكد من إدخال رقم أمر الشراء (PO) في:**
+                    <ul>
+                        <li><i class="fas fa-check me-1"></i> خانة **رقم أمر الشراء** عند **إنشاء مستخلص جديد**.</li>
+                        <li><i class="fas fa-check me-1"></i> خانة **رقم أمر الشراء** عند **إضافة تفصيل تكلفة (أمر عمل)** للبند.</li>
+                    </ul>
+                </p>
             </div>
         {% endif %}
     </div>

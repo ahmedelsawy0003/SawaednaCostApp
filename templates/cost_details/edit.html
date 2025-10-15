@@ -3,48 +3,82 @@
 {% block title %}تعديل تفصيل التكلفة{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1>تعديل تفصيل التكلفة</h1>
-    <a href="{{ url_for('item.edit_item', item_id=detail.item_id) }}" class="btn btn-secondary">
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <h2 class="mb-0">
+        <i class="fas fa-edit me-2 text-primary"></i>
+        <span class="text-muted fw-normal">تعديل تفصيل التكلفة للبند:</span>
+        <span class="text-primary">{{ detail.item.item_number }}</span>
+    </h2>
+    <a href="{{ url_for('item.edit_item', item_id=detail.item_id) }}" class="btn btn-secondary" data-bs-toggle="tooltip" title="العودة لصفحة إدارة البند الرئيسي">
         <i class="fas fa-arrow-right me-1"></i> العودة للبند الرئيسي
     </a>
 </div>
 
+<div class="card mb-4">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0"><i class="fas fa-calculator me-2"></i>ملخص الحسابات الفورية</h5>
+    </div>
+    <div class="card-body">
+        <div class="row text-center g-3">
+            <div class="col-md-4">
+                <div class="p-3 border rounded h-100 bg-light">
+                    <h6 class="text-muted small mb-1">التكلفة الأساسية (قبل الضريبة)</h6>
+                    <p id="base-cost-display" class="fs-4 text-primary fw-bold number-cell">0.00 <span class="small text-muted">ر.س</span></p>
+                </div>
+            </div>
+             <div class="col-md-4">
+                <div class="p-3 border rounded h-100 bg-light">
+                    <h6 class="text-muted small mb-1">مبلغ الضريبة المضافة</h6>
+                    <p id="vat-amount-display" class="fs-4 text-info fw-bold number-cell">0.00 <span class="small text-muted">ر.س</span></p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="p-3 border rounded h-100 border-primary">
+                    <h6 class="text-muted small mb-1">الإجمالي الكلي (شامل الضريبة)</h6>
+                    <p id="total-cost-display" class="fs-4 text-success fw-bold number-cell">0.00 <span class="small text-muted">ر.س</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="card">
     <div class="card-header bg-primary text-white">
-        <h3 class="mb-0"><i class="fas fa-edit me-2"></i>بيانات التفصيل</h3>
+        <h4 class="mb-0"><i class="fas fa-list-alt me-2"></i>بيانات التفصيل</h4>
     </div>
     <div class="card-body">
         <form method="POST" action="{{ url_for('cost_detail.edit_cost_detail', detail_id=detail.id) }}">
             <div class="mb-3">
                 <label for="description" class="form-label">الوصف</label>
-                <input type="text" class="form-control" id="description" name="description" value="{{ detail.description }}" required>
+                <input type="text" class="form-control" id="description" name="description" value="{{ detail.description }}" required placeholder="وصف تفصيلي لأمر العمل أو فاتورة الشراء">
             </div>
             <div class="row g-3">
                 <div class="col-md-3">
                     <label for="quantity" class="form-label">الكمية</label>
-                    <input type="number" step="0.01" class="form-control" id="quantity" name="quantity" value="{{ detail.quantity }}" required>
+                    <input type="number" step="0.01" class="form-control cost-input" id="quantity" name="quantity" value="{{ detail.quantity }}" required>
                 </div>
                 <div class="col-md-3">
                     <label for="unit_cost" class="form-label">تكلفة الوحدة</label>
-                    <input type="number" step="0.01" class="form-control" id="unit_cost" name="unit_cost" value="{{ detail.unit_cost }}" required>
+                    <input type="number" step="0.01" class="form-control cost-input" id="unit_cost" name="unit_cost" value="{{ detail.unit_cost }}" required>
+                    <div class="form-text">التكلفة الإفرادية قبل احتساب الضريبة.</div>
                 </div>
                 <div class="col-md-3">
                     <label for="unit" class="form-label">الوحدة</label>
-                    <input type="text" class="form-control" id="unit" name="unit" value="{{ detail.unit or '' }}">
+                    <input type="text" class="form-control" id="unit" name="unit" value="{{ detail.unit or '' }}" placeholder="مثال: م2، طن، عدد">
                 </div>
                 <div class="col-md-3">
                     <label for="vat_percent" class="form-label">نسبة الضريبة (%)</label>
-                    <input type="number" step="0.01" class="form-control" id="vat_percent" name="vat_percent" value="{{ detail.vat_percent or 0.0 }}" placeholder="0.00">
-                    <div class="form-text">تستخدم لحساب التكلفة الإجمالية شاملة الضريبة.</div>
+                    <input type="number" step="0.01" class="form-control cost-input" id="vat_percent" name="vat_percent" value="{{ detail.vat_percent or 0.0 }}" placeholder="0.00">
+                    <div class="form-text">تستخدم لحساب الإجمالي شامل الضريبة.</div>
                 </div>
             </div>
             <hr class="my-4">
+            <h5 class="text-muted mb-3"><i class="fas fa-handshake me-2"></i>معلومات المقاول/المورد وأوامر العمل</h5>
             <div class="row g-3">
                 <div class="col-md-12">
                      <label for="contractor_id" class="form-label">المورد / المقاول (اختياري)</label>
                     <select class="form-select" id="contractor_id" name="contractor_id">
-                        <option value="">-- شراء مباشر --</option>
+                        <option value="">-- شراء مباشر / تنفيذ ذاتي --</option>
                         {% for contractor in contractors %}
                             <option value="{{ contractor.id }}" {% if detail.contractor_id == contractor.id %}selected{% endif %}>
                                 {{ contractor.name }}
@@ -56,11 +90,11 @@
             <div class="row mt-3 g-3">
                 <div class="col-md-6">
                     <label for="purchase_order_number" class="form-label">رقم أمر الشراء (اختياري)</label>
-                    <input type="text" class="form-control" id="purchase_order_number" name="purchase_order_number" value="{{ detail.purchase_order_number or '' }}">
+                    <input type="text" class="form-control" id="purchase_order_number" name="purchase_order_number" value="{{ detail.purchase_order_number or '' }}" placeholder="مثال: PO-001">
                 </div>
                 <div class="col-md-6">
                     <label for="disbursement_order_number" class="form-label">رقم أمر الصرف (اختياري)</label>
-                    <input type="text" class="form-control" id="disbursement_order_number" name="disbursement_order_number" value="{{ detail.disbursement_order_number or '' }}">
+                    <input type="text" class="form-control" id="disbursement_order_number" name="disbursement_order_number" value="{{ detail.disbursement_order_number or '' }}" placeholder="مثال: DO-001">
                 </div>
             </div>
             <button type="submit" class="btn btn-primary mt-4">
@@ -69,4 +103,45 @@
         </form>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const qtyInput = document.getElementById('quantity');
+    const unitCostInput = document.getElementById('unit_cost');
+    const vatPercentInput = document.getElementById('vat_percent');
+    
+    const baseCostDisplay = document.getElementById('base-cost-display');
+    const vatAmountDisplay = document.getElementById('vat-amount-display');
+    const totalCostDisplay = document.getElementById('total-cost-display');
+
+    function formatNumber(num) {
+        // Ensure the number is not NaN and format it
+        return (parseFloat(num) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function calculateTotal() {
+        const qty = parseFloat(qtyInput.value) || 0;
+        const unitCost = parseFloat(unitCostInput.value) || 0;
+        const vatPercent = parseFloat(vatPercentInput.value) || 0;
+
+        const baseCost = qty * unitCost;
+        const vatAmount = baseCost * (vatPercent / 100);
+        const totalCost = baseCost + vatAmount;
+
+        baseCostDisplay.textContent = formatNumber(baseCost) + ' ر.س';
+        vatAmountDisplay.textContent = formatNumber(vatAmount) + ' ر.س';
+        totalCostDisplay.textContent = formatNumber(totalCost) + ' ر.س';
+    }
+
+    // Attach event listeners to all relevant inputs
+    document.querySelectorAll('.cost-input').forEach(input => {
+        input.addEventListener('input', calculateTotal);
+    });
+
+    // Initial calculation on load
+    calculateTotal();
+});
+</script>
 {% endblock %}

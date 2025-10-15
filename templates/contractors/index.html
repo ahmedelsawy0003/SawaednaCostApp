@@ -3,9 +3,9 @@
 {% block title %}قائمة المقاولين{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
     <h2 class="mb-0">
-        <i class="fas fa-hard-hat fa-fw me-2 text-muted"></i>قائمة المقاولين / الموردين
+        <i class="fas fa-hard-hat fa-fw me-2 text-primary"></i>قائمة المقاولين / الموردين
     </h2>
     {% if current_user.role in ['admin', 'sub-admin'] %}
     <a href="{{ url_for('contractor.new_contractor') }}" class="btn btn-primary">
@@ -14,20 +14,34 @@
     {% endif %}
 </div>
 
+{# --- START: قسم البحث السريع الجديد --- #}
+<div class="card mb-4">
+    <div class="card-header bg-dark text-white">
+        <h5 class="mb-0"><i class="fas fa-search me-1"></i>البحث السريع في القائمة</h5>
+    </div>
+    <div class="card-body">
+         <input type="search" class="form-control" id="contractor-quick-search" placeholder="ابحث باسم المقاول، شخص الاتصال، أو الهاتف..." style="max-width: 100%;">
+         <div class="form-text mt-2 text-muted small">
+             ابحث فوراً عن أي مقاول في الجدول بالاسم أو جهة الاتصال.
+         </div>
+    </div>
+</div>
+{# --- END: قسم البحث السريع الجديد --- #}
+
 <div class="card">
     <div class="card-header">
-        <h5 class="mb-0"><i class="fas fa-list-alt me-1"></i>جميع المقاولين المسجلين</h5>
+        <h5 class="mb-0"><i class="fas fa-list-alt me-1"></i>جميع المقاولين المسجلين ({{ contractors|length }})</h5>
     </div>
     <div class="card-body p-0">
         {% if contractors %}
             <div class="table-responsive">
-                <table class="table table-dark table-hover table-striped mb-0">
+                <table class="table table-dark table-hover table-striped mb-0" id="contractors-table">
                     <thead>
                         <tr>
-                            <th>اسم المقاول</th>
-                            <th class="d-none d-md-table-cell">شخص الاتصال</th>
-                            <th class="d-none d-sm-table-cell">الهاتف</th>
-                            <th class="text-center">الإجراءات</th>
+                            <th style="width: 35%;">اسم المقاول/المورد</th>
+                            <th class="d-none d-md-table-cell" style="width: 30%;">شخص الاتصال</th>
+                            <th class="d-none d-sm-table-cell" style="width: 20%;">الهاتف</th>
+                            <th class="text-center" style="width: 15%;">الإجراءات</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -40,7 +54,7 @@
                             <td class="d-none d-sm-table-cell">{{ contractor.phone or '-' }}</td>
                             <td class="text-center">
                                 <div class="btn-group btn-group-sm flex-nowrap">
-                                    <a href="{{ url_for('contractor.show_contractor', contractor_id=contractor.id) }}" class="btn btn-info" title="عرض التفاصيل والمدفوعات">
+                                    <a href="{{ url_for('contractor.show_contractor', contractor_id=contractor.id) }}" class="btn btn-info" title="عرض التفاصيل وسجل المدفوعات">
                                         <i class="fas fa-eye"></i>
                                     </a>
                                     {% if current_user.role in ['admin', 'sub-admin'] %}
@@ -59,9 +73,15 @@
                 </table>
             </div>
         {% else %}
-            <div class="alert alert-secondary m-3 text-center">
-                <i class="fas fa-info-circle me-2"></i>
-                لا يوجد مقاولون مسجلون حالياً. يمكنك البدء بإضافة مقاول جديد.
+            <div class="alert alert-info m-3 text-center p-4">
+                <h4 class="alert-heading"><i class="fas fa-handshake-alt-slash me-2"></i> لا يوجد مقاولون مسجلون حالياً.</h4>
+                <p class="mb-0">
+                    {% if current_user.role in ['admin', 'sub-admin'] %}
+                        يرجى البدء بإضافة مقاول جديد عبر زر **"<i class="fas fa-plus me-1"></i> إضافة مقاول جديد"** في الأعلى.
+                    {% else %}
+                        لا تملك صلاحية إضافة مقاولين/موردين.
+                    {% endif %}
+                </p>
             </div>
         {% endif %}
     </div>
@@ -80,7 +100,7 @@
                 <p>هل أنت متأكد أنك تريد حذف المقاول <strong>{{ contractor.name }}</strong>؟</p>
                 <p class="text-danger small">
                     <i class="fas fa-exclamation-triangle me-2"></i>
-                    لا يمكن حذف المقاول إذا كان مرتبطًا بأي مستخلصات أو بنود.
+                    لا يمكن حذف المقاول إذا كان مرتبطًا بأي مستخلصات أو بنود عمل.
                 </p>
             </div>
             <div class="modal-footer">
@@ -94,4 +114,31 @@
 </div>
 {% endfor %}
 {# --- END: Delete Confirmation Modals --- #}
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // Client-side quick search for contractors table
+    const searchInput = document.getElementById('contractor-quick-search');
+    const table = document.getElementById('contractors-table');
+    if (searchInput && table) {
+        const rows = table.querySelectorAll('tbody tr');
+        searchInput.addEventListener('keyup', function() {
+            const filter = searchInput.value.toLowerCase();
+            rows.forEach(row => {
+                const name = row.querySelector('td:nth-child(1)').textContent.toLowerCase();
+                const contact = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+                const phone = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
+
+                if (name.includes(filter) || contact.includes(filter) || phone.includes(filter)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    }
+});
+</script>
 {% endblock %}

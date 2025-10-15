@@ -3,7 +3,7 @@
 {% block title %}إضافة مقاول جديد{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
     <h2 class="mb-0">
         <i class="fas fa-plus-circle fa-fw me-2 text-primary"></i>
         إضافة مقاول / مورد جديد
@@ -15,50 +15,54 @@
 
 <div class="card">
     <div class="card-header bg-primary text-white">
-        <h4 class="mb-0"><i class="fas fa-id-card-alt me-2"></i>بيانات المقاول/المورد</h4>
+        <h4 class="mb-0"><i class="fas fa-id-card-alt me-2"></i>البيانات الأساسية للمقاول/المورد</h4>
     </div>
     <div class="card-body">
         <form method="POST" action="{{ url_for("contractor.new_contractor") }}" novalidate>
             {{ form.hidden_tag() }}
             <div class="mb-3">
                 {{ form.name.label(class="form-label") }}
-                {{ form.name(class="form-control") }}
+                {{ form.name(class="form-control", placeholder="مثال: مؤسسة البناء السريع") }}
                 {% for error in form.name.errors %}
                     <div class="text-danger small mt-1">{{ error }}</div>
                 {% endfor %}
+                <div class="form-text">الاسم الرسمي للمقاول أو المورد. يجب أن يكون فريداً.</div>
             </div>
             
             <hr class="my-4">
-            <h5 class="text-muted mb-3"><i class="fas fa-address-book me-2"></i>معلومات الاتصال</h5>
+            <h5 class="text-muted mb-3"><i class="fas fa-address-book me-2"></i>معلومات الاتصال (اختياري)</h5>
             <div class="row g-3">
                 <div class="col-md-4">
                     <div class="mb-3">
                         {{ form.contact_person.label(class="form-label") }}
-                        {{ form.contact_person(class="form-control") }}
+                        {{ form.contact_person(class="form-control", placeholder="مثال: خالد محمد") }}
                         <div class="form-text">اسم الشخص المسؤول عن التواصل.</div>
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="mb-3">
                         {{ form.phone.label(class="form-label") }}
-                        {{ form.phone(class="form-control") }}
+                        {{ form.phone(class="form-control", placeholder="مثال: 050xxxxxxx") }}
+                        <div class="form-text">رقم الهاتف الأساسي.</div>
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="mb-3">
                         {{ form.email.label(class="form-label") }}
-                        {{ form.email(class="form-control") }}
+                        {{ form.email(class="form-control", placeholder="example@domain.com") }}
                          {% for error in form.email.errors %}
                             <div class="text-danger small mt-1">{{ error }}</div>
                         {% endfor %}
+                         <div class="form-text">البريد الإلكتروني للتواصل.</div>
                     </div>
                 </div>
             </div>
             <div class="mb-4">
                 {{ form.notes.label(class="form-label") }}
-                {{ form.notes(class="form-control", rows="4") }}
+                {{ form.notes(class="form-control", rows="4", placeholder="ملاحظات حول المقاول أو شروط التعاقد") }}
+                <div class="form-text">أي ملاحظات إضافية بخصوص المقاول/المورد.</div>
             </div>
-            {{ form.submit(class="btn btn-success btn-lg w-100") }}
+            {{ form.submit(class="btn btn-success btn-lg w-100", value="حفظ المقاول وإضافته للنظام") }}
         </form>
     </div>
 </div>

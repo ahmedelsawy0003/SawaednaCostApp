@@ -3,15 +3,16 @@
 {% block title %}بنود المشروع - {{ project.name }}{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
     <h2 class="mb-0">
-        <span class="text-muted fw-normal">المشروع:</span> {{ project.name }}
+        <i class="fas fa-list-check fa-fw me-2 text-primary"></i>
+        <span class="text-muted fw-normal">بنود المشروع:</span> {{ project.name }}
     </h2>
     <div>
         <a href="{{ url_for("project.get_project", project_id=project.id) }}" class="btn btn-secondary" data-bs-toggle="tooltip" title="العودة لصفحة المشروع">
             <i class="fas fa-arrow-left me-1"></i> العودة للمشروع
         </a>
-        <a href="{{ url_for("item.new_item", project_id=project.id) }}" class="btn btn-primary" data-bs-toggle="tooltip" title="إضافة بند يدوي جديد">
+        <a href="{{ url_for("item.new_item", project_id=project.id) }}" class="btn btn-primary" data-bs-toggle="tooltip" title="إضافة بند عمل يدوي جديد">
             <i class="fas fa-plus me-1"></i> إضافة بند جديد
         </a>
     </div>
@@ -21,7 +22,7 @@
     <div class="accordion" id="filterAccordion">
         <div class="accordion-item">
             <h2 class="accordion-header">
-                <button class="accordion-button collapsed bg-primary text-white" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFilter" aria-expanded="false" aria-controls="collapseFilter">
+                <button class="accordion-button collapsed bg-dark text-white" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFilter" aria-expanded="false" aria-controls="collapseFilter">
                     <i class="fas fa-filter me-2"></i>خيارات البحث والفلترة المتقدمة
                 </button>
             </h2>
@@ -29,22 +30,22 @@
                 <div class="accordion-body">
                     <form method="GET" action="{{ url_for('item.get_items_by_project', project_id=project.id) }}">
                         <div class="row g-3 align-items-end">
-                            <div class="col-md-3"><label class="form-label">رقم البند</label><input type="text" name="search_number" class="form-control" value="{{ filters.search_number or '' }}"></div>
-                            <div class="col-md-3"><label class="form-label">الوصف</label><input type="text" name="search_description" class="form-control" value="{{ filters.search_description or '' }}"></div>
+                            <div class="col-md-3"><label class="form-label">رقم البند</label><input type="text" name="search_number" class="form-control" value="{{ filters.search_number or '' }}" placeholder="البحث برقم البند"></div>
+                            <div class="col-md-3"><label class="form-label">الوصف</label><input type="text" name="search_description" class="form-control" value="{{ filters.search_description or '' }}" placeholder="البحث بوصف البند"></div>
                             <div class="col-md-2">
                                 <label class="form-label">الحالة</label>
                                 <select name="status" class="form-select">
-                                    <option value="">الكل</option>
+                                    <option value="">كل الحالات</option>
                                     <option value="نشط" {% if filters.status == 'نشط' %}selected{% endif %}>نشط</option>
                                     <option value="مكتمل" {% if filters.status == 'مكتمل' %}selected{% endif %}>مكتمل</option>
                                     <option value="معلق" {% if filters.status == 'معلق' %}selected{% endif %}>معلق</option>
                                 </select>
                             </div>
-                            <div class="col-md-2"><label class="form-label">المقاول</label><input type="text" name="contractor" class="form-control" value="{{ filters.contractor or '' }}"></div>
+                            <div class="col-md-2"><label class="form-label">المقاول</label><input type="text" name="contractor" class="form-control" value="{{ filters.contractor or '' }}" placeholder="البحث باسم المقاول"></div>
                             <div class="col-md-2">
                                 <div class="d-flex gap-2">
                                     <button type="submit" class="btn btn-primary w-100"><i class="fas fa-search"></i> بحث</button>
-                                    <a href="{{ url_for('item.get_items_by_project', project_id=project.id) }}" class="btn btn-secondary w-100"><i class="fas fa-times"></i> مسح</a>
+                                    <a href="{{ url_for('item.get_items_by_project', project_id=project.id) }}" class="btn btn-secondary w-100" data-bs-toggle="tooltip" title="مسح جميع الفلاتر"><i class="fas fa-times"></i> مسح</a>
                                 </div>
                             </div>
                         </div>
@@ -62,6 +63,7 @@
       data-delete-url="{{ url_for('item.bulk_delete_items', project_id=project.id) }}"
       data-duplicate-url="{{ url_for('item.bulk_duplicate_items', project_id=project.id) }}">
 	  
+    {% if current_user.role in ['admin', 'sub-admin'] %}
     <div class="card mb-4">
         <div class="accordion" id="bulkEditAccordion">
             <div class="accordion-item">
@@ -74,14 +76,14 @@
                     <div class="accordion-body">
                         <div class="row align-items-end g-3">
                             <div class="col-md-3"><label for="bulk-status" class="form-label">تغيير حالة المحدد</label><select name="bulk_status" id="bulk-status" class="form-select"><option value="">-- اختر --</option><option value="نشط">نشط</option><option value="مكتمل">مكتمل</option><option value="معلق">معلق</option></select></div>
-                            <div class="col-md-4"><label for="bulk-contractor" class="form-label">تغيير مقاول المحدد</label><input type="text" name="bulk_contractor" id="bulk-contractor" class="form-control" placeholder="اتركه فارغاً لعدم التغيير"></div>
-                            <div class="col-md-5 d-flex gap-2">
+                            <div class="col-md-3"><label for="bulk-contractor" class="form-label">تغيير مقاول المحدد</label><input type="text" name="bulk_contractor" id="bulk-contractor" class="form-control" placeholder="اتركه فارغاً لعدم التغيير"></div>
+                            <div class="col-md-6 d-flex gap-2">
                                 <button type="submit" class="btn btn-warning w-100" id="bulk-update-btn" disabled><i class="fas fa-save me-1"></i> تطبيق التعديلات</button>
                                 <button type="button" class="btn btn-success w-100" id="bulk-duplicate-btn" data-bs-toggle="modal" data-bs-target="#bulkDuplicateConfirmModal" disabled>
-                                    <i class="fas fa-copy me-1"></i> تكرار
+                                    <i class="fas fa-copy me-1"></i> تكرار (<span id="bulk-duplicate-count">0</span>)
                                 </button>
                                 <button type="button" class="btn btn-danger w-100" id="bulk-delete-btn" data-bs-toggle="modal" data-bs-target="#bulkDeleteConfirmModal" disabled>
-                                    <i class="fas fa-trash me-1"></i> حذف
+                                    <i class="fas fa-trash me-1"></i> حذف (<span id="bulk-delete-count-display">0</span>)
                                 </button>
                             </div>
                         </div>
@@ -90,10 +92,11 @@
             </div>
         </div>
     </div>
+    {% endif %}
 
     <div class="card">
         <div class="card-header">
-            <h5 class="mb-0"><i class="fas fa-list-alt me-1"></i>قائمة البنود التفصيلية</h5>
+            <h5 class="mb-0"><i class="fas fa-table me-1"></i>جدول بنود المشروع ({{ items|length }})</h5>
         </div>
         <div class="card-body p-0">
             {% if items %}
@@ -101,17 +104,17 @@
                     <table class="table table-dark table-hover table-striped mb-0">
                         <thead>
                             <tr>
-                                <th style="width: 3%;"><input class="form-check-input" type="checkbox" id="select-all"></th>
+                                <th style="width: 3%;"><input class="form-check-input" type="checkbox" id="select-all" data-bs-toggle="tooltip" title="تحديد/إلغاء تحديد الكل"></th>
                                 <th>رقم البند</th>
                                 <th>الوصف</th>
                                 {% if current_user.role in ['admin', 'sub-admin'] %}
-                                <th class="text-end">التكلفة التعاقدية</th>
+                                <th class="text-end" data-bs-toggle="tooltip" title="إجمالي التكلفة حسب العقد المرجعي">التكلفة التعاقدية (ر.س)</th>
                                 {% endif %}
-                                <th class="text-end">التكلفة الفعلية</th>
-                                <th class="text-end">إجمالي المدفوعات</th>
-                                <th class="text-end">المبلغ المتبقي</th>
+                                <th class="text-end" data-bs-toggle="tooltip" title="إجمالي التكلفة المحتسبة من تفاصيل التكاليف المباشرة">التكلفة الفعلية (ر.س)</th>
+                                <th class="text-end" data-bs-toggle="tooltip" title="إجمالي المدفوعات التي وُزعت على هذا البند">إجمالي المدفوع (ر.س)</th>
+                                <th class="text-end" data-bs-toggle="tooltip" title="المبلغ المتبقي للاستحقاق (الفعلية - المدفوع)">المبلغ المتبقي (ر.س)</th>
                                 {% if current_user.role in ['admin', 'sub-admin'] %}
-                                <th class="text-end">الوفر / الزيادة</th>
+                                <th class="text-end" data-bs-toggle="tooltip" title="الفرق بين التكلفة التعاقدية والفعلية">الوفر / الزيادة (ر.س)</th>
                                 {% endif %}
                                 <th class="text-center">الحالة</th>
                                 <th class="text-center">الإجراءات</th>
@@ -124,7 +127,7 @@
                                 <td>{{ item.item_number }}</td>
                                 <td>{{ item.short_description }}</td>
                                 {% if current_user.role in ['admin', 'sub-admin'] %}
-                                <td class="number-cell text-end">{{ "{:,.2f}".format(item.contract_total_cost) }}</td>
+                                <td class="number-cell text-end text-info">{{ "{:,.2f}".format(item.contract_total_cost) }}</td>
                                 {% endif %}
                                 <td class="number-cell text-end text-primary">{{ "{:,.2f}".format(item.actual_total_cost) }}</td>
                                 <td class="number-cell text-end"><span class="text-success">{{ "{:,.2f}".format(item.paid_amount) }}</span></td>
@@ -147,12 +150,16 @@
                                 </td>
                                 <td class="text-center">
                                     <div class="btn-group btn-group-sm flex-nowrap">
-                                        <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#paymentsModal-{{ item.id }}" title="عرض الدفعات">
+                                        <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#paymentsModal-{{ item.id }}" title="عرض سجل الدفعات التفصيلي لهذا البند">
                                             <i class="fas fa-money-bill-wave"></i>
                                         </button>
-                                        <a href="{{ url_for("item.edit_item", item_id=item.id) }}" class="btn btn-warning" title="تعديل"><i class="fas fa-edit"></i></a>
+                                        <a href="{{ url_for("item.edit_item", item_id=item.id) }}" class="btn btn-warning" title="تعديل بيانات البند وتكاليفه">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
                                         {% if current_user.role in ['admin', 'sub-admin'] %}
-                                        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteItemModal-{{ item.id }}" title="حذف"><i class="fas fa-trash"></i></button>
+                                        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteItemModal-{{ item.id }}" title="حذف البند نهائياً">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
                                         {% endif %}
                                     </div>
                                 </td>
@@ -162,13 +169,20 @@
                     </table>
                 </div>
             {% else %}
-                <div class="alert alert-secondary m-3 text-center"><i class="fas fa-info-circle me-2"></i>لا توجد بنود تطابق معايير البحث الحالية.</div>
+                <div class="alert alert-info m-3 text-center p-4">
+                    <h4 class="alert-heading"><i class="fas fa-box-open me-2"></i> لا توجد بنود عمل مسجلة!</h4>
+                    <p class="mb-0">
+                        لم يتم العثور على بنود تطابق معايير البحث الحالية في هذا المشروع.
+                        <br>
+                        يمكنك **إضافة بند جديد** يدوياً من الأعلى، أو **استيراد البنود** من Google Sheets (إذا كانت الخاصية مفعلة في المشروع).
+                    </p>
+                </div>
             {% endif %}
         </div>
     </div>
 </form>
 
-{# Modals remain the same #}
+{# Modals remain the same, but update bulk delete count span #}
 {% for item in items %}
 <div class="modal fade" id="deleteItemModal-{{ item.id }}" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
@@ -176,7 +190,7 @@
             <div class="modal-header bg-danger text-white"><h5 class="modal-title">تأكيد الحذف</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
             <div class="modal-body">
                 <p>هل أنت متأكد أنك تريد حذف البند <strong>{{ item.item_number }} - {{ item.description }}</strong>؟</p>
-                <p class="text-danger"><i class="fas fa-exclamation-triangle me-2"></i>لا يمكن التراجع عن هذا الإجراء.</p>
+                <p class="text-danger"><i class="fas fa-exclamation-triangle me-2"></i>سيؤدي الحذف إلى إزالة جميع التكاليف والدفعات المرتبطة بهذا البند بشكل نهائي. لا يمكن التراجع عن هذا الإجراء.</p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
@@ -207,8 +221,8 @@
                                     <th>تاريخ الدفعة</th>
                                     <th>رقم المستخلص</th>
                                     <th>المقاول</th>
-                                    <th>الوصف</th>
-                                    <th class="text-end">المبلغ</th>
+                                    <th>بيان الدفعة</th>
+                                    <th class="text-end">المبلغ (ر.س)</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -223,7 +237,7 @@
                                     </td>
                                     <td>{{ dist.payment.invoice.contractor.name }}</td>
                                     <td>{{ dist.payment.description or '-' }}</td>
-                                    <td class="text-end text-success fw-bold">{{ "{:,.2f}".format(dist.amount) }} ريال</td>
+                                    <td class="text-end text-success fw-bold number-cell">{{ "{:,.2f}".format(dist.amount) }}</td>
                                 </tr>
                                 {% endfor %}
                                 {# --- END: THE FIX --- #}
@@ -254,7 +268,7 @@
             </div>
             <div class="modal-body">
                 <p>هل أنت متأكد أنك تريد حذف البنود المحددة؟</p>
-                <p class="text-danger"><i class="fas fa-exclamation-triangle me-2"></i>سيتم حذف <strong id="bulk-delete-count">0</strong> بنود بشكل نهائي. لا يمكن التراجع عن هذا الإجراء.</p>
+                <p class="text-danger"><i class="fas fa-exclamation-triangle me-2"></i>سيتم حذف <strong id="bulk-delete-count">0</strong> بنود بشكل نهائي وكل ما يتعلق بها من تكاليف ودفعات. لا يمكن التراجع عن هذا الإجراء.</p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
@@ -273,7 +287,7 @@
             </div>
             <div class="modal-body">
                 <p>هل أنت متأكد أنك تريد تكرار البنود المحددة؟</p>
-                <p class="text-info"><i class="fas fa-info-circle me-2"></i>سيتم إنشاء نسخة جديدة من كل بند محدد مع إضافة لاحقة لرقم البند.</p>
+                <p class="text-info"><i class="fas fa-info-circle me-2"></i>سيتم إنشاء نسخة جديدة من كل بند محدد مع إضافة لاحقة لرقم البند للمحافظة على الأرقام الفريدة.</p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>

@@ -3,14 +3,14 @@
 {% block title %}تفاصيل المقاول - {{ contractor.name }}{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
     <h2 class="mb-0">
-        <i class="fas fa-hard-hat fa-fw me-2 text-muted"></i>
+        <i class="fas fa-hard-hat fa-fw me-2 text-primary"></i>
         <span class="text-muted fw-normal">ملف المقاول:</span> {{ contractor.name }}
     </h2>
     <div class="d-flex gap-2">
         {% if current_user.role in ['admin', 'sub-admin'] %}
-        <a href="{{ url_for('contractor.edit_contractor', contractor_id=contractor.id) }}" class="btn btn-warning" data-bs-toggle="tooltip" title="تعديل بيانات المقاول">
+        <a href="{{ url_for('contractor.edit_contractor', contractor_id=contractor.id) }}" class="btn btn-warning" data-bs-toggle="tooltip" title="تعديل بيانات المقاول الأساسية">
             <i class="fas fa-edit me-1"></i> تعديل البيانات
         </a>
         {% endif %}
@@ -23,13 +23,13 @@
 {# --- Financial Summary Cards --- #}
 <div class="card mb-4">
     <div class="card-header bg-primary text-white">
-        <h4 class="mb-0"><i class="fas fa-chart-line fa-fw me-2"></i>الملخص المالي للمقاول</h4>
+        <h4 class="mb-0"><i class="fas fa-chart-line fa-fw me-2"></i>الملخص المالي للمقاول (لجميع المشاريع)</h4>
     </div>
     <div class="card-body">
         <div class="row text-center g-3">
             <div class="col-md-4">
-                <div class="p-3 border rounded h-100 bg-light">
-                    <h5 class="text-muted small">إجمالي المستحق (من المستخلصات المعتمدة)</h5>
+                <div class="p-3 border rounded h-100 border-primary">
+                    <h5 class="text-muted small">إجمالي المستحق (من المستخلصات)</h5>
                     <p class="fs-4 text-primary fw-bold number-cell">{{ "{:,.2f}".format(total_due) }} <span class="small text-muted">ر.س</span></p>
                 </div>
             </div>
@@ -49,7 +49,7 @@
         
         {% if contractor.notes %}
             <hr class="mt-4 mb-3">
-            <p class="mb-0"><strong class="d-block mb-1 text-muted">ملاحظات المقاول:</strong> {{ contractor.notes }}</p>
+            <p class="mb-0"><strong class="d-block mb-1 text-muted"><i class="fas fa-clipboard-list me-1"></i> ملاحظات المقاول:</strong> {{ contractor.notes }}</p>
         {% endif %}
     </div>
 </div>
@@ -60,7 +60,7 @@
         <ul class="nav nav-tabs card-header-tabs" id="contractorTab" role="tablist">
             <li class="nav-item" role="presentation">
                 <button class="nav-link active" id="invoices-tab" data-bs-toggle="tab" data-bs-target="#invoices-content" type="button" role="tab" aria-controls="invoices-content" aria-selected="true">
-                    <i class="fas fa-file-invoice-dollar me-1"></i>المستخلصات ({{ invoices|length }})
+                    <i class="fas fa-file-invoice-dollar me-1"></i>سجل المستخلصات ({{ invoices|length }})
                 </button>
             </li>
             <li class="nav-item" role="presentation">
@@ -76,8 +76,28 @@
             <div class="tab-pane fade show active" id="invoices-content" role="tabpanel" aria-labelledby="invoices-tab">
                 
                 <div class="p-3">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h6 class="mb-0 text-muted">المستخلصات المرتبطة بالمقاول ({{ contractor.name }})</h6>
+                    <form method="GET" action="{{ url_for('contractor.show_contractor', contractor_id=contractor.id) }}" class="mb-3">
+                        <div class="row g-3 align-items-end">
+                            <div class="col-md-4">
+                                <label class="form-label">تصفية حسب المشروع</label>
+                                <select name="project_id" class="form-select">
+                                    <option value="">جميع المشاريع</option>
+                                    {% for project in projects %}
+                                        <option value="{{ project.id }}" {% if filters.project_id == project.id %}selected{% endif %}>{{ project.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">بحث برقم المستخلص</label>
+                                <input type="search" name="search" class="form-control" value="{{ filters.search or '' }}" placeholder="ابحث برقم المستخلص">
+                            </div>
+                            <div class="col-md-4 d-flex gap-2">
+                                <button type="submit" class="btn btn-primary w-100" title="تطبيق الفلتر"><i class="fas fa-search me-1"></i> بحث</button>
+                                <a href="{{ url_for('contractor.show_contractor', contractor_id=contractor.id) }}" class="btn btn-secondary w-100" title="مسح الفلاتر"><i class="fas fa-times me-1"></i> مسح</a>
+                            </div>
+                        </div>
+                    </form>
+                    <div class="d-flex justify-content-end mb-2">
                         <div class="btn-group btn-group-sm">
                             <button class="btn btn-outline-secondary" id="expand-all-btn" title="توسيع الكل"><i class="fas fa-angle-double-down"></i></button>
                             <button class="btn btn-outline-secondary" id="collapse-all-btn" title="طي الكل"><i class="fas fa-angle-double-up"></i></button>
@@ -94,8 +114,8 @@
                                     <th>رقم المستخلص</th>
                                     <th>المشروع</th>
                                     <th>تاريخه</th>
-                                    <th class="text-end">الإجمالي</th>
-                                    <th class="text-end">المدفوع</th>
+                                    <th class="text-end">الإجمالي (ر.س)</th>
+                                    <th class="text-end">المدفوع (ر.س)</th>
                                     <th class="text-center">الحالة</th>
                                     <th class="text-center">الإجراءات</th>
                                 </tr>
@@ -137,10 +157,10 @@
                                             <table class="table table-sm table-striped table-hover mb-0">
                                                 <thead class="bg-light">
                                                     <tr>
-                                                        <th>البند</th>
-                                                        <th class="text-end">الإجمالي</th>
-                                                        <th class="text-end">المدفوع</th>
-                                                        <th class="text-end">المتبقي</th>
+                                                        <th>وصف البند</th>
+                                                        <th class="text-end">الإجمالي (ر.س)</th>
+                                                        <th class="text-end">المدفوع (ر.س)</th>
+                                                        <th class="text-end">المتبقي (ر.س)</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -163,25 +183,32 @@
                         </table>
                     </div>
                 {% else %}
-                    <div class="alert alert-secondary m-3 text-center">لا توجد مستخلصات مسجلة لهذا المقاول.</div>
+                    <div class="alert alert-info m-3 text-center p-4">
+                         <h4 class="alert-heading"><i class="fas fa-file-invoice-slash me-2"></i> لا توجد مستخلصات مسجلة!</h4>
+                         <p class="mb-0">
+                            لا توجد مستخلصات مسجلة لهذا المقاول حالياً، أو أنها لا تتطابق مع فلتر المشروع المحدد.
+                            <br>
+                            يمكنك البدء بـ **<a href="{{ url_for('contractor.show_contractor', contractor_id=contractor.id) }}" class="alert-link">مسح الفلتر</a>** أو الانتقال لأحد المشاريع لإنشاء مستخلص جديد.
+                        </p>
+                    </div>
                 {% endif %}
             </div>
 
             <div class="tab-pane fade" id="items-content" role="tabpanel" aria-labelledby="items-tab">
                 <div class="p-3">
-                    <h6 class="mb-3 text-muted">البنود التي تم إسنادها للمقاول في المشاريع (تشمل بنود العقد وتفاصيل التكلفة)</h6>
+                    <h6 class="mb-3 text-muted"><i class="fas fa-info-circle me-1"></i> البنود التي تم إسنادها للمقاول في المشاريع (تشمل بنود العقد وتفاصيل التكلفة)</h6>
                 </div>
                 {% if assigned_items %}
                     <div class="table-responsive">
                         <table class="table table-dark table-hover table-striped mb-0">
                             <thead class="table-dark">
                                 <tr>
-                                    <th>رقم البند</th>
-                                    <th>الوصف</th>
-                                    <th>المشروع</th>
-                                    <th class="text-end">التكلفة الفعلية</th>
-                                    <th class="text-center">الحالة</th>
-                                    <th class="text-center">الإجراءات</th>
+                                    <th style="width: 15%;">رقم البند</th>
+                                    <th style="width: 40%;">الوصف</th>
+                                    <th style="width: 20%;">المشروع</th>
+                                    <th class="text-end" style="width: 15%;">التكلفة الفعلية (ر.س)</th>
+                                    <th class="text-center" style="width: 5%;">الحالة</th>
+                                    <th class="text-center" style="width: 5%;">الإجراءات</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -190,7 +217,7 @@
                                     <td>{{ item.item_number }}</td>
                                     <td>{{ item.short_description }}</td>
                                     <td><a href="{{ url_for('project.get_project', project_id=item.project_id) }}">{{ item.project.name }}</a></td>
-                                    <td class="text-end number-cell">{{ "{:,.2f}".format(item.actual_total_cost) }}</td>
+                                    <td class="text-end number-cell text-primary">{{ "{:,.2f}".format(item.actual_total_cost) }}</td>
                                     <td class="text-center">
                                         <span class="badge 
                                             {% if item.status == "نشط" %} bg-warning 
@@ -209,7 +236,14 @@
                         </table>
                     </div>
                 {% else %}
-                    <div class="alert alert-secondary m-3 text-center">لم يتم إسناد أي بنود لهذا المقاول بشكل مباشر.</div>
+                    <div class="alert alert-info m-3 text-center p-4">
+                        <h4 class="alert-heading"><i class="fas fa-tasks-alt me-2"></i> لا توجد بنود عمل مسندة!</h4>
+                        <p class="mb-0">
+                            لم يتم إسناد أي بنود عمل (أو تفاصيل تكلفة) لهذا المقاول بشكل مباشر في أي مشروع حتى الآن.
+                            <br>
+                            يرجى التأكد من اختيار هذا المقاول عند إضافة بند عمل أو تفصيل تكلفة جديد.
+                        </p>
+                    </div>
                 {% endif %}
             </div>
 
@@ -231,14 +265,14 @@ document.addEventListener("DOMContentLoaded", function() {
         collapsibleItems.forEach(item => {
             // نضيف كلاس يوقف الحركة
             item.classList.add('no-transition');
-            const bsCollapse = bootstrap.Collapse.getOrCreateInstance(item);
+            // نستخدم getInstance للحصول على نسخة موجودة أو getOrCreateInstance
+            const bsCollapse = bootstrap.Collapse.getOrCreateInstance(item); 
             if (action === 'show') {
                 bsCollapse.show();
             } else {
                 bsCollapse.hide();
             }
             // نزيل الكلاس بعد انتهاء العملية مباشرة
-            // نستخدم setTimeout بصفر لإعطاء المتصفح فرصة لتنفيذ الأمر ثم إزالة الكلاس
             setTimeout(() => {
                 item.classList.remove('no-transition');
             }, 0);

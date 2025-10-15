@@ -3,9 +3,9 @@
 {% block title %}تفاصيل المستخلص - {{ invoice.invoice_number }}{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
     <h2 class="mb-0">
-        <i class="fas fa-file-invoice-dollar fa-fw me-2 text-muted"></i>
+        <i class="fas fa-file-invoice-dollar fa-fw me-2 text-primary"></i>
         <span class="text-muted fw-normal">مستخلص رقم:</span> {{ invoice.invoice_number }}
     </h2>
     <a href="{{ url_for('invoice.get_invoices_by_project', project_id=invoice.project_id) }}" class="btn btn-secondary">
@@ -17,7 +17,7 @@
     <div class="col-lg-8">
         <div class="card mb-4">
             <div class="card-header d-flex justify-content-between align-items-center bg-dark text-white">
-                <h5 class="mb-0"><i class="fas fa-info-circle fa-fw me-2"></i>معلومات المستخلص</h5>
+                <h5 class="mb-0"><i class="fas fa-info-circle fa-fw me-2"></i>معلومات المستخلص الأساسية</h5>
                 <span class="badge 
                     {% if invoice.status == 'مدفوع بالكامل' %} bg-success fs-6
                     {% elif invoice.status == 'مدفوع جزئياً' %} bg-warning text-dark fs-6
@@ -36,7 +36,7 @@
                     </div>
                     <div class="col-md-6">
                         <p><strong>تاريخ المستخلص:</strong> {{ invoice.invoice_date.strftime('%Y-%m-%d') }}</p>
-                        <p><strong>رقم أمر الشراء:</strong> {{ invoice.purchase_order_number or 'غير محدد' }}</p>
+                        <p><strong>رقم أمر الشراء (PO):</strong> {{ invoice.purchase_order_number or 'غير محدد' }}</p>
                         <p><strong>رقم أمر الصرف:</strong> {{ invoice.disbursement_order_number or 'غير محدد' }}</p>
                     </div>
                 </div>
@@ -50,24 +50,25 @@
         {% if not invoice.is_fully_paid %}
         <div class="card mb-4">
             <div class="card-header bg-success text-white">
-                <h5 class="mb-0"><i class="fas fa-plus-circle fa-fw me-2"></i>إضافة بنود للمستخلص</h5>
+                <h5 class="mb-0"><i class="fas fa-plus-circle fa-fw me-2"></i> إضافة بنود/أوامر عمل جديدة</h5>
             </div>
             <div class="card-body">
                 <form method="POST" action="{{ url_for('invoice.add_item_to_invoice', invoice_id=invoice.id) }}">
+                    <p class="text-muted small">اختر البند أو تفصيل التكلفة (أمر العمل) الذي تريد فوترة كميته المنجزة في هذا المستخلص.</p>
                     <div class="row g-3 align-items-end">
                         <div class="col-md-6">
                             <label for="selected_item_id" class="form-label">اختر البند أو أمر العمل</label>
-                            <select name="selected_item_id" id="selected_item_id" class="form-select" required>
-                                <option value="" disabled selected>-- اختر بندًا متاحًا --</option>
+                            <select name="selected_item_id" id="selected_item_id" class="form-select" required data-bs-toggle="tooltip" title="البنود المعروضة هنا هي البنود/التفاصيل المتبقية والتي تم إسنادها للمقاول">
+                                <option value="" disabled selected>-- اختر بندًا متاحًا للفوترة --</option>
                                 {% if available_items %}
-                                <optgroup label="بنود المشروع الرئيسية (المتبقي: {{ invoice.project.name }})">
+                                <optgroup label="البنود الرئيسية للمشروع (كميات متاحة)">
                                     {% for item in available_items %}
                                         <option value="item_{{ item.id }}">{{ item.item_number }} - {{ item.description | truncate(80) }}</option>
                                     {% endfor %}
                                 </optgroup>
                                 {% endif %}
                                 {% if available_cost_details %}
-                                <optgroup label="أوامر العمل المسندة (تفاصيل التكاليف)">
+                                <optgroup label="أوامر العمل/تفاصيل التكاليف المسندة">
                                     {% for detail in available_cost_details %}
                                         <option value="detail_{{ detail.id }}">تفصيل: {{ detail.description | truncate(80) }} (البند الرئيسي: {{ detail.item.item_number }})</option>
                                     {% endfor %}
@@ -76,8 +77,8 @@
                             </select>
                         </div>
                         <div class="col-md-4">
-                            <label for="quantity" class="form-label">الكمية المنجزة</label>
-                            <input type="number" step="0.01" name="quantity" id="quantity" class="form-control" required min="0.01">
+                            <label for="quantity" class="form-label">الكمية المنجزة للفوترة</label>
+                            <input type="number" step="0.01" name="quantity" id="quantity" class="form-control" required min="0.01" data-bs-toggle="tooltip" title="يجب أن تكون الكمية ضمن الحد المتاح المتبقي لهذا البند/التفصيل.">
                         </div>
                         <div class="col-md-2">
                             <button type="submit" class="btn btn-primary w-100">
@@ -97,7 +98,7 @@
 
         <div class="card mb-4">
             <div class="card-header">
-                <h5 class="mb-0"><i class="fas fa-list-alt fa-fw me-2"></i>البنود المفوترة ({{ invoice.items|length }})</h5>
+                <h5 class="mb-0"><i class="fas fa-list-alt fa-fw me-2"></i>بنود المستخلص الحالية ({{ invoice.items|length }})</h5>
             </div>
             <div class="card-body p-0">
                 {% if invoice.items %}
@@ -105,12 +106,12 @@
                         <table class="table table-dark table-hover table-striped mb-0">
                             <thead>
                                 <tr>
-                                    <th>وصف البند</th>
+                                    <th>وصف البند/التفصيل</th>
                                     <th class="text-center">الكمية</th>
-                                    <th class="text-end">سعر الوحدة</th>
-                                    <th class="text-end">الإجمالي</th>
-                                    <th class="text-end">المدفوع</th>
-                                    <th class="text-end">المتبقي</th>
+                                    <th class="text-end">سعر الوحدة (ر.س)</th>
+                                    <th class="text-end">الإجمالي (ر.س)</th>
+                                    <th class="text-end">المدفوع (ر.س)</th>
+                                    <th class="text-end">المتبقي (ر.س)</th>
                                     <th class="text-center">الإجراءات</th>
                                 </tr>
                             </thead>
@@ -145,10 +146,15 @@
                             </tbody>
                         </table>
                     </div>
+                    <div class="alert alert-light m-3 p-2 text-center small text-muted">
+                        <i class="fas fa-info-circle me-1"></i> لا يمكن تعديل أو حذف البنود التي تم تسجيل دفعات عليها.
+                    </div>
                 {% else %}
-                    <div class="alert alert-info m-3 text-center">
-                        <i class="fas fa-info-circle me-2"></i>
-                        لم تتم إضافة أي بنود لهذا المستخلص بعد.
+                    <div class="alert alert-info m-3 text-center p-4">
+                        <h4 class="alert-heading"><i class="fas fa-box-open me-2"></i> المستخلص فارغ!</h4>
+                        <p class="mb-0">
+                            الرجاء استخدام قسم **إضافة بنود جديدة** في الأعلى لإضافة أول بند لهذا المستخلص.
+                        </p>
                     </div>
                 {% endif %}
             </div>
@@ -156,9 +162,9 @@
 
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0"><i class="fas fa-cash-register fa-fw me-2"></i>سجل الدفعات</h5>
+                <h5 class="mb-0"><i class="fas fa-cash-register fa-fw me-2"></i> سجل الدفعات المسجلة</h5>
                 <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addPaymentModal" 
-                        title="إضافة دفعة جديدة على المستحق"
+                        title="تسجيل دفعة جديدة على المبلغ المستحق"
                         {% if not invoice.items or invoice.is_fully_paid %}disabled{% endif %}>
                     <i class="fas fa-plus me-1"></i> تسجيل دفعة جديدة
                 </button>
@@ -171,8 +177,8 @@
                                 <tr>
                                     <th>تاريخ الدفعة</th>
                                     <th>الوصف/البيان</th>
-                                    <th class="d-none d-md-table-cell">توزيع البنود</th>
-                                    <th class="text-end">المبلغ</th>
+                                    <th class="d-none d-md-table-cell">تفاصيل التوزيع على البنود</th>
+                                    <th class="text-end">المبلغ (ر.س)</th>
                                     <th class="text-center">الإجراءات</th>
                                 </tr>
                             </thead>
@@ -184,7 +190,7 @@
                                     <td class="d-none d-md-table-cell">
                                         <ul class="list-unstyled mb-0 small text-muted">
                                         {% for dist in payment.distributions %}
-                                            <li>{{ dist.invoice_item.description | truncate(40) }}: <span class="text-success">{{ "{:,.2f}".format(dist.amount) }}</span></li>
+                                            <li><i class="fas fa-chevron-left me-1"></i> {{ dist.invoice_item.description | truncate(40) }}: <span class="text-success fw-bold number-cell">{{ "{:,.2f}".format(dist.amount) }}</span> ر.س</li>
                                         {% endfor %}
                                         </ul>
                                     </td>
@@ -205,8 +211,11 @@
                         </table>
                     </div>
                 {% else %}
-                    <div class="alert alert-info m-3 text-center">
-                        لم يتم تسجيل أي دفعات لهذا المستخلص بعد.
+                    <div class="alert alert-info m-3 text-center p-4">
+                        <h4 class="alert-heading"><i class="fas fa-money-bill-wave me-2"></i> لا توجد دفعات مسجلة!</h4>
+                        <p class="mb-0">
+                            لتسجيل دفعة، يرجى التأكد من إضافة بنود أولاً، ثم اضغط على زر **تسجيل دفعة جديدة** في الأعلى.
+                        </p>
                     </div>
                 {% endif %}
             </div>
@@ -220,16 +229,16 @@
             </div>
             <div class="card-body">
                 <div class="summary-item pb-3 mb-3 border-bottom">
-                    <h6 class="text-muted">إجمالي المستخلص</h6>
-                    <h4 class="text-primary mb-0 fw-bold number-cell">{{ "{:,.2f}".format(invoice.total_amount) }} ريال</h4>
+                    <h6 class="text-muted">الإجمالي الكلي للمستخلص</h6>
+                    <h4 class="text-primary mb-0 fw-bold number-cell">{{ "{:,.2f}".format(invoice.total_amount) }} <span class="small text-muted">ر.س</span></h4>
                 </div>
                 <div class="summary-item pb-3 mb-3 border-bottom">
-                    <h6 class="text-muted">إجمالي المدفوع</h6>
-                    <h4 class="text-success mb-0 fw-bold number-cell">{{ "{:,.2f}".format(invoice.paid_amount) }} ريال</h4>
+                    <h6 class="text-muted">إجمالي المدفوعات المسجلة</h6>
+                    <h4 class="text-success mb-0 fw-bold number-cell">{{ "{:,.2f}".format(invoice.paid_amount) }} <span class="small text-muted">ر.س</span></h4>
                 </div>
                 <div class="summary-item">
                     <h6 class="text-muted">المبلغ المتبقي للاستحقاق</h6>
-                    <h4 class="text-danger mb-0 fw-bold number-cell">{{ "{:,.2f}".format(invoice.remaining_amount) }} ريال</h4>
+                    <h4 class="text-danger mb-0 fw-bold number-cell">{{ "{:,.2f}".format(invoice.remaining_amount) }} <span class="small text-muted">ر.س</span></h4>
                 </div>
             </div>
         </div>
@@ -243,6 +252,7 @@
             <div class="modal-header bg-danger text-white"><h5 class="modal-title">تأكيد حذف البند</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
             <div class="modal-body">
                 <p>هل أنت متأكد أنك تريد حذف البند <strong>{{ inv_item.description }}</strong> من المستخلص؟</p>
+                <p class="text-danger small"><i class="fas fa-exclamation-triangle me-1"></i> لا يمكن حذف البند إذا كان مرتبطًا بأي دفعات سابقة.</p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
@@ -262,7 +272,7 @@
             <div class="modal-header bg-danger text-white"><h5 class="modal-title">تأكيد حذف الدفعة</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
             <div class="modal-body">
                 <p>هل أنت متأكد أنك تريد حذف الدفعة بمبلغ <strong>{{ "{:,.2f}".format(payment.amount) }}</strong>؟</p>
-                <p class="text-danger">لا يمكن التراجع عن هذا الإجراء، وسيتم تحديث حالة المستخلص.</p>
+                <p class="text-danger"><i class="fas fa-exclamation-triangle me-1"></i> لا يمكن التراجع عن هذا الإجراء، وسيتم تحديث حالة المستخلص والمبالغ المتبقية للبنود.</p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
@@ -280,13 +290,13 @@
         <div class="modal-content">
             <form id="paymentForm" method="POST" action="{{ url_for('invoice.add_payment_to_invoice', invoice_id=invoice.id) }}">
                 <div class="modal-header bg-success text-white">
-                    <h5 class="modal-title"><i class="fas fa-plus me-1"></i> تسجيل دفعة جديدة</h5>
+                    <h5 class="modal-title"><i class="fas fa-plus me-1"></i> تسجيل دفعة جديدة للمستخلص</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="alert alert-info">
                         <i class="fas fa-info-circle me-1"></i>
-                        الدفعة الإجمالية ستكون مجموع المبالغ الموزعة على البنود أدناه.
+                        لتسجيل الدفعة، يجب توزيع المبلغ على بنود المستخلص المستحقة الدفع أدناه.
                     </div>
                     <div class="row mb-3">
                         <div class="col-md-6">
@@ -295,18 +305,18 @@
                         </div>
                         <div class="col-md-6">
                             <label for="description" class="form-label">الوصف (اختياري)</label>
-                            <input type="text" class="form-control" id="description" name="description">
+                            <input type="text" class="form-control" id="description" name="description" placeholder="مثال: دفعة بموجب شيك رقم 123">
                         </div>
                     </div>
                     
-                    <h6 class="mt-4"><i class="fas fa-sliders-h me-1"></i> توزيع مبلغ الدفعة على البنود</h6>
+                    <h6 class="mt-4 text-primary"><i class="fas fa-sliders-h me-1"></i> توزيع مبلغ الدفعة على البنود المستحقة</h6>
                     <div class="table-responsive">
                         <table class="table table-sm table-bordered">
                             <thead class="table-light">
                                 <tr>
                                     <th>البند</th>
-                                    <th class="text-end">المتبقي للاستحقاق</th>
-                                    <th style="width: 150px;">المبلغ المدفوع</th>
+                                    <th class="text-end">المتبقي للاستحقاق (ر.س)</th>
+                                    <th style="width: 150px;">المبلغ المدفوع (ر.س)</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -314,7 +324,7 @@
                                     {% if inv_item.remaining_amount > 0 %}
                                     <tr>
                                         <td>{{ inv_item.description | truncate(70) }}</td>
-                                        <td class="text-end number-cell">{{ "{:,.2f}".format(inv_item.remaining_amount) }}</td>
+                                        <td class="text-end number-cell text-danger fw-bold">{{ "{:,.2f}".format(inv_item.remaining_amount) }}</td>
                                         <td>
                                             <input type="number" 
                                                    class="form-control form-control-sm payment-dist-input"
@@ -334,11 +344,13 @@
                 <div class="modal-footer d-flex justify-content-between">
                     <div>
                         <strong class="text-muted">إجمالي الدفعة الكلي: </strong>
-                        <span id="totalPaymentAmount" class="fw-bold text-success fs-5 number-cell">0.00</span> <span class="text-muted">ريال</span>
+                        <span id="totalPaymentAmount" class="fw-bold text-success fs-5 number-cell">0.00</span> <span class="text-muted">ر.س</span>
                     </div>
                     <div>
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                        <button type="submit" id="submitPaymentBtn" class="btn btn-success" disabled>حفظ الدفعة</button>
+                        <button type="submit" id="submitPaymentBtn" class="btn btn-success" disabled>
+                            <i class="fas fa-save me-1"></i> حفظ الدفعة
+                        </button>
                     </div>
                 </div>
             </form>
@@ -360,12 +372,15 @@ document.addEventListener("DOMContentLoaded", function() {
         function updateTotal() {
             let total = 0;
             distInputs.forEach(input => {
-                const value = parseFloat(input.value) || 0;
+                // استخدام parseFloat() للقيم التي قد تكون فارغة أو ليست أرقامًا
+                const value = parseFloat(input.value) || 0; 
                 total += value;
             });
+            
+            // تحديث العرض باستخدام التنسيق المناسب
             totalAmountDisplay.textContent = total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             
-            // Enable/disable submit button
+            // تمكين/تعطيل زر الإرسال بناءً على الإجمالي (أكبر من صفر)
             submitBtn.disabled = total <= 0;
         }
 
@@ -374,9 +389,11 @@ document.addEventListener("DOMContentLoaded", function() {
                 const value = parseFloat(input.value) || 0;
                 const max = parseFloat(input.max);
                 
+                // منع تجاوز الحد الأقصى
                 if (value > max) {
                     input.value = max.toFixed(2);
                 }
+                // منع القيم السالبة
                 if (value < 0) {
                     input.value = 0;
                 }
@@ -384,14 +401,19 @@ document.addEventListener("DOMContentLoaded", function() {
             });
         });
 
-        // Set today's date on modal show and reset form
+        // تعيين تاريخ اليوم على ظهور النافذة وإعادة تعيين النموذج
         paymentModal.addEventListener('shown.bs.modal', () => {
-            // Reset form fields
+            // إعادة تعيين حقول النموذج
             paymentModal.querySelector('#paymentForm').reset();
-            // Set date
+            // تعيين التاريخ إلى تاريخ اليوم
             dateInput.value = new Date().toISOString().slice(0, 10);
             updateTotal();
         });
+        
+        // Initial setup for the form (to ensure date is set if modal is not shown)
+        if (dateInput) {
+             dateInput.value = new Date().toISOString().slice(0, 10);
+        }
     }
 });
 </script>

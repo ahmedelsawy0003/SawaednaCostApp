@@ -4,19 +4,19 @@
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1><i class="fas fa-cash-register fa-fw me-2 text-muted"></i>سجل الدفعات الشامل</h1>
+    <h1><i class="fas fa-cash-register fa-fw me-2 text-primary"></i>سجل الدفعات الشامل</h1>
 </div>
 
 <div class="card mb-4">
     <div class="card-header bg-dark text-white">
-        <h5 class="mb-0"><i class="fas fa-filter me-2"></i>خيارات البحث والفلترة</h5>
+        <h5 class="mb-0"><i class="fas fa-filter me-2"></i>خيارات البحث والفلترة المتقدمة</h5>
     </div>
     <div class="card-body">
         <form method="GET" action="{{ url_for('payment.get_all_payments') }}">
             <div class="row g-3 align-items-end">
                 <div class="col-md-3">
                     <label class="form-label">بحث عام</label>
-                    <input type="search" name="search" class="form-control" placeholder="رقم المستخلص, البيان, المقاول..." value="{{ filters.search or '' }}">
+                    <input type="search" name="search" class="form-control" placeholder="رقم المستخلص, البيان, المقاول..." value="{{ filters.search or '' }}" data-bs-toggle="tooltip" title="ابحث برقم المستخلص، وصف الدفعة، أو اسم المقاول/المورد.">
                 </div>
                 <div class="col-md-2">
                     <label class="form-label">المشروع</label>
@@ -57,7 +57,7 @@
 
 <div class="card">
     <div class="card-header">
-        <h5 class="mb-0"><i class="fas fa-list-alt me-1"></i>قائمة الدفعات المسجلة</h5>
+        <h5 class="mb-0"><i class="fas fa-list-alt me-1"></i>قائمة الدفعات المسجلة ({{ payments|length }})</h5>
     </div>
     <div class="card-body p-0">
         {% if payments %}
@@ -66,14 +66,14 @@
                     <thead>
                         <tr>
                             <th>رقم الدفعة</th>
-                            <th>التاريخ</th>
+                            <th style="width: 10%;">التاريخ</th>
                             <th>المشروع</th>
                             <th>المقاول/المورد</th>
                             <th>بيان الدفعة</th>
                             <th>رقم المستخلص</th>
-                            <th class="text-end">المبلغ</th>
-                            <th class="text-center" style="width: 100px;">إدارة</th>
-                            <th class="text-center" style="width: 100px;">البنود</th>
+                            <th class="text-end" style="width: 15%;">المبلغ (ر.س)</th>
+                            <th class="text-center" style="width: 100px;">الإجراءات</th>
+                            <th class="text-center" style="width: 100px;">التوزيع</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -81,15 +81,15 @@
                         <tr data-distributions="{{ payment.distributions_json | tojson }}" data-payment-id="{{ payment.id }}">
                             <td>{{ payment.id }}</td>
                             <td>{{ payment.payment_date.strftime('%Y-%m-%d') }}</td>
-                            <td>{{ payment.invoice.project.name }}</td>
-                            <td>{{ payment.invoice.contractor.name }}</td>
+                            <td><a href="{{ url_for('project.get_project', project_id=payment.invoice.project.id) }}">{{ payment.invoice.project.name }}</a></td>
+                            <td><a href="{{ url_for('contractor.show_contractor', contractor_id=payment.invoice.contractor.id) }}">{{ payment.invoice.contractor.name }}</a></td>
                             <td>{{ payment.description or '-' }}</td>
                             <td>
                                 <a href="{{ url_for('invoice.show_invoice', invoice_id=payment.invoice_id) }}">
                                     {{ payment.invoice.invoice_number }}
                                 </a>
                             </td>
-                            <td class="text-end text-success fw-bold number-cell">{{ "{:,.2f}".format(payment.amount) }} ريال</td>
+                            <td class="text-end text-success fw-bold number-cell">{{ "{:,.2f}".format(payment.amount) }}</td>
                             <td class="text-center">
                                 <a href="{{ url_for('invoice.edit_payment', payment_id=payment.id) }}" class="btn btn-sm btn-warning" title="تعديل الدفعة">
                                     <i class="fas fa-edit"></i>
@@ -120,9 +120,13 @@
                 </table>
             </div>
         {% else %}
-            <div class="alert alert-info m-3 text-center">
-                <i class="fas fa-info-circle me-2"></i>
-                لا توجد دفعات تطابق معايير البحث الحالية.
+            <div class="alert alert-info m-3 text-center p-4">
+                <h4 class="alert-heading"><i class="fas fa-search-minus me-2"></i> لا توجد نتائج مطابقة!</h4>
+                <p class="mb-0">
+                    لا توجد دفعات تطابق معايير البحث الحالية.
+                    <br>
+                    لمسح الفلاتر، **<a href="{{ url_for('payment.get_all_payments') }}" class="alert-link">اضغط هنا</a>**.
+                </p>
             </div>
         {% endif %}
     </div>
@@ -138,29 +142,32 @@
             <div class="modal-body">
                 <div class="row mb-3">
                     <div class="col-md-4">
-                        <p class="mb-0"><strong>المبلغ:</strong> <span id="modal-payment-amount" class="text-success fw-bold number-cell"></span> ريال</p>
+                        <p class="mb-0"><strong>المبلغ الإجمالي:</strong> <span id="modal-payment-amount" class="text-success fw-bold number-cell"></span> ريال</p>
                     </div>
                     <div class="col-md-4">
-                        <p class="mb-0"><strong>التاريخ:</strong> <span id="modal-payment-date"></span></p>
+                        <p class="mb-0"><strong>تاريخ الدفعة:</strong> <span id="modal-payment-date"></span></p>
                     </div>
                     <div class="col-md-4">
-                        <p class="mb-0"><strong>الوصف:</strong> <span id="modal-payment-description"></span></p>
+                        <p class="mb-0"><strong>البيان:</strong> <span id="modal-payment-description"></span></p>
                     </div>
                 </div>
                 
                 <hr>
-                <h6>توزيع المبلغ على البنود المفوترة</h6>
+                <h6>توزيع المبلغ على البنود المفوترة في المستخلص</h6>
                 <div class="table-responsive border rounded">
                     <table class="table table-sm table-striped table-hover mb-0">
                         <thead class="bg-light">
                             <tr>
                                 <th>وصف البند</th>
-                                <th class="text-end">المبلغ الموزع</th>
+                                <th class="text-end">المبلغ الموزع (ر.س)</th>
                             </tr>
                         </thead>
                         <tbody id="modal-items-list">
                             </tbody>
                     </table>
+                </div>
+                <div class="alert alert-light text-muted small mt-3 mb-0 text-center">
+                    <i class="fas fa-info-circle me-1"></i> يتم عرض تفاصيل توزيع الدفعة الواحدة على البنود المتعددة في المستخلص.
                 </div>
             </div>
             <div class="modal-footer">

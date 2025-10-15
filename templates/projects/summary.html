@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1><i class="fas fa-chart-line fa-fw me-2 text-muted"></i>الملخص المالي لجميع المشاريع النشطة</h1>
+    <h1><i class="fas fa-chart-line fa-fw me-2 text-primary"></i>الملخص المالي لجميع المشاريع النشطة</h1>
 </div>
 
 <div class="card mb-4">
@@ -14,26 +14,26 @@
     <div class="card-body">
         <div class="row text-center g-3">
             <div class="col-md-3">
-                <div class="p-3 border rounded h-100 bg-light">
-                    <h5 class="text-muted small">التكلفة التعاقدية</h5>
+                <div class="p-3 border rounded h-100 bg-light border-info">
+                    <h5 class="text-muted small">إجمالي التكلفة التعاقدية</h5>
                     <p class="fs-4 text-info fw-bold number-cell">{{ "{:,.2f}".format(totals.contract_cost) }} <span class="small text-muted">ر.س</span></p>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="p-3 border rounded h-100 border-primary">
-                    <h5 class="text-muted small">التكلفة الفعلية</h5>
+                    <h5 class="text-muted small">إجمالي التكلفة الفعلية</h5>
                     <p class="fs-4 text-primary fw-bold number-cell">{{ "{:,.2f}".format(totals.actual_cost) }} <span class="small text-muted">ر.س</span></p>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="p-3 border rounded h-100 border-success">
-                    <h5 class="text-muted small">إجمالي المدفوع</h5>
+                    <h5 class="text-muted small">إجمالي المدفوعات</h5>
                     <p class="fs-4 text-success fw-bold number-cell">{{ "{:,.2f}".format(totals.paid_amount) }} <span class="small text-muted">ر.س</span></p>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="p-3 border rounded h-100 border-danger">
-                    <h5 class="text-muted small">إجمالي المتبقي</h5>
+                    <h5 class="text-muted small">إجمالي المتبقي للاستحقاق</h5>
                     <p class="fs-4 text-danger fw-bold number-cell">{{ "{:,.2f}".format(totals.remaining_amount) }} <span class="small text-muted">ر.س</span></p>
                 </div>
             </div>
@@ -51,10 +51,10 @@
                 <thead>
                     <tr>
                         <th>اسم المشروع</th>
-                        <th class="text-end">التكلفة التعاقدية</th>
-                        <th class="text-end">التكلفة الفعلية</th>
-                        <th class="text-end">إجمالي المدفوع</th>
-                        <th class="text-end">المبلغ المتبقي</th>
+                        <th class="text-end">التكلفة التعاقدية (ر.س)</th>
+                        <th class="text-end">التكلفة الفعلية (ر.س)</th>
+                        <th class="text-end">إجمالي المدفوع (ر.س)</th>
+                        <th class="text-end">المبلغ المتبقي (ر.س)</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -71,6 +71,9 @@
                     {% endfor %}
                 </tbody>
             </table>
+        </div>
+        <div class="alert alert-light text-muted small m-3 p-2 text-center">
+            <i class="fas fa-info-circle me-1"></i> لعرض التفاصيل الكاملة والمؤشرات لكل مشروع، اضغط على اسم المشروع في القائمة.
         </div>
     </div>
 </div>
