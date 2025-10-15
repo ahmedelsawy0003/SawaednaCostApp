@@ -99,8 +99,22 @@ a:hover {
 }
 
 .sidebar::before {
-    content: none;
+    content: none; 
 }
+
+/* **التعديل الجديد:** ضمان أن المحتوى الرئيسي يملأ المساحة المتبقية */
+.main-content-wrapper {
+    flex-grow: 1; 
+    /* إزالة أي قيود عرض قصوى سابقة قد تكون موجودة هنا */
+}
+
+/* **التعديل الجديد:** إزالة قيود العرض من الحاوية الداخلية (container-fluid) */
+.main-content .container-fluid {
+    padding: 1rem 1.5rem; /* يمكن تعديل الهامش الداخلي حسب الرغبة */
+    width: 100%;
+    max-width: none; /* هذا هو المفتاح لاستغلال كامل العرض */
+}
+
 
 .topbar {
     /* خلفية بيضاء وحدود خفيفة */
