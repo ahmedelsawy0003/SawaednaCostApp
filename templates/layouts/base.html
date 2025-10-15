@@ -13,7 +13,7 @@
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=1.5">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=1.6">
 </head>
 <body data-bs-theme="light">
 
@@ -28,35 +28,44 @@
             </div>
                 <ul class="list-unstyled sidebar-menu-list">
                     
-                    {# 1. الرئيسية #}
+                    {# 1. لوحة التحكم والإجماليات #}
                     <li class="sidebar-item">
                         <a href="{{ url_for('project.get_projects') }}" class="sidebar-link">
-                            <i class="fas fa-home fa-fw me-2"></i> الرئيسية
+                            <i class="fas fa-home fa-fw me-2"></i> لوحة التحكم (الرئيسية)
                         </a>
                     </li>
+                    
+                    {% if current_user.role in ['admin', 'sub-admin'] %}
+                    <li class="sidebar-item">
+                        <a href="{{ url_for('project.projects_summary') }}" class="sidebar-link">
+                            <i class="fas fa-chart-pie fa-fw me-2"></i> الملخص المالي الإجمالي
+                        </a>
+                    </li>
+                    {% endif %}
 
-                    {# 2. المشاريع #}
+                    <hr class="sidebar-divider">
+
+                    {# 2. إدارة المشاريع #}
                     <li class="sidebar-item">
                         <a href="#" class="sidebar-link sidebar-toggler">
                             <i class="fas fa-project-diagram fa-fw me-2"></i> المشاريع
                         </a>
                         <div class="sidebar-submenu">
                             <a href="{{ url_for('project.get_projects') }}" class="sidebar-submenu-link"><i class="fas fa-eye me-2"></i> عرض المشاريع النشطة</a>
-                            <a href="{{ url_for('project.get_projects', show_archived=True) }}" class="sidebar-submenu-link"><i class="fas fa-archive me-2"></i> عرض الأرشيف</a>
                             {% if current_user.role in ['admin', 'sub-admin'] %}
-                            <a href="{{ url_for('project.new_project') }}" class="sidebar-submenu-link"><i class="fas fa-plus me-2"></i> إضافة مشروع جديد</a>
-                            <a href="{{ url_for('project.projects_summary') }}" class="sidebar-submenu-link"><i class="fas fa-chart-pie me-2"></i> الملخص المالي الإجمالي</a>
+                            <a href="{{ url_for('project.new_project') }}" class="sidebar-submenu-link"><i class="fas fa-plus me-2 text-success"></i> إضافة مشروع جديد</a>
+                            <a href="{{ url_for('project.get_projects', show_archived=True) }}" class="sidebar-submenu-link"><i class="fas fa-archive me-2"></i> المشاريع المؤرشفة</a>
                             {% endif %}
                             
-                            <hr class="sidebar-divider">
-                            <a href="#" class="sidebar-submenu-link sidebar-toggler nested"><i class="fas fa-folder-open me-2"></i> الوصول السريع للمشاريع</a>
-                            <div class="sidebar-submenu nested-menu">
-                                {% for project in sidebar_projects %}
-                                    <a href="{{ url_for('project.get_project', project_id=project.id) }}" class="sidebar-submenu-link" title="{{ project.name }}"><i class="fas fa-dot-circle fa-fw me-2 text-muted small"></i> {{ project.name | truncate(20) }}</a>
-                                {% else %}
-                                    <span class="sidebar-submenu-link text-muted">لا توجد مشاريع نشطة.</span>
-                                {% endfor %}
-                            </div>
+                            {% if sidebar_projects %}
+                                <hr class="sidebar-divider">
+                                <a href="#" class="sidebar-submenu-link sidebar-toggler nested"><i class="fas fa-folder-open me-2"></i> المشاريع المسندة لك</a>
+                                <div class="sidebar-submenu nested-menu">
+                                    {% for project in sidebar_projects %}
+                                        <a href="{{ url_for('project.get_project', project_id=project.id) }}" class="sidebar-submenu-link" title="{{ project.name }}"><i class="fas fa-dot-circle fa-fw me-2 text-muted small"></i> {{ project.name | truncate(20) }}</a>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
                         </div>
                     </li>
 
@@ -71,26 +80,19 @@
 
                             <hr class="sidebar-divider">
 
-                            <a href="#" class="sidebar-submenu-link sidebar-toggler nested"><i class="fas fa-eye me-2"></i>عرض مستخلصات المشروع</a>
-                            <div class="sidebar-submenu nested-menu">
-                                {% for project in sidebar_projects %}
-                                    <a href="{{ url_for('invoice.get_invoices_by_project', project_id=project.id) }}" class="sidebar-submenu-link" title="{{ project.name }}"><i class="fas fa-dot-circle fa-fw me-2 text-muted small"></i> {{ project.name | truncate(20) }}</a>
-                                {% else %}
-                                    <span class="sidebar-submenu-link text-muted">لا توجد مشاريع.</span>
-                                {% endfor %}
-                            </div>
-                            <hr class="sidebar-divider">
-                            <a href="#" class="sidebar-submenu-link sidebar-toggler nested"><i class="fas fa-plus me-2"></i>إضافة مستخلص جديد</a>
+                            <a href="#" class="sidebar-submenu-link sidebar-toggler nested"><i class="fas fa-plus me-2 text-primary"></i> إضافة مستخلص حسب المشروع</a>
                             <div class="sidebar-submenu nested-menu">
                                 {% for project in sidebar_projects %}
                                     <a href="{{ url_for('invoice.new_invoice', project_id=project.id) }}" class="sidebar-submenu-link" title="{{ project.name }}"><i class="fas fa-dot-circle fa-fw me-2 text-muted small"></i> {{ project.name | truncate(20) }}</a>
                                 {% else %}
-                                    <span class="sidebar-submenu-link text-muted">لا توجد مشاريع.</span>
+                                    <span class="sidebar-submenu-link text-muted">لا توجد مشاريع للإضافة.</span>
                                 {% endfor %}
                             </div>
                         </div>
                     </li>
                     
+                    <hr class="sidebar-divider">
+
                     {# 4. المقاولون / الموردون #}
                     <li class="sidebar-item">
                         <a href="#" class="sidebar-link sidebar-toggler">
@@ -99,21 +101,21 @@
                         <div class="sidebar-submenu">
                             <a href="{{ url_for('contractor.get_contractors') }}" class="sidebar-submenu-link"><i class="fas fa-eye me-2"></i> عرض جميع المقاولين</a>
                              {% if current_user.role in ['admin', 'sub-admin'] %}
-                            <a href="{{ url_for('contractor.new_contractor') }}" class="sidebar-submenu-link"><i class="fas fa-plus me-2"></i> إضافة مقاول جديد</a>
+                            <a href="{{ url_for('contractor.new_contractor') }}" class="sidebar-submenu-link"><i class="fas fa-plus me-2 text-success"></i> إضافة مقاول جديد</a>
                              {% endif %}
-                            <hr class="sidebar-divider">
-                            <a href="#" class="sidebar-submenu-link sidebar-toggler nested"><i class="fas fa-list me-2"></i> الوصول السريع للمقاولين</a>
-                            <div class="sidebar-submenu nested-menu">
-                                {% for contractor in sidebar_contractors %}
-                                    <a href="{{ url_for('contractor.show_contractor', contractor_id=contractor.id) }}" class="sidebar-submenu-link" title="{{ contractor.name }}"><i class="fas fa-dot-circle fa-fw me-2 text-muted small"></i> {{ contractor.name | truncate(20) }}</a>
-                                {% else %}
-                                    <span class="sidebar-submenu-link text-muted">لا يوجد مقاولون.</span>
-                                {% endfor %}
-                            </div>
+                            
+                            {% if sidebar_contractors %}
+                                <hr class="sidebar-divider">
+                                <a href="#" class="sidebar-submenu-link sidebar-toggler nested"><i class="fas fa-list me-2"></i> الوصول السريع للمقاولين</a>
+                                <div class="sidebar-submenu nested-menu">
+                                    {% for contractor in sidebar_contractors %}
+                                        <a href="{{ url_for('contractor.show_contractor', contractor_id=contractor.id) }}" class="sidebar-submenu-link" title="{{ contractor.name }}"><i class="fas fa-dot-circle fa-fw me-2 text-muted small"></i> {{ contractor.name | truncate(20) }}</a>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
                         </div>
                     </li>
                     
-                    {# 5. لوحة تحكم المسؤول #}
                     {% if current_user.role == 'admin' %}
                     <li class="sidebar-item">
                         <a href="{{ url_for('auth.admin_dashboard') }}" class="sidebar-link">
@@ -179,7 +181,7 @@
     {# --- END: تحسين عرض التنبيهات (Toasts) --- #}
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{{ url_for('static', filename='js/script.js') }}?v=1.5"></script>
+    <script src="{{ url_for('static', filename='js/script.js') }}?v=1.6"></script>
     {% block scripts %}
     <script>
     document.addEventListener('DOMContentLoaded', function() {
