@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", function() {
 
 
-    // --- START: ROBUST Sidebar Toggler ---
+    // --- START: ROBUST Sidebar Toggler (لإظهار وإخفاء القوائم الفرعية) ---
     function setupSidebar() {
         const togglers = document.querySelectorAll('.sidebar-toggler');
 
@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", function() {
             toggler.addEventListener('click', function(event) {
                 event.preventDefault();
                 
-                // This robustly finds the submenu, even for nested items
+                // البحث عن القائمة الفرعية المجاورة
                 const submenu = this.nextElementSibling;
 
                 if (submenu && submenu.classList.contains('sidebar-submenu')) {
@@ -27,9 +27,7 @@ document.addEventListener("DOMContentLoaded", function() {
     // --- END: ROBUST Sidebar Toggler ---
 
 
-    // --- Other functionalities ---
-
-    // Sidebar Toggle Functionality for mobile
+    // --- Sidebar Toggle Functionality for mobile (لإظهار/إخفاء القائمة الرئيسية على الشاشات الصغيرة) ---
     const sidebar = document.querySelector('.sidebar');
     const openSidebarBtn = document.getElementById('open-sidebar-btn');
     const closeSidebarBtn = document.getElementById('close-sidebar-btn');
@@ -44,22 +42,15 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
     
-    // Toast Functionality for Flash Messages (Handled in base.html script block now for better control)
-    // Removed old toast initialization here.
-
-
-    // Password Toggle Functionality
-    // This is the single source of truth for password toggling across all pages
+    // Password Toggle Functionality (لإظهار/إخفاء كلمة المرور)
     const togglePassword = document.querySelector("#togglePassword");
     const passwordInput = document.querySelector("#password");
-    // Handle the password field in the register/edit_user template which might have a different ID (confirm_password)
     const confirmPasswordInput = document.querySelector("#confirm_password");
     
     if (togglePassword && passwordInput) {
         togglePassword.addEventListener("click", function () {
             const type = passwordInput.getAttribute("type") === "password" ? "text" : "password";
             passwordInput.setAttribute("type", type);
-            // Also update the confirm password if it exists on the page
             if (confirmPasswordInput) {
                 confirmPasswordInput.setAttribute("type", type);
             }
@@ -69,7 +60,7 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 
-    // Bulk actions section for item index page
+    // --- Bulk actions section for item index page (آلية التحديد الجماعي) ---
     const bulkEditForm = document.getElementById('bulk-edit-form');
     if(bulkEditForm) {
         const selectAllCheckbox = document.getElementById('select-all');
@@ -80,7 +71,6 @@ document.addEventListener("DOMContentLoaded", function() {
         const bulkDeleteBtn = document.getElementById('bulk-delete-btn');
         const bulkDuplicateBtn = document.getElementById('bulk-duplicate-btn');
         
-        // New spans for dynamic counts on buttons
         const bulkDeleteCountDisplay = document.getElementById('bulk-delete-count-display');
         const bulkDuplicateCountDisplay = document.getElementById('bulk-duplicate-count');
 
@@ -144,31 +134,27 @@ document.addEventListener("DOMContentLoaded", function() {
             });
         }
         
-        // Initial setup for bulk actions
         if(selectAllCheckbox) {
             updateSelectedState();
         }
     }
 
-    // START: Show Payment Items Modal
+    // START: Show Payment Items Modal (لنافذة تفاصيل توزيع الدفعة)
     const paymentItemsModal = document.getElementById('paymentItemsModal');
     if (paymentItemsModal) {
         paymentItemsModal.addEventListener('show.bs.modal', function(event) {
             const button = event.relatedTarget;
-            // Get data from button attributes
             const paymentId = button.getAttribute('data-payment-id');
             const paymentAmount = button.getAttribute('data-payment-amount');
             const paymentDate = button.getAttribute('data-payment-date');
             const paymentDescription = button.getAttribute('data-payment-description');
 
-            // Get modal elements
             const modalAmount = paymentItemsModal.querySelector('#modal-payment-amount');
             const modalDate = paymentItemsModal.querySelector('#modal-payment-date');
             const modalDescription = paymentItemsModal.querySelector('#modal-payment-description');
             const modalItemsList = paymentItemsModal.querySelector('#modal-items-list');
             
-            // Set basic info
-            modalAmount.textContent = parseFloat(paymentAmount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            modalAmount.textContent = (parseFloat(paymentAmount) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             modalDate.textContent = paymentDate;
             modalDescription.textContent = paymentDescription === 'null' ? '-' : paymentDescription;
             modalItemsList.innerHTML = '<tr><td colspan="2" class="text-center text-muted">جاري تحميل تفاصيل التوزيع...</td></tr>';
@@ -181,6 +167,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 if (list && list.length > 0) {
                     list.forEach(dist => {
                         const row = document.createElement('tr');
+                        // نفضل استخدام حقل description المضمّن إذا كان متوفراً
                         const description = dist.description || (dist.invoice_item ? dist.invoice_item.description : 'غير محدد');
                         const amount = parseFloat(dist.amount);
 
@@ -195,11 +182,10 @@ document.addEventListener("DOMContentLoaded", function() {
                 }
             };
 
-            // Attempt to use embedded data first
+            // محاولة استخدام البيانات المضمنة أولاً
             if (distributionsJsonAttr && distributionsJsonAttr.trim() !== '') {
                 let parsed = [];
                 try { 
-                    // Using JSON.parse to correctly handle the Python tojson output
                     parsed = JSON.parse(distributionsJsonAttr); 
                 } catch (e) { 
                     console.error("Error parsing embedded JSON data:", e);
@@ -207,7 +193,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 }
                 renderRows(parsed);
             } 
-            // Fallback to API call if no embedded data is available
+            // الرجوع إلى جلب البيانات من API
             else if (distApiUrl) {
                 fetch(distApiUrl, { credentials: 'same-origin' })
                     .then(r => r.ok ? r.json() : Promise.reject())
