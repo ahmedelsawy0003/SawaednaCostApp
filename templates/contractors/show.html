@@ -13,6 +13,9 @@
         <a href="{{ url_for('contractor.edit_contractor', contractor_id=contractor.id) }}" class="btn btn-warning" data-bs-toggle="tooltip" title="تعديل بيانات المقاول الأساسية">
             <i class="fas fa-edit me-1"></i> تعديل البيانات
         </a>
+        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteContractorModal-{{ contractor.id }}" title="حذف المقاول نهائياً">
+            <i class="fas fa-trash me-1"></i> حذف المقاول
+        </button>
         {% endif %}
         <a href="{{ url_for('contractor.get_contractors') }}" class="btn btn-secondary">
             <i class="fas fa-arrow-right me-1"></i> العودة للقائمة
@@ -22,25 +25,28 @@
 
 {# --- Financial Summary Cards --- #}
 <div class="card mb-4">
-    <div class="card-header bg-primary text-white">
+    <div class="card-header bg-dark text-white">
         <h4 class="mb-0"><i class="fas fa-chart-line fa-fw me-2"></i>الملخص المالي للمقاول (لجميع المشاريع)</h4>
     </div>
     <div class="card-body">
         <div class="row text-center g-3">
+            {# Total Due #}
             <div class="col-md-4">
-                <div class="p-3 border rounded h-100 border-primary">
+                <div class="p-3 border rounded h-100 border-primary border-3">
                     <h5 class="text-muted small">إجمالي المستحق (من المستخلصات)</h5>
                     <p class="fs-4 text-primary fw-bold number-cell">{{ "{:,.2f}".format(total_due) }} <span class="small text-muted">ر.س</span></p>
                 </div>
             </div>
+            {# Total Paid #}
             <div class="col-md-4">
-                <div class="p-3 border rounded h-100 border-success">
+                <div class="p-3 border rounded h-100 border-success border-3">
                     <h5 class="text-muted small">إجمالي المدفوع</h5>
                     <p class="fs-4 text-success fw-bold number-cell">{{ "{:,.2f}".format(total_paid) }} <span class="small text-muted">ر.س</span></p>
                 </div>
             </div>
+            {# Remaining #}
             <div class="col-md-4">
-                <div class="p-3 border rounded h-100 border-danger">
+                <div class="p-3 border rounded h-100 border-danger border-3">
                     <h5 class="text-muted small">إجمالي المتبقي للدفع</h5>
                     <p class="fs-4 text-danger fw-bold number-cell">{{ "{:,.2f}".format(remaining) }} <span class="small text-muted">ر.س</span></p>
                 </div>
@@ -99,15 +105,15 @@
                     </form>
                     <div class="d-flex justify-content-end mb-2">
                         <div class="btn-group btn-group-sm">
-                            <button class="btn btn-outline-secondary" id="expand-all-btn" title="توسيع الكل"><i class="fas fa-angle-double-down"></i></button>
-                            <button class="btn btn-outline-secondary" id="collapse-all-btn" title="طي الكل"><i class="fas fa-angle-double-up"></i></button>
+                            <button class="btn btn-outline-info" id="expand-all-btn" title="توسيع الكل"><i class="fas fa-angle-double-down"></i></button>
+                            <button class="btn btn-outline-info" id="collapse-all-btn" title="طي الكل"><i class="fas fa-angle-double-up"></i></button>
                         </div>
                     </div>
                 </div>
 
                 {% if invoices %}
                     <div class="table-responsive">
-                        <table class="table table-dark table-hover table-striped mb-0">
+                        <table class="table table-hover table-striped mb-0">
                             <thead class="table-dark">
                                 <tr>
                                     <th style="width: 3%;"></th>
@@ -150,7 +156,7 @@
                                     </td>
                                 </tr>
                                 {% if invoice.items %}
-                                <tr class="collapse bg-card" id="invoice-items-{{ invoice.id }}">
+                                <tr class="collapse bg-light" id="invoice-items-{{ invoice.id }}">
                                     <td colspan="8" class="p-3">
                                         <h6 class="text-primary mb-2"><i class="fas fa-sitemap me-1"></i>تفاصيل بنود المستخلص:</h6>
                                         <div class="table-responsive border p-2">
@@ -200,7 +206,7 @@
                 </div>
                 {% if assigned_items %}
                     <div class="table-responsive">
-                        <table class="table table-dark table-hover table-striped mb-0">
+                        <table class="table table-hover table-striped mb-0">
                             <thead class="table-dark">
                                 <tr>
                                     <th style="width: 15%;">رقم البند</th>
@@ -250,10 +256,36 @@
         </div>
     </div>
 </div>
+
+{# --- Delete Confirmation Modal --- #}
+<div class="modal fade" id="deleteContractorModal-{{ contractor.id }}" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">تأكيد الحذف</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>هل أنت متأكد أنك تريد حذف المقاول <strong>{{ contractor.name }}</strong>؟</p>
+                <p class="text-danger small">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    لا يمكن حذف المقاول إذا كان مرتبطًا بأي مستخلصات أو بنود عمل.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <form action="{{ url_for('contractor.delete_contractor', contractor_id=contractor.id) }}" method="POST" class="d-inline">
+                    <button type="submit" class="btn btn-danger">تأكيد الحذف</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}
 
 {% block scripts %}
-{# --- START: الكود النهائي المحسن للسرعة --- #}
+{# --- START: الكود النهائي المحسن للسرعة (مكرر من ملف المقاولين) --- #}
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     const expandAllBtn = document.getElementById('expand-all-btn');

@@ -15,10 +15,11 @@ from flask_login import login_required, current_user
 from app.utils import check_project_permission, sanitize_input
 from app.forms import InvoiceForm
 from app import constants
+from sqlalchemy.orm import undefer # <<< إضافة: استيراد دالة التحميل الصريح
 
 invoice_bp = Blueprint("invoice", __name__, url_prefix='/invoices')
 
-# --- START: THE FIX ---
+# --- START: THE FIX (Performance Optimization) ---
 @invoice_bp.route("/project/<int:project_id>")
 @login_required
 def get_invoices_by_project(project_id):
@@ -64,6 +65,9 @@ def get_invoices_by_project(project_id):
     else:
         query = query.order_by(order_column.desc())
 
+    # <<< New performance optimization line: explicitly load deferred columns
+    query = query.options(undefer(Invoice.total_amount), undefer(Invoice.paid_amount))
+    
     invoices = query.all()
 
     filters = {
@@ -80,7 +84,7 @@ def get_invoices_by_project(project_id):
                            invoices=invoices, 
                            filters=filters,
                            invoice_types=constants.INVOICE_TYPE_CHOICES)
-# --- END: THE FIX ---
+# --- END: THE FIX (Performance Optimization) ---
 
 
 @invoice_bp.route("/new/project/<int:project_id>", methods=["GET", "POST"])

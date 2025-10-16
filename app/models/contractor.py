@@ -9,14 +9,16 @@ class Contractor(db.Model):
     phone = db.Column(db.String(50))
     email = db.Column(db.String(255))
     notes = db.Column(db.Text, nullable=True)
-    items = db.relationship('Item', back_populates='contractor', lazy=True)
+    
+    # <<< التعديل: تغيير lazy=True إلى lazy='dynamic'
+    items = db.relationship('Item', back_populates='contractor', lazy='dynamic') 
 
     # --- بداية الإضافة ---
     # تعريف العلاقة المفقودة مع تفاصيل التكلفة
-    invoices = relationship('Invoice', back_populates='contractor', cascade="all, delete-orphan")
+    # <<< التعديل: إضافة lazy='dynamic' لضمان كفاءة التعامل مع المستخلصات
+    invoices = relationship('Invoice', back_populates='contractor', lazy='dynamic', cascade="all, delete-orphan")
     cost_details = db.relationship('CostDetail', back_populates='contractor', lazy='dynamic')
     # --- نهاية الإضافة ---
 
     def __repr__(self):
         return f'<Contractor {self.name}>'
-

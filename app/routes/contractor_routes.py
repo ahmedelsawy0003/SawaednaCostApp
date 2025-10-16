@@ -122,11 +122,20 @@ def show_contractor(contractor_id):
     total_paid = sum(inv.paid_amount for inv in invoices if inv.status != 'ملغي')
     remaining = total_due - total_paid
 
-    projects_query = Project.query.join(Invoice).filter(Invoice.contractor_id == contractor_id)
-    # --- START: التعديل الرئيسي هنا ---
+    
+    # 1. Projects linked via Invoices
+    projects_via_invoices = Project.query.join(Invoice).filter(Invoice.contractor_id == contractor_id)
+    
+    # 2. Projects linked via Items (Contractor assigned to the item)
+    projects_via_items = Project.query.join(Item).filter(Item.contractor_id == contractor_id)
+
+    # 3. Combine and apply user permission filter
+    projects_query = projects_via_invoices.union(projects_via_items)
+
     if current_user.role not in ['admin', 'sub-admin']:
-    # --- END: التعديل الرئيسي هنا ---
+        # Filter combined projects by user access
         projects_query = projects_query.join(Project.users).filter(User.id == current_user.id)
+    
     projects = projects_query.distinct().order_by(Project.name).all()
 
     assigned_items = Item.query.filter_by(contractor_id=contractor_id).order_by(Item.project_id, Item.item_number).all()

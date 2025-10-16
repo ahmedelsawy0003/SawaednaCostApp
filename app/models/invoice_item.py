@@ -55,7 +55,10 @@ class InvoiceItem(db.Model):
             self.cost_detail = cost_detail
             self.item = cost_detail.item
             self.description = f"تفصيل: {cost_detail.description}"
-            self.unit_price = cost_detail.unit_cost or 0.0
+            # --- START: FIX VAT IN UNIT PRICE FOR COST DETAIL ---
+            # Calculate unit price including VAT for accurate invoicing
+            self.unit_price = cost_detail.total_cost / cost_detail.quantity if cost_detail.quantity > 0 else 0.0
+            # --- END: FIX VAT IN UNIT PRICE FOR COST DETAIL ---
         else:
             raise ValueError("InvoiceItem must be initialized with either an 'item' or a 'cost_detail'.")
 

@@ -9,20 +9,20 @@
     </h2>
 </div>
 
-<div class="card">
-    <div class="card-header bg-primary text-white">
+<div class="card" style="max-width: 700px;">
+    <div class="card-header bg-dark text-white">
         <h4 class="mb-0"><i class="fas fa-id-card me-2"></i>بيانات الحساب الأساسية</h4>
     </div>
     <div class="card-body">
-        <ul class="list-unstyled mb-4">
-            <li class="mb-2"><strong>اسم المستخدم:</strong> <span class="fw-bold text-primary">{{ current_user.username }}</span></li>
-            <li class="mb-2"><strong>البريد الإلكتروني:</strong> <span class="text-muted">{{ current_user.email }}</span></li>
+        <ul class="list-unstyled mb-4 p-3 border rounded bg-light">
+            <li class="mb-2 fs-5"><strong>اسم المستخدم:</strong> <span class="fw-bold text-primary ms-2">{{ current_user.username }}</span></li>
+            <li class="mb-2"><strong>البريد الإلكتروني:</strong> <span class="text-muted ms-2">{{ current_user.email }}</span></li>
             <li><strong>الدور والصلاحية:</strong> 
                 <span class="badge 
                     {% if current_user.role == 'admin' %} bg-danger 
                     {% elif current_user.role == 'sub-admin' %} bg-info 
                     {% else %} bg-secondary 
-                    {% endif %}">
+                    {% endif %} ms-2">
                     {{ current_user.role }}
                 </span>
             </li>

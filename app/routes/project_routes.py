@@ -29,11 +29,11 @@ def get_projects():
     else:
         query = query.filter(Project.is_archived == False)
     
-    # We use joinedload to prevent multiple queries for items later
-    # Use selectinload for better performance on one-to-many relationships
-    # and undefer to explicitly load our calculated property
+    # <<< التعديل الأول: تحميل total_actual_cost و total_paid_amount مسبقًا لتحسين أداء قائمة المشاريع
     projects = query.options(
-        selectinload(Project.items).undefer(Item.actual_details_cost)
+        selectinload(Project.items), 
+        undefer(Project.total_actual_cost),
+        undefer(Project.total_paid_amount)
     ).all()    
     return render_template("projects/index.html", projects=projects, show_archived=show_archived)
 
@@ -188,7 +188,9 @@ def projects_summary():
 
     # Eagerly load the calculated column for better performance on summary page
     projects = Project.query.filter_by(is_archived=False).options(
-        undefer(Project.total_paid_amount)
+        # <<< التعديل الثاني: إضافة total_actual_cost لضمان تحميل جميع الحقول المحسوبة
+        undefer(Project.total_paid_amount),
+        undefer(Project.total_actual_cost) 
     ).all()
     
     grand_totals = {

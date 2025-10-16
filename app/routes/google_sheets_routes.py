@@ -5,6 +5,7 @@ from app.models.item import Item
 from app.extensions import db
 from flask_login import login_required, current_user
 from app.utils import check_project_permission, sanitize_input
+from app import constants # <<< تم الإضافة هنا
 
 sheets_bp = Blueprint("sheets", __name__)
 
@@ -211,7 +212,7 @@ def import_items(project_id):
 
                     # Default actual values based on contract
                     actual_quantity = contract_quantity
-                    actual_unit_cost = contract_unit_cost * 0.70 # Default 70%
+                    actual_unit_cost = contract_unit_cost * constants.ACTUAL_UNIT_COST_DEFAULT_PERCENT # <<< تم استبدال 0.70 بالثابت
 
                     if item_number:
                         existing_item = Item.query.filter_by(project_id=project.id, item_number=item_number).first()

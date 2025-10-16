@@ -15,25 +15,25 @@
 </div>
 
 <div class="card mb-4">
-    <div class="card-header bg-info text-white">
+    <div class="card-header bg-dark text-white">
         <h5 class="mb-0"><i class="fas fa-calculator me-2"></i>ملخص الحسابات الفورية</h5>
     </div>
     <div class="card-body">
         <div class="row text-center g-3">
             <div class="col-md-4">
-                <div class="p-3 border rounded h-100 bg-light">
+                <div class="p-3 border rounded h-100 bg-light border-primary border-3">
                     <h6 class="text-muted small mb-1">التكلفة الأساسية (قبل الضريبة)</h6>
                     <p id="base-cost-display" class="fs-4 text-primary fw-bold number-cell">0.00 <span class="small text-muted">ر.س</span></p>
                 </div>
             </div>
              <div class="col-md-4">
-                <div class="p-3 border rounded h-100 bg-light">
+                <div class="p-3 border rounded h-100 bg-light border-info border-3">
                     <h6 class="text-muted small mb-1">مبلغ الضريبة المضافة</h6>
                     <p id="vat-amount-display" class="fs-4 text-info fw-bold number-cell">0.00 <span class="small text-muted">ر.س</span></p>
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="p-3 border rounded h-100 border-primary">
+                <div class="p-3 border rounded h-100 border-success border-3">
                     <h6 class="text-muted small mb-1">الإجمالي الكلي (شامل الضريبة)</h6>
                     <p id="total-cost-display" class="fs-4 text-success fw-bold number-cell">0.00 <span class="small text-muted">ر.س</span></p>
                 </div>
@@ -55,11 +55,11 @@
             <div class="row g-3">
                 <div class="col-md-3">
                     <label for="quantity" class="form-label">الكمية</label>
-                    <input type="number" step="0.01" class="form-control cost-input" id="quantity" name="quantity" value="{{ detail.quantity }}" required>
+                    <input type="number" step="0.01" class="form-control cost-input" id="quantity" name="quantity" value="{{ detail.quantity }}" required min="0">
                 </div>
                 <div class="col-md-3">
                     <label for="unit_cost" class="form-label">تكلفة الوحدة</label>
-                    <input type="number" step="0.01" class="form-control cost-input" id="unit_cost" name="unit_cost" value="{{ detail.unit_cost }}" required>
+                    <input type="number" step="0.01" class="form-control cost-input" id="unit_cost" name="unit_cost" value="{{ detail.unit_cost }}" required min="0">
                     <div class="form-text">التكلفة الإفرادية قبل احتساب الضريبة.</div>
                 </div>
                 <div class="col-md-3">
@@ -68,7 +68,7 @@
                 </div>
                 <div class="col-md-3">
                     <label for="vat_percent" class="form-label">نسبة الضريبة (%)</label>
-                    <input type="number" step="0.01" class="form-control cost-input" id="vat_percent" name="vat_percent" value="{{ detail.vat_percent or 0.0 }}" placeholder="0.00">
+                    <input type="number" step="0.01" class="form-control cost-input" id="vat_percent" name="vat_percent" value="{{ detail.vat_percent or 0.0 }}" placeholder="0.00" min="0">
                     <div class="form-text">تستخدم لحساب الإجمالي شامل الضريبة.</div>
                 </div>
             </div>
@@ -97,7 +97,7 @@
                     <input type="text" class="form-control" id="disbursement_order_number" name="disbursement_order_number" value="{{ detail.disbursement_order_number or '' }}" placeholder="مثال: DO-001">
                 </div>
             </div>
-            <button type="submit" class="btn btn-primary mt-4">
+            <button type="submit" class="btn btn-primary btn-lg mt-4 w-100">
                 <i class="fas fa-save me-1"></i> حفظ التعديلات
             </button>
         </form>
@@ -117,7 +117,6 @@ document.addEventListener("DOMContentLoaded", function() {
     const totalCostDisplay = document.getElementById('total-cost-display');
 
     function formatNumber(num) {
-        // Ensure the number is not NaN and format it
         return (parseFloat(num) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 

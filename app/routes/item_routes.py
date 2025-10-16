@@ -9,6 +9,7 @@ from app.extensions import db
 from flask_login import login_required, current_user
 from app.utils import check_project_permission, sanitize_input
 from app.forms import ItemForm
+from sqlalchemy.orm import undefer # <<< إضافة: استيراد دالة التحميل الصريح
 
 item_bp = Blueprint("item", __name__)
 
@@ -68,7 +69,12 @@ def get_items_by_project(project_id):
 
     # Use substring to extract leading numbers for a safe numerical sort
     numeric_part = func.substring(Item.item_number, '^[0-9]+')
-    items = query.order_by(cast(numeric_part, Integer), Item.item_number).all()
+    
+    # <<< New performance optimization line: explicitly load paid_amount and actual_details_cost
+    items = query.options(
+        undefer(Item.paid_amount), 
+        undefer(Item.actual_details_cost)
+    ).order_by(cast(numeric_part, Integer), Item.item_number).all()
     
     # إرسال قاموس "filters" بدلاً من "search_query"
     return render_template("items/index.html", items=items, project=project, filters=filters)
@@ -114,8 +120,6 @@ def bulk_add_items(project_id):
         
         return redirect(url_for('item.get_items_by_project', project_id=project_id))
 
-    return render_template('items/bulk_add.html', project=project)
-
 @item_bp.route('/projects/<int:project_id>/items/bulk_update', methods=['GET', 'POST'])
 @login_required
 def bulk_update_items(project_id):
@@ -133,14 +137,38 @@ def bulk_update_items(project_id):
         updated_count = 0
         for line in lines:
             parts = line.strip().split('\t')
+            # Check for at least item_number, actual_quantity, and actual_unit_cost (3 parts)
             if len(parts) >= 3:
                 item_number = sanitize_input(parts[0])
                 item = Item.query.filter_by(project_id=project_id, item_number=item_number).first()
                 if item:
                     try:
-                        item.actual_quantity = float(parts[1]) if parts[1] else item.actual_quantity
-                        item.actual_unit_cost = float(parts[2]) if parts[2] else item.actual_unit_cost
-                        updated_count += 1
+                        changes = []
+                        
+                        # --- START: Streamlined Update Logic ---
+                        fields_to_update = [
+                            ('actual_quantity', parts[1].strip(), 'الكمية المتاحة للفوترة'),
+                            ('actual_unit_cost', parts[2].strip(), 'تكلفة الوحدة للمستخلص'),
+                        ]
+
+                        for field_name, new_value_str, display_name in fields_to_update:
+                            if new_value_str:
+                                # Get the original value and safely parse the new value
+                                original_value = getattr(item, field_name)
+                                new_value = float(new_value_str)
+
+                                # Compare (using tolerance for floats and checking for None)
+                                if (original_value is None or abs(new_value - original_value) > 0.001):
+                                    setattr(item, field_name, new_value)
+                                    original_display = f"'{original_value}'" if original_value is not None else "'لا شيء'"
+                                    changes.append(f"{display_name}: من {original_display} إلى '{new_value}'")
+
+                        # --- END: Streamlined Update Logic ---
+                        
+                        if changes:
+                            log_item_change(item, 'update', "\n".join(changes))
+                            updated_count += 1
+
                     except (ValueError, IndexError):
                         # UX IMPROVEMENT: Clearer error message
                         flash(f'بيانات غير صالحة للكمية الفعلية أو تكلفة الوحدة الفعلية للبند {item_number}. يجب أن تكون أرقامًا.', 'danger')
@@ -148,7 +176,8 @@ def bulk_update_items(project_id):
         
         if updated_count > 0:
             db.session.commit()
-            flash(f'تم تحديث {updated_count} بندًا بنجاح.', 'success')
+            # UX Improvement: Confirm that changes were logged
+            flash(f'تم تحديث {updated_count} بندًا بنجاح. تم تسجيل التغييرات في سجل التغييرات.', 'success')
 
         return redirect(url_for('item.get_items_by_project', project_id=project_id))
     

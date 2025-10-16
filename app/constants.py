@@ -32,7 +32,6 @@ INVOICE_STATUS_PARTIALLY_PAID = 'مدفوع جزئياً'
 INVOICE_STATUS_FULLY_PAID = 'مدفوع بالكامل'
 INVOICE_STATUS_CANCELLED = 'ملغي'
 
-# --- START: الإضافة الجديدة ---
 # Invoice Types
 INVOICE_TYPE_CONTRACTOR = 'مستخلص مقاول'
 INVOICE_TYPE_SUPPLIER = 'مستخلص مورد'
@@ -43,4 +42,9 @@ INVOICE_TYPE_CHOICES = [
     (INVOICE_TYPE_SUPPLIER, INVOICE_TYPE_SUPPLIER),
     (INVOICE_TYPE_DIRECT_PURCHASE, INVOICE_TYPE_DIRECT_PURCHASE),
 ]
-# --- END: الإضافة الجديدة ---
+
+# --- START: ACTUAL COST DEFAULT CONSTANTS ---
+# Default percentage used to calculate the actual unit cost from contract unit cost 
+# when importing items from Google Sheets.
+ACTUAL_UNIT_COST_DEFAULT_PERCENT = 0.70
+# --- END: ACTUAL COST DEFAULT CONSTANTS ---

@@ -15,23 +15,23 @@
 </div>
 
 <div class="card mb-4">
-    <div class="card-header bg-warning text-dark">
+    <div class="card-header bg-dark text-white">
         <h4 class="mb-0"><i class="fas fa-tasks me-2"></i>تفاصيل البند المُراد تعديله</h4>
     </div>
     <div class="card-body">
         <div class="row">
             <div class="col-md-12 mb-3">
-                <p><strong>وصف البند:</strong> <span class="fw-bold">{{ invoice_item.description }}</span></p>
+                <p><strong>وصف البند:</strong> <span class="fw-bold text-primary">{{ invoice_item.description }}</span></p>
                 <hr>
             </div>
             <div class="col-md-4">
-                <p><strong>سعر الوحدة الحالي:</strong> <span class="fw-bold number-cell text-success">{{ "{:,.2f}".format(invoice_item.unit_price) }} ريال</span></p>
+                <p><strong>سعر الوحدة الحالي:</strong> <span class="fw-bold number-cell text-info">{{ "{:,.2f}".format(invoice_item.unit_price) }} ريال</span></p>
             </div>
              <div class="col-md-4">
                  <p><strong>الكمية المسجلة حالياً:</strong> <span class="fw-bold text-primary">{{ invoice_item.quantity }}</span></p>
             </div>
             <div class="col-md-4">
-                 <p><strong>الإجمالي الحالي للبند:</strong> <span class="fw-bold number-cell text-info">{{ "{:,.2f}".format(invoice_item.total_price) }} ريال</span></p>
+                 <p><strong>الإجمالي الحالي للبند:</strong> <span class="fw-bold number-cell text-success">{{ "{:,.2f}".format(invoice_item.total_price) }} ريال</span></p>
             </div>
         </div>
     </div>
@@ -58,9 +58,9 @@
                     لتتمكن من التعديل، يجب عليك أولاً **حذف** الدفعات المرتبطة بهذا البند من صفحة المستخلص.
                 </p>
             </div>
-            <button type="submit" class="btn btn-primary" disabled>حفظ التعديلات</button>
+            <button type="submit" class="btn btn-primary btn-lg w-100" disabled>حفظ التعديلات</button>
             {% else %}
-            <button type="submit" class="btn btn-primary">
+            <button type="submit" class="btn btn-primary btn-lg w-100">
                 <i class="fas fa-save me-1"></i> حفظ التعديلات
             </button>
             {% endif %}

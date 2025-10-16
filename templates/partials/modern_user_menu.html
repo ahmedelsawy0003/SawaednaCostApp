@@ -1,4 +1,4 @@
-{# هذا الملف يمثل قائمة المستخدم (الدروب داون) في ملف layouts/base.html #}
+{# هذا الملف يمثل قائمة المستخدم (الدروب داون) في ملف layouts/base.html - تصميم أتلانتس المحسن #}
 
 <div class="user-menu dropdown">
     <button class="user-menu-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -24,6 +24,7 @@
         {% endif %}
         <li><hr class="dropdown-divider"></li>
         <li>
+            {# Logout button is always red #}
             <a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}">
                 <i class="fas fa-sign-out-alt me-2"></i> تسجيل الخروج
             </a>

@@ -5,6 +5,7 @@ from .payment import Payment
 from app import constants
 from sqlalchemy.ext.hybrid import hybrid_property
 from .item import Item
+from .cost_detail import CostDetail # <<< إضافة جديدة لغرض الـ column_property
 from sqlalchemy import func, select
 from sqlalchemy.orm import column_property
 
@@ -37,9 +38,23 @@ class Project(db.Model):
     def total_contract_cost(self):
         return sum(item.contract_total_cost for item in self.items if item.contract_total_cost is not None)
 
-    @hybrid_property
+    # --- START: Performance Refactoring: total_actual_cost ---
+    # Calculate Project.total_actual_cost efficiently at DB level using column_property
+    total_actual_cost = column_property(
+        select(func.coalesce(func.sum(CostDetail.quantity * CostDetail.unit_cost * (1 + CostDetail.vat_percent / 100)), 0.0))
+        .join(Item, Item.id == CostDetail.item_id)
+        .where(Item.project_id == id) # Project.id
+        .correlate_except(CostDetail, Item)
+        .scalar_subquery(),
+        deferred=True
+    )
+    
+    # Keep total_actual_cost as a property for consistency, accessing the computed attribute
+    @property
     def total_actual_cost(self):
-        return sum(item.actual_total_cost for item in self.items if item.actual_total_cost is not None)
+        # Use getattr safely to get the computed column value, defaulting to 0.0 if not loaded
+        return getattr(self, 'total_actual_cost', 0.0) or 0.0
+    # --- END: Performance Refactoring ---
 
     total_paid_amount = column_property(
         select(func.coalesce(func.sum(Payment.amount), 0.0))

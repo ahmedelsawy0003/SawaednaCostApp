@@ -76,13 +76,9 @@ class Item(db.Model):
 
     @hybrid_property
     def actual_total_cost(self):
-        # إذا لا يوجد أي تفاصيل للبند، يكون صفر
-        if not self.cost_details or len(self.cost_details) == 0:
-            return 0.0
-        # إذا فيه تفاصيل، إجمالي التكلفة هو مجموع تفاصيل البند فقط (بدون أي حساب يدوي)
+        # <<< التعديل: تبسيط الخاصية للاعتماد كلياً على القيمة المحتسبة من قاعدة البيانات
         return self.actual_details_cost or 0.0
-
-    
+        
     @hybrid_property
     def remaining_amount(self):
         return self.actual_total_cost - self.paid_amount

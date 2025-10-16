@@ -14,7 +14,7 @@
 </div>
 
 <div class="card">
-    <div class="card-header bg-primary text-white">
+    <div class="card-header bg-dark text-white">
         <h4 class="mb-0"><i class="fas fa-file-excel me-2"></i>خطوات استيراد البنود التعاقدية</h4>
     </div>
     <div class="card-body">
@@ -26,15 +26,15 @@
             <p class="mb-0">وسيتم تعيين **تكلفة الوحدة الفعلية** بنسبة **70%** من تكلفة الوحدة التعاقدية (يمكنك تعديل كلتا القيمتين لاحقاً في صفحة البند).</p>
         </div>
         
-        <div class="alert alert-info">
-            <h5 class="alert-heading"><i class="fas fa-cogs me-2"></i>الأعمدة المطلوبة للتعرف عليها (إلزامية)</h5>
+        <div class="card p-3 mb-4 border-info border-3">
+            <h5 class="alert-heading mb-3 text-info"><i class="fas fa-cogs me-2"></i>الأعمدة المطلوبة للتعرف عليها (إلزامية)</h5>
             <p class="mb-1">يجب أن تتأكد من أن الصف الأول (العناوين) في ورقة العمل (Sheet) يحتوي على أعمدة تحمل أحد الأسماء التالية لكل حقل:</p>
-            <ul>
-                <li><strong class="text-primary">رقم البند:</strong> (مثل: <code>رقم البند</code>, <code>مسلسل</code>, <code>الرقم التسلسلي</code>)</li>
-                <li><strong class="text-primary">الوصف:</strong> (مثل: <code>الوصف</code>, <code>البيان</code>, <code>وصف البند</code>)</li>
-                <li><strong class="text-primary">الوحدة:</strong> (مثل: <code>الوحدة</code>, <code>وحدة القياس</code>)</li>
-                <li><strong class="text-primary">الكمية:</strong> (مثل: <code>الكمية</code>, <code>الكمية التعاقدية</code>)</li>
-                <li><strong class="text-primary">سعر الوحدة:</strong> (مثل: <code>السعر</code>, <code>التكلفة الإفرادية</code>, <code>سعر افرادى</code>)</li>
+            <ul class="list-unstyled row g-2 small mt-3">
+                <li class="col-md-6"><strong class="text-primary">رقم البند:</strong> (مثل: <code>رقم البند</code>, <code>مسلسل</code>, <code>الرقم التسلسلي</code>)</li>
+                <li class="col-md-6"><strong class="text-primary">الوصف:</strong> (مثل: <code>الوصف</code>, <code>البيان</code>, <code>وصف البند</code>)</li>
+                <li class="col-md-6"><strong class="text-primary">الوحدة:</strong> (مثل: <code>الوحدة</code>, <code>وحدة القياس</code>)</li>
+                <li class="col-md-6"><strong class="text-primary">الكمية:</strong> (مثل: <code>الكمية</code>, <code>الكمية التعاقدية</code>)</li>
+                <li class="col-md-6"><strong class="text-primary">سعر الوحدة:</strong> (مثل: <code>السعر</code>, <code>التكلفة الإفرادية</code>, <code>سعر افرادى</code>)</li>
             </ul>
         </div>
         
@@ -43,7 +43,7 @@
         <form method="POST" action="{{ url_for("sheets.import_items", project_id=project.id) }}">
             <div class="mb-4">
                 <label for="sheet_name" class="form-label fs-5">1. اختر ورقة العمل (Sheet) المراد استيرادها</label>
-                <select class="form-select" id="sheet_name" name="sheet_name" required>
+                <select class="form-select form-control-lg" id="sheet_name" name="sheet_name" required>
                     <option value="" selected disabled>-- اختر ورقة عمل من ملف Google Sheets المربوط --</option>
                     {% if sheet_names %}
                         {% for name in sheet_names %}

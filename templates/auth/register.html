@@ -3,10 +3,14 @@
 {% block title %}تسجيل جديد{% endblock %}
 
 {% block content %}
-<div class="auth-container">
-    <div class="card auth-card shadow-lg p-4">
+<div class="auth-container d-flex justify-content-center align-items-center min-vh-100 p-3">
+    <div class="card auth-card shadow-lg p-4" style="max-width: 450px; width: 100%;">
         <div class="card-body">
-            <h2 class="card-title text-center mb-4 text-primary">إنشاء حساب جديد</h2>
+            <div class="text-center mb-4">
+                 <i class="fas fa-chart-line fa-3x text-primary mb-2"></i>
+                 <h2 class="card-title mb-0 text-primary fw-bold">إنشاء حساب جديد</h2>
+                 <p class="text-muted small">انضم إلى نظام إدارة التكاليف</p>
+            </div>
             
             <form method="POST" novalidate>
                 {{ form.hidden_tag() }}
@@ -55,7 +59,7 @@
             </form>
 
             <p class="text-center mt-3">
-                لديك حساب بالفعل؟ <a href="{{ url_for("auth.login") }}" class="fw-bold">تسجيل الدخول</a>
+                لديك حساب بالفعل؟ <a href="{{ url_for("auth.login") }}" class="fw-bold text-success">تسجيل الدخول</a>
             </p>
         </div>
     </div>

@@ -1,7 +1,7 @@
 from app.extensions import db
-from sqlalchemy import func
+from sqlalchemy import func, select # <<< تم إضافة select
 from app import constants
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, column_property # <<< تم إضافة column_property
 
 # Make sure to import related models at the top
 from .invoice_item import InvoiceItem
@@ -28,16 +28,29 @@ class Invoice(db.Model):
     items = relationship('InvoiceItem', back_populates='invoice', cascade="all, delete-orphan")
     payments = relationship('Payment', back_populates='invoice', cascade="all, delete-orphan")
 
-    @property
-    def total_amount(self):
-        return db.session.query(func.sum(InvoiceItem.total_price)).filter(InvoiceItem.invoice_id == self.id).scalar() or 0.0
-
-    @property
-    def paid_amount(self):
-        return db.session.query(func.sum(Payment.amount)).filter(Payment.invoice_id == self.id).scalar() or 0.0
+    # --- START: Performance Refactoring using column_property ---
+    # حساب الإجمالي الكلي لبنود الفاتورة بكفاءة عالية (في استعلام القائمة)
+    total_amount = column_property(
+        select(func.coalesce(func.sum(InvoiceItem.total_price), 0.0))
+        .where(InvoiceItem.invoice_id == id)
+        .correlate_except(InvoiceItem)
+        .scalar_subquery(),
+        deferred=True
+    )
+    
+    # حساب إجمالي المدفوعات على الفاتورة بكفاءة عالية
+    paid_amount = column_property(
+        select(func.coalesce(func.sum(Payment.amount), 0.0))
+        .where(Payment.invoice_id == id)
+        .correlate_except(Payment)
+        .scalar_subquery(),
+        deferred=True
+    )
+    # --- END: Performance Refactoring ---
 
     @property
     def remaining_amount(self):
+        # Now relies on column_property attributes
         return self.total_amount - self.paid_amount
 
     @property
