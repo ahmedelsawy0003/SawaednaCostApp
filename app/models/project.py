@@ -5,7 +5,7 @@ from .payment import Payment
 from app import constants
 from sqlalchemy.ext.hybrid import hybrid_property
 from .item import Item
-from .cost_detail import CostDetail # <<< إضافة جديدة لغرض الـ column_property
+from .cost_detail import CostDetail 
 from sqlalchemy import func, select
 from sqlalchemy.orm import column_property
 
@@ -49,11 +49,8 @@ class Project(db.Model):
         deferred=True
     )
     
-    # Keep total_actual_cost as a property for consistency, accessing the computed attribute
-    @property
-    def total_actual_cost(self):
-        # Use getattr safely to get the computed column value, defaulting to 0.0 if not loaded
-        return getattr(self, 'total_actual_cost', 0.0) or 0.0
+    # <<< تم حذف دالة @property total_actual_cost المتعارضة هنا >>>
+    
     # --- END: Performance Refactoring ---
 
     total_paid_amount = column_property(
@@ -67,10 +64,12 @@ class Project(db.Model):
 
     @hybrid_property
     def total_savings(self):
+        # Now uses the ORM-mapped total_actual_cost attribute directly
         return self.total_contract_cost - self.total_actual_cost
 
     @hybrid_property
     def total_remaining_amount(self):
+        # Now uses the ORM-mapped total_actual_cost attribute directly
         return self.total_actual_cost - self.total_paid_amount
 
     def __repr__(self):
