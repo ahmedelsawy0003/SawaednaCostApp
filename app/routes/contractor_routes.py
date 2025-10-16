@@ -1,12 +1,12 @@
 from flask import Blueprint, render_template, request, abort, redirect, url_for, flash
 from app.models.contractor import Contractor
 from app.models.project import Project
-from app.models.user import User 
+# from app.models.user import User # <<< تم الحذف (غير مستخدمة في المنطق الحالي)
 from app.models.invoice import Invoice
-from app.models.item import Item # <-- إضافة جديدة
+from app.models.item import Item 
 from app.extensions import db
 from flask_login import login_required, current_user
-from sqlalchemy import or_
+# from sqlalchemy import or_ # <<< تم الحذف (غير مستخدمة في المنطق الحالي)
 from app.utils import sanitize_input
 from app.forms import ContractorForm 
 
@@ -134,6 +134,7 @@ def show_contractor(contractor_id):
 
     if current_user.role not in ['admin', 'sub-admin']:
         # Filter combined projects by user access
+        from app.models.user import User # <<< استيراد محلي للحاجة فقط
         projects_query = projects_query.join(Project.users).filter(User.id == current_user.id)
     
     projects = projects_query.distinct().order_by(Project.name).all()
