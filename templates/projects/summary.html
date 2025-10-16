@@ -8,33 +8,40 @@
 </div>
 
 <div class="card mb-4">
-    <div class="card-header bg-primary text-white">
+    <div class="card-header bg-dark text-white">
         <h4 class="mb-0"><i class="fas fa-calculator me-2"></i>الإجماليات الكلية للمحفظة</h4>
     </div>
     <div class="card-body">
         <div class="row text-center g-3">
+            {# Card 1: Contract Cost - Info #}
             <div class="col-md-3">
-                <div class="p-3 border rounded h-100 bg-light border-info">
+                <div class="p-3 border rounded h-100 bg-light border-info border-3">
                     <h5 class="text-muted small">إجمالي التكلفة التعاقدية</h5>
-                    <p class="fs-4 text-info fw-bold number-cell">{{ "{:,.2f}".format(totals.contract_cost) }} <span class="small text-muted">ر.س</span></p>
+                    <p class="fs-4 text-info fw-bold mb-0 number-cell">{{ "{:,.2f}".format(totals.contract_cost) }} <span class="small text-muted">ر.س</span></p>
                 </div>
             </div>
+            
+            {# Card 2: Actual Cost - Primary #}
             <div class="col-md-3">
-                <div class="p-3 border rounded h-100 border-primary">
+                <div class="p-3 border rounded h-100 border-primary border-3">
                     <h5 class="text-muted small">إجمالي التكلفة الفعلية</h5>
-                    <p class="fs-4 text-primary fw-bold number-cell">{{ "{:,.2f}".format(totals.actual_cost) }} <span class="small text-muted">ر.س</span></p>
+                    <p class="fs-4 text-primary fw-bold mb-0 number-cell">{{ "{:,.2f}".format(totals.actual_cost) }} <span class="small text-muted">ر.س</span></p>
                 </div>
             </div>
+            
+            {# Card 3: Paid Amount - Success #}
             <div class="col-md-3">
-                <div class="p-3 border rounded h-100 border-success">
+                <div class="p-3 border rounded h-100 border-success border-3">
                     <h5 class="text-muted small">إجمالي المدفوعات</h5>
-                    <p class="fs-4 text-success fw-bold number-cell">{{ "{:,.2f}".format(totals.paid_amount) }} <span class="small text-muted">ر.س</span></p>
+                    <p class="fs-4 text-success fw-bold mb-0 number-cell">{{ "{:,.2f}".format(totals.paid_amount) }} <span class="small text-muted">ر.س</span></p>
                 </div>
             </div>
+            
+            {# Card 4: Remaining Amount - Danger #}
             <div class="col-md-3">
-                <div class="p-3 border rounded h-100 border-danger">
+                <div class="p-3 border rounded h-100 border-danger border-3">
                     <h5 class="text-muted small">إجمالي المتبقي للاستحقاق</h5>
-                    <p class="fs-4 text-danger fw-bold number-cell">{{ "{:,.2f}".format(totals.remaining_amount) }} <span class="small text-muted">ر.س</span></p>
+                    <p class="fs-4 text-danger fw-bold mb-0 number-cell">{{ "{:,.2f}".format(totals.remaining_amount) }} <span class="small text-muted">ر.س</span></p>
                 </div>
             </div>
         </div>
@@ -47,14 +54,15 @@
     </div>
     <div class="card-body p-0">
         <div class="table-responsive">
-            <table class="table table-dark table-hover table-striped mb-0">
+            {# Removed table-dark class #}
+            <table class="table table-hover table-striped mb-0">
                 <thead>
                     <tr>
-                        <th>اسم المشروع</th>
-                        <th class="text-end">التكلفة التعاقدية (ر.س)</th>
-                        <th class="text-end">التكلفة الفعلية (ر.س)</th>
-                        <th class="text-end">إجمالي المدفوع (ر.س)</th>
-                        <th class="text-end">المبلغ المتبقي (ر.س)</th>
+                        <th style="width: 25%;">اسم المشروع</th>
+                        <th class="text-end" style="width: 17.5%;">التكلفة التعاقدية (ر.س)</th>
+                        <th class="text-end" style="width: 17.5%;">التكلفة الفعلية (ر.س)</th>
+                        <th class="text-end" style="width: 17.5%;">إجمالي المدفوع (ر.س)</th>
+                        <th class="text-end" style="width: 17.5%;">المبلغ المتبقي (ر.س)</th>
                     </tr>
                 </thead>
                 <tbody>

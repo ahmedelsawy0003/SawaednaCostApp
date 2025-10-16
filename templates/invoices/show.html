@@ -14,39 +14,59 @@
 </div>
 
 <div class="row">
-    <div class="col-lg-8">
-        <div class="card mb-4">
-            <div class="card-header d-flex justify-content-between align-items-center bg-dark text-white">
-                <h5 class="mb-0"><i class="fas fa-info-circle fa-fw me-2"></i>معلومات المستخلص الأساسية</h5>
-                <span class="badge 
-                    {% if invoice.status == 'مدفوع بالكامل' %} bg-success fs-6
-                    {% elif invoice.status == 'مدفوع جزئياً' %} bg-warning text-dark fs-6
-                    {% elif invoice.status == 'معتمد' %} bg-info fs-6
-                    {% elif invoice.status == 'ملغي' %} bg-danger fs-6
-                    {% else %} bg-secondary fs-6 {% endif %}">
-                    {{ invoice.status }}
-                </span>
+    {# --- Right Column: Financial Summary (Sticky on large screens) --- #}
+    <div class="col-lg-4 order-lg-2">
+        <div class="card mb-4 sticky-lg-top" style="top: 20px;">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-calculator fa-fw me-2"></i>الملخص المالي للمستخلص</h5>
             </div>
             <div class="card-body">
-                <div class="row">
-                    <div class="col-md-6">
-                        <p><strong>المشروع:</strong> {{ invoice.project.name }}</p>
-                        <p><strong>المقاول / المورد:</strong> <a href="{{ url_for('contractor.show_contractor', contractor_id=invoice.contractor_id) }}" class="fw-bold">{{ invoice.contractor.name }}</a></p>
-                        <p><strong>نوع المستخلص:</strong> <span class="badge bg-primary">{{ invoice.invoice_type }}</span></p>
-                    </div>
-                    <div class="col-md-6">
-                        <p><strong>تاريخ المستخلص:</strong> {{ invoice.invoice_date.strftime('%Y-%m-%d') }}</p>
-                        <p><strong>رقم أمر الشراء (PO):</strong> {{ invoice.purchase_order_number or 'غير محدد' }}</p>
-                        <p><strong>رقم أمر الصرف:</strong> {{ invoice.disbursement_order_number or 'غير محدد' }}</p>
-                    </div>
+                <div class="summary-item pb-3 mb-3 border-bottom border-primary border-3">
+                    <h6 class="text-muted">الإجمالي الكلي للمستخلص</h6>
+                    <h4 class="text-primary mb-0 fw-bold number-cell">{{ "{:,.2f}".format(invoice.total_amount) }} <span class="small text-muted">ر.س</span></h4>
                 </div>
-                {% if invoice.notes %}
-                <hr>
-                <p><strong>ملاحظات:</strong> {{ invoice.notes }}</p>
-                {% endif %}
+                <div class="summary-item pb-3 mb-3 border-bottom border-success border-2">
+                    <h6 class="text-muted">إجمالي المدفوعات المسجلة</h6>
+                    <h4 class="text-success mb-0 fw-bold number-cell">{{ "{:,.2f}".format(invoice.paid_amount) }} <span class="small text-muted">ر.س</span></h4>
+                </div>
+                <div class="summary-item">
+                    <h6 class="text-muted">المبلغ المتبقي للاستحقاق</h6>
+                    <h4 class="text-danger mb-0 fw-bold number-cell">{{ "{:,.2f}".format(invoice.remaining_amount) }} <span class="small text-muted">ر.س</span></h4>
+                </div>
             </div>
         </div>
         
+        <div class="card mb-4">
+             <div class="card-header bg-dark text-white">
+                <h5 class="mb-0"><i class="fas fa-info-circle fa-fw me-2"></i>معلومات المستخلص الأساسية</h5>
+             </div>
+             <div class="card-body">
+                 <p><strong>المشروع:</strong> {{ invoice.project.name }}</p>
+                 <p><strong>المقاول / المورد:</strong> <a href="{{ url_for('contractor.show_contractor', contractor_id=invoice.contractor_id) }}" class="fw-bold">{{ invoice.contractor.name }}</a></p>
+                 <p><strong>نوع المستخلص:</strong> <span class="badge bg-primary">{{ invoice.invoice_type }}</span></p>
+                 <p><strong>تاريخ المستخلص:</strong> {{ invoice.invoice_date.strftime('%Y-%m-%d') }}</p>
+             </div>
+        </div>
+        
+    </div>
+    
+    {# --- Left Column: Actions and Tables --- #}
+    <div class="col-lg-8 order-lg-1">
+        
+        {# STATUS BADGE (Moved to a prominent place) #}
+        <div class="alert 
+            {% if invoice.status == 'مدفوع بالكامل' %} alert-success
+            {% elif invoice.status == 'مدفوع جزئياً' %} alert-warning text-dark
+            {% elif invoice.status == 'معتمد' %} alert-info
+            {% elif invoice.status == 'ملغي' %} alert-danger
+            {% else %} alert-secondary {% endif %} mb-4 text-center">
+            <h4 class="alert-heading mb-0">
+                <i class="fas fa-certificate me-2"></i>
+                الحالة الحالية: {{ invoice.status }}
+            </h4>
+        </div>
+        
+        {# Add New Items Section (Action Card) #}
         {% if not invoice.is_fully_paid %}
         <div class="card mb-4">
             <div class="card-header bg-success text-white">
@@ -96,6 +116,7 @@
         </div>
         {% endif %}
 
+        {# Invoice Items Table #}
         <div class="card mb-4">
             <div class="card-header">
                 <h5 class="mb-0"><i class="fas fa-list-alt fa-fw me-2"></i>بنود المستخلص الحالية ({{ invoice.items|length }})</h5>
@@ -103,7 +124,8 @@
             <div class="card-body p-0">
                 {% if invoice.items %}
                     <div class="table-responsive">
-                        <table class="table table-dark table-hover table-striped mb-0">
+                        {# تم إزالة table-dark #}
+                        <table class="table table-hover table-striped mb-0">
                             <thead>
                                 <tr>
                                     <th>وصف البند/التفصيل</th>
@@ -160,8 +182,9 @@
             </div>
         </div>
 
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
+        {# Payment History/Add Payment #}
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center bg-dark text-white">
                 <h5 class="mb-0"><i class="fas fa-cash-register fa-fw me-2"></i> سجل الدفعات المسجلة</h5>
                 <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addPaymentModal" 
                         title="تسجيل دفعة جديدة على المبلغ المستحق"
@@ -172,7 +195,8 @@
             <div class="card-body p-0">
                 {% if invoice.payments %}
                     <div class="table-responsive">
-                        <table class="table table-dark table-hover table-striped mb-0">
+                        {# تم إزالة table-dark #}
+                        <table class="table table-hover table-striped mb-0">
                             <thead>
                                 <tr>
                                     <th>تاريخ الدفعة</th>
@@ -221,30 +245,9 @@
             </div>
         </div>
     </div>
-
-    <div class="col-lg-4">
-        <div class="card mb-4">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0"><i class="fas fa-calculator fa-fw me-2"></i>الملخص المالي للمستخلص</h5>
-            </div>
-            <div class="card-body">
-                <div class="summary-item pb-3 mb-3 border-bottom">
-                    <h6 class="text-muted">الإجمالي الكلي للمستخلص</h6>
-                    <h4 class="text-primary mb-0 fw-bold number-cell">{{ "{:,.2f}".format(invoice.total_amount) }} <span class="small text-muted">ر.س</span></h4>
-                </div>
-                <div class="summary-item pb-3 mb-3 border-bottom">
-                    <h6 class="text-muted">إجمالي المدفوعات المسجلة</h6>
-                    <h4 class="text-success mb-0 fw-bold number-cell">{{ "{:,.2f}".format(invoice.paid_amount) }} <span class="small text-muted">ر.س</span></h4>
-                </div>
-                <div class="summary-item">
-                    <h6 class="text-muted">المبلغ المتبقي للاستحقاق</h6>
-                    <h4 class="text-danger mb-0 fw-bold number-cell">{{ "{:,.2f}".format(invoice.remaining_amount) }} <span class="small text-muted">ر.س</span></h4>
-                </div>
-            </div>
-        </div>
-    </div>
 </div>
 
+{# --- Modals (Keep them outside the main flow) --- #}
 {% for inv_item in invoice.items %}
 <div class="modal fade" id="deleteItemModal-{{ inv_item.id }}" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
@@ -285,6 +288,7 @@
 </div>
 {% endfor %}
 
+{# --- Add Payment Modal (Keep it as is, it's already complex and functional) --- #}
 <div class="modal fade" id="addPaymentModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
@@ -372,7 +376,6 @@ document.addEventListener("DOMContentLoaded", function() {
         function updateTotal() {
             let total = 0;
             distInputs.forEach(input => {
-                // استخدام parseFloat() للقيم التي قد تكون فارغة أو ليست أرقامًا
                 const value = parseFloat(input.value) || 0; 
                 total += value;
             });
