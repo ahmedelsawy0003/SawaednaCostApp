@@ -1,101 +1,142 @@
-// Atlantis Enhancements for Sawaedna Cost App
-class AtlantisUX { // الفئة الجديدة لنظام أتلانتس
+// ==========================================================================
+// Atlantis UX Enhancements for Sawaedna Cost App
+// ==========================================================================
+
+class AtlantisUX {
     constructor() {
-        this.init();
+        this.initSidebarToggle();
+        this.initDropdowns();
+        this.initAnimations();
+        this.handleFlashMessages();
     }
 
-    init() {
-        this.setupVisualAnimations(); 
-        this.setupAdvancedTooltips(); 
-        this.handleFlashMessages(); // وظيفة جديدة لمعالجة رسائل Flash القديمة وعرضها كـ Toasts
-    }
+    // تهيئة وظيفة فتح/إغلاق القائمة الجانبية
+    initSidebarToggle() {
+        const sidebarToggler = document.getElementById('sidebarToggler');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarClose = document.getElementById('sidebarClose');
+        const mainContent = document.querySelector('.modern-main'); // المحتوى الرئيسي للنقر خارج القائمة
 
-    setupVisualAnimations() {
-        // إضافة Intersection Observer لتحريك العناصر عند التمرير (Fade-in-up)
-        const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -50px 0px'
-        };
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('animate-fade-in-up');
-                }
-            });
-        }, observerOptions);
-
-        // مراقبة البطاقات وحاويات الجداول
-        document.querySelectorAll('.card, .table-responsive').forEach(el => {
-            observer.observe(el);
-        });
-    }
-
-    setupAdvancedTooltips() {
-        // تهيئة الـ Tooltips (Bootstrap)
-        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl, {
-                trigger: 'hover focus',
-                placement: 'auto'
-            });
-        });
-    }
-
-    handleFlashMessages() {
-        // العثور على حاوية التنبيهات القديمة من ملف base.html
-        const notificationsContainer = document.querySelector('.modern-notifications');
-        
-        if (notificationsContainer) {
-            // التحقق مما إذا كانت هناك رسائل Flash موجودة داخلها
-            const flashMessages = notificationsContainer.querySelectorAll('.modern-alert');
-            
-            // المرور على كل رسالة وعرضها باستخدام نظام showToast الجديد
-            flashMessages.forEach(alert => {
-                // استخراج نوع الرسالة (success, danger, etc.)
-                const categoryClass = alert.className.match(/alert-(success|danger|warning|info)/);
-                const category = categoryClass ? categoryClass[1] : 'info';
-                
-                // استخراج نص الرسالة
-                const messageSpan = alert.querySelector('span');
-                const message = messageSpan ? messageSpan.textContent.trim() : 'رسالة نظام';
-
-                // استخدام دالة showToast المعرفة عالمياً في script.js
-                if (window.showToast) {
-                     window.showToast(message, category);
-                }
-                
-                // إخفاء الرسالة القديمة فوراً بعد معالجتها
-                alert.style.display = 'none';
-            });
-            
-            // إزالة الحاوية من DOM بعد فترة قصيرة
-            if (flashMessages.length > 0) {
-                 setTimeout(() => notificationsContainer.remove(), 500);
+        // دالة إغلاق القائمة
+        const closeSidebar = () => {
+            if (sidebar) {
+                sidebar.classList.remove('show');
+                document.body.classList.remove('sidebar-open');
             }
+        };
+
+        // دالة فتح القائمة
+        const openSidebar = () => {
+            if (sidebar) {
+                sidebar.classList.add('show');
+                document.body.classList.add('sidebar-open');
+            }
+        };
+
+        // ربط زر الفتح (في الشريط العلوي)
+        if (sidebarToggler && sidebar) {
+            sidebarToggler.addEventListener('click', openSidebar);
         }
+        
+        // ربط زر الإغلاق (في القائمة الجانبية نفسها)
+        if (sidebarClose && sidebar) {
+            sidebarClose.addEventListener('click', closeSidebar);
+        }
+
+        // إغلاق القائمة عند النقر على منطقة المحتوى الرئيسية في وضع الجوال
+        if (mainContent) {
+            mainContent.addEventListener('click', (e) => {
+                // نغلق القائمة فقط إذا كانت مفتوحة ونحن على جهاز صغير (< 992px)
+                if (document.body.classList.contains('sidebar-open') && window.innerWidth < 992) {
+                    // نتأكد أن النقر لم يكن على زر الفتح نفسه (للتجنب تداخُل الإجراءات)
+                    if (e.target.closest('#sidebarToggler') === null) {
+                        closeSidebar();
+                    }
+                }
+            });
+        }
+    }
+
+    // تهيئة القوائم المنسدلة (Sub-menus) في شريط التنقل
+    initDropdowns() {
+        const navLinks = document.querySelectorAll('.nav-dropdown > a');
+        navLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const parentItem = this.parentElement;
+                
+                // إغلاق أي قوائم مفتوحة أخرى
+                document.querySelectorAll('.nav-dropdown.open').forEach(openItem => {
+                    if (openItem !== parentItem) {
+                        openItem.classList.remove('open');
+                        const submenu = openItem.querySelector('.nav-submenu');
+                        if (submenu) submenu.style.maxHeight = 0;
+                    }
+                });
+
+                // فتح أو إغلاق القائمة الحالية
+                parentItem.classList.toggle('open');
+                const submenu = parentItem.querySelector('.nav-submenu');
+                
+                if (parentItem.classList.contains('open')) {
+                    // لفتح القائمة، نحسب ارتفاعها الفعلي
+                    submenu.style.maxHeight = submenu.scrollHeight + "px";
+                } else {
+                    // للإغلاق، نعيد ارتفاعها إلى صفر
+                    submenu.style.maxHeight = 0;
+                }
+            });
+            
+            // تهيئة حالة الـ max-height للعناصر المفتوحة افتراضياً عند التحميل
+            if (link.parentElement.classList.contains('open')) {
+                const submenu = link.parentElement.querySelector('.nav-submenu');
+                if (submenu) {
+                    submenu.style.maxHeight = submenu.scrollHeight + "px";
+                }
+            }
+        });
+    }
+
+    // تهيئة الحركات البصرية (مثل التلاشي التدريجي)
+    initAnimations() {
+        if ('IntersectionObserver' in window) {
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, {
+                root: null, // تتبع الإطار العرضي (Viewport)
+                rootMargin: '0px',
+                threshold: 0.1 // يبدأ الحركة عندما يكون 10% من العنصر مرئيًا
+            });
+
+            document.querySelectorAll('.animate-fade-in-up').forEach(element => {
+                observer.observe(element);
+            });
+        }
+    }
+
+    // معالجة رسائل الفلاش (Flash Messages) - إخفاءها تلقائياً بعد فترة
+    handleFlashMessages() {
+        const alerts = document.querySelectorAll('.flash-messages-container .alert');
+        alerts.forEach(alert => {
+            // إخفاء الرسائل بعد 5 ثوانٍ
+            setTimeout(() => {
+                const bsAlert = bootstrap.Alert.getOrCreateInstance(alert);
+                if (bsAlert) {
+                    bsAlert.close();
+                } else {
+                    alert.remove(); // في حال لم يتم تحميل Bootstrap JS بعد
+                }
+            }, 5000);
+        });
     }
 }
 
 // تهيئة نظام أتلانتس عند تحميل الصفحة
 document.addEventListener('DOMContentLoaded', function() {
     new AtlantisUX();
-    
-    // تهيئة قائمة الجوال (متبقي لضمان عمل زر الإغلاق والفتح)
-    const sidebarToggler = document.getElementById('sidebarToggler');
-    const sidebar = document.getElementById('sidebar');
-    
-    if (sidebarToggler && sidebar) {
-        sidebarToggler.addEventListener('click', function() {
-            sidebar.classList.toggle('show');
-            document.body.classList.toggle('sidebar-open');
-        });
-        
-        const sidebarClose = document.getElementById('sidebarClose');
-        if (sidebarClose) {
-            sidebarClose.addEventListener('click', function() {
-                sidebar.classList.remove('show');
-                document.body.classList.remove('sidebar-open');
-            });
-        }
-    }
 });
