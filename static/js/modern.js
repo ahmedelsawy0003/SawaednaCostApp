@@ -1,103 +1,18 @@
 // ==========================================================================
-// Atlantis UX Enhancements for Sawaedna Cost App
+// Atlantis UX Enhancements for Sawaedna Cost App - Core UI Logic
 // ==========================================================================
 
 class AtlantisUX {
     constructor() {
+        // تهيئة التفاعل الأساسي بعد تحميل الـ DOM
         this.initSidebarToggle();
-        this.initDropdowns();
-        this.initAnimations();
-        this.handleFlashMessages();
+        this.initAnimations(); 
+        this.handleFlashMessages(); // معالجة رسائل الفلاش
+        this.setupAdvancedTooltips(); // تهيئة الـ Tooltips
+        this.setupDropdowns(); // تهيئة القوائم الفرعية (Sub-menus)
     }
-
-    // تهيئة وظيفة فتح/إغلاق القائمة الجانبية
-    initSidebarToggle() {
-        const sidebarToggler = document.getElementById('sidebarToggler');
-        const sidebar = document.getElementById('sidebar');
-        const sidebarClose = document.getElementById('sidebarClose');
-        const mainContent = document.querySelector('.modern-main'); // المحتوى الرئيسي للنقر خارج القائمة
-
-        // دالة إغلاق القائمة
-        const closeSidebar = () => {
-            if (sidebar) {
-                sidebar.classList.remove('show');
-                document.body.classList.remove('sidebar-open');
-            }
-        };
-
-        // دالة فتح القائمة
-        const openSidebar = () => {
-            if (sidebar) {
-                sidebar.classList.add('show');
-                document.body.classList.add('sidebar-open');
-            }
-        };
-
-        // ربط زر الفتح (في الشريط العلوي)
-        if (sidebarToggler && sidebar) {
-            sidebarToggler.addEventListener('click', openSidebar);
-        }
-        
-        // ربط زر الإغلاق (في القائمة الجانبية نفسها)
-        if (sidebarClose && sidebar) {
-            sidebarClose.addEventListener('click', closeSidebar);
-        }
-
-        // إغلاق القائمة عند النقر على منطقة المحتوى الرئيسية في وضع الجوال
-        if (mainContent) {
-            mainContent.addEventListener('click', (e) => {
-                // نغلق القائمة فقط إذا كانت مفتوحة ونحن على جهاز صغير (< 992px)
-                if (document.body.classList.contains('sidebar-open') && window.innerWidth < 992) {
-                    // نتأكد أن النقر لم يكن على زر الفتح نفسه (للتجنب تداخُل الإجراءات)
-                    if (e.target.closest('#sidebarToggler') === null) {
-                        closeSidebar();
-                    }
-                }
-            });
-        }
-    }
-
-    // تهيئة القوائم المنسدلة (Sub-menus) في شريط التنقل
-    initDropdowns() {
-        const navLinks = document.querySelectorAll('.nav-dropdown > a');
-        navLinks.forEach(link => {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
-                const parentItem = this.parentElement;
-                
-                // إغلاق أي قوائم مفتوحة أخرى
-                document.querySelectorAll('.nav-dropdown.open').forEach(openItem => {
-                    if (openItem !== parentItem) {
-                        openItem.classList.remove('open');
-                        const submenu = openItem.querySelector('.nav-submenu');
-                        if (submenu) submenu.style.maxHeight = 0;
-                    }
-                });
-
-                // فتح أو إغلاق القائمة الحالية
-                parentItem.classList.toggle('open');
-                const submenu = parentItem.querySelector('.nav-submenu');
-                
-                if (parentItem.classList.contains('open')) {
-                    // لفتح القائمة، نحسب ارتفاعها الفعلي
-                    submenu.style.maxHeight = submenu.scrollHeight + "px";
-                } else {
-                    // للإغلاق، نعيد ارتفاعها إلى صفر
-                    submenu.style.maxHeight = 0;
-                }
-            });
-            
-            // تهيئة حالة الـ max-height للعناصر المفتوحة افتراضياً عند التحميل
-            if (link.parentElement.classList.contains('open')) {
-                const submenu = link.parentElement.querySelector('.nav-submenu');
-                if (submenu) {
-                    submenu.style.maxHeight = submenu.scrollHeight + "px";
-                }
-            }
-        });
-    }
-
-    // تهيئة الحركات البصرية (مثل التلاشي التدريجي)
+    
+    // إعداد الـ Intersection Observer لتحريك العناصر عند الظهور
     initAnimations() {
         if ('IntersectionObserver' in window) {
             const observer = new IntersectionObserver((entries, observer) => {
@@ -108,9 +23,9 @@ class AtlantisUX {
                     }
                 });
             }, {
-                root: null, // تتبع الإطار العرضي (Viewport)
+                root: null,
                 rootMargin: '0px',
-                threshold: 0.1 // يبدأ الحركة عندما يكون 10% من العنصر مرئيًا
+                threshold: 0.1
             });
 
             document.querySelectorAll('.animate-fade-in-up').forEach(element => {
@@ -119,20 +34,120 @@ class AtlantisUX {
         }
     }
 
-    // معالجة رسائل الفلاش (Flash Messages) - إخفاءها تلقائياً بعد فترة
-    handleFlashMessages() {
-        const alerts = document.querySelectorAll('.flash-messages-container .alert');
-        alerts.forEach(alert => {
-            // إخفاء الرسائل بعد 5 ثوانٍ
-            setTimeout(() => {
-                const bsAlert = bootstrap.Alert.getOrCreateInstance(alert);
-                if (bsAlert) {
-                    bsAlert.close();
-                } else {
-                    alert.remove(); // في حال لم يتم تحميل Bootstrap JS بعد
+    // تهيئة وظيفة فتح/إغلاق القائمة الجانبية (للجوال وسطح المكتب)
+    initSidebarToggle() {
+        const sidebarToggler = document.getElementById('sidebarToggler');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarClose = document.getElementById('sidebarClose');
+        const mainContent = document.querySelector('.modern-main'); 
+
+        const closeSidebar = () => {
+            if (sidebar) {
+                sidebar.classList.remove('show');
+                document.body.classList.remove('sidebar-open');
+            }
+        };
+
+        const openSidebar = () => {
+            if (sidebar) {
+                sidebar.classList.add('show');
+                document.body.classList.add('sidebar-open');
+            }
+        };
+
+        if (sidebarToggler) {
+            sidebarToggler.addEventListener('click', openSidebar);
+        }
+        
+        if (sidebarClose) {
+            sidebarClose.addEventListener('click', closeSidebar);
+        }
+
+        // إغلاق القائمة عند النقر على منطقة المحتوى الرئيسية في وضع الجوال
+        if (mainContent) {
+            mainContent.addEventListener('click', (e) => {
+                // نغلق القائمة إذا كانت مفتوحة ونحن في وضع الجوال
+                if (document.body.classList.contains('sidebar-open') && window.innerWidth < 992) {
+                    // نتأكد أن النقر لم يكن على زر الفتح نفسه أو داخل القائمة
+                    if (e.target.closest('#sidebar') === null && e.target.closest('#sidebarToggler') === null) {
+                        closeSidebar();
+                    }
                 }
-            }, 5000);
+            });
+        }
+    }
+
+    // تهيئة القوائم المنسدلة (Sub-menus) في شريط التنقل
+    setupDropdowns() {
+        const navDropdowns = document.querySelectorAll('.nav-list .has-submenu');
+        
+        navDropdowns.forEach(dropdown => {
+            const toggler = dropdown.querySelector('.sidebar-toggler');
+            const submenu = dropdown.querySelector('.sidebar-submenu');
+            
+            if (!toggler || !submenu) return;
+
+            // تعيين الحالة الأولية للقوائم المفتوحة
+            if (submenu.style.maxHeight && submenu.style.maxHeight !== '0px') {
+                submenu.style.maxHeight = submenu.scrollHeight + "px";
+                dropdown.classList.add('open');
+            }
+
+            toggler.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Toggle the 'open' class
+                dropdown.classList.toggle('open');
+
+                if (dropdown.classList.contains('open')) {
+                    // Open with animation
+                    submenu.style.maxHeight = submenu.scrollHeight + "px";
+                } else {
+                    // Close with animation
+                    submenu.style.maxHeight = 0;
+                }
+            });
         });
+    }
+
+    // تهيئة الـ Tooltips (Bootstrap)
+    setupAdvancedTooltips() {
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl, {
+                trigger: 'hover focus',
+                placement: 'auto'
+            });
+        });
+    }
+
+    // معالجة رسائل الفلاش (Flash Messages) - تحويلها إلى توست (Toasts)
+    handleFlashMessages() {
+        // نعتمد الآن على رسائل الفلاش الموجودة في base.html
+        const notificationsContainer = document.getElementById('flash-messages-container');
+        if (!notificationsContainer) return;
+        
+        const flashMessages = notificationsContainer.querySelectorAll('.modern-alert');
+        
+        // إذا كان لديك دالة showToast معرفة في script.js، يمكنك استخدامها هنا
+        if (window.showToast) {
+            flashMessages.forEach(alertEl => {
+                 const categoryClass = alertEl.className.match(/alert-(success|danger|warning|info|secondary|primary)/);
+                 const category = categoryClass ? categoryClass[1] : 'info';
+                 const messageSpan = alertEl.querySelector('span');
+                 const message = messageSpan ? messageSpan.textContent.trim() : 'رسالة نظام';
+                 
+                 window.showToast(message, category);
+                 
+                 // إخفاء العنصر القديم من الـ DOM فوراً
+                 alertEl.style.display = 'none';
+            });
+            // إخفاء الحاوية القديمة بعد معالجة الرسائل
+            if (flashMessages.length > 0) {
+                 setTimeout(() => notificationsContainer.style.display = 'none', 500);
+            }
+        }
     }
 }
 

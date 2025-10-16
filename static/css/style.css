@@ -8,26 +8,36 @@
     /* === Atlantis Color Palette === */
     --primary: #047857; /* Dark Teal - More professional and trustworthy */
     --primary-light: #059669;
+    --primary-dark: #065f46;
     --secondary: #475569; /* Slate Gray */
-    --accent: #F59E0B; /* Amber for highlights/warnings */
-    --bg-body: #f8fafc; /* Slate 50 */
-    --bg-surface: #ffffff;
-    --text-primary: #1e293b; /* Slate 900 */
-    --text-secondary: #475569; /* Slate 600 */
-    --border-light: #e2e8f0; /* Slate 200 */
-    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
-
-    /* === Primary Gradient === */
-    --primary-gradient: linear-gradient(135deg, var(--primary-light), var(--primary));
-
-    /* === Typography === */
-    --font-family: 'Cairo', sans-serif;
-    --border-radius: 0.5rem;
-    --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --info: #06b6d4;
     
-    /* === LAYOUT VARIABLES === */
+    /* === Atlantis Background Colors === */
+    --bg-body: #f8fafc; /* Light Gray */
+    --bg-surface: #ffffff; /* Pure White for cards/containers */
+    --bg-card-header: #f1f5f9; /* Off-white for section headers */
+    --bg-hover: #f0f9ff; /* Very light primary tone on hover */
+    
+    /* === Atlantis Text Colors === */
+    --text-primary: #1e293b;
+    --text-secondary: #475569;
+    --text-muted: #64748b;
+    
+    /* === Atlantis Borders & Shadows === */
+    --border-light: #e2e8f0;
+    --border-medium: #cbd5e1;
+    --radius-lg: 12px;
+    --radius-md: 8px;
+    
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    
+    /* === Transitions & Layout === */
+    --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --sidebar-width: 250px;
     --topbar-height: 60px;
 }
@@ -36,28 +46,35 @@
 /* == GLOBAL RESET AND TYPOGRAPHY == */
 /* ========================================================================== */
 
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
 body {
-    font-family: var(--font-family);
+    font-family: 'Cairo', sans-serif; /* تغيير الخط إلى القاهرة */
     background-color: var(--bg-body);
     color: var(--text-primary);
-    direction: rtl; /* دعم اللغة العربية */
+    line-height: 1.6;
+    direction: rtl; 
     text-align: right;
+    overflow-x: hidden;
 }
 
 h1, h2, h3, h4, h5, h6 {
+    font-weight: 700;
     color: var(--text-primary);
-    font-weight: 600;
+    line-height: 1.3;
 }
 
-a {
-    color: var(--primary);
-    text-decoration: none;
-    transition: color var(--transition-normal);
+/* Fix for number alignment in RTL tables */
+.number-cell {
+    direction: ltr;
+    text-align: right !important;
+    display: inline-block;
 }
 
-a:hover {
-    color: var(--primary-light);
-}
 
 /* ========================================================================== */
 /* == MODERN LAYOUT COMPONENTS == */
@@ -72,7 +89,7 @@ a:hover {
 .modern-sidebar {
     width: var(--sidebar-width);
     flex-shrink: 0;
-    position: fixed;
+    position: fixed; 
     top: 0;
     bottom: 0;
     right: 0; 
@@ -86,7 +103,7 @@ a:hover {
 }
 
 .sidebar-header {
-    background: var(--primary-gradient);
+    background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
     color: white;
     padding: 1rem 1.5rem;
     display: flex;
@@ -110,10 +127,10 @@ a:hover {
 .modern-nav {
     flex-grow: 1;
     overflow-y: auto;
-    padding: 1.5rem 0;
+    padding: 0.5rem 0.75rem;
 }
 
-.modern-nav ul {
+.nav-list {
     list-style: none;
     padding: 0;
     margin: 0;
@@ -126,65 +143,67 @@ a:hover {
 .nav-link {
     display: flex;
     align-items: center;
-    padding: 0.75rem 1.5rem;
+    padding: 0.75rem 1rem;
     color: var(--text-secondary);
     font-weight: 600;
     transition: all 0.2s;
-    border-radius: 0;
+    border-radius: var(--radius-md);
 }
 
 .nav-link i {
-    font-size: 1.1rem;
+    font-size: 1rem;
     width: 20px;
     margin-left: 10px;
+    transition: color 0.2s;
 }
 
-.nav-link:hover, .nav-item.active > .nav-link {
-    background-color: var(--primary);
-    color: var(--bg-surface);
-    border-right: 4px solid var(--accent);
+.nav-link:hover {
+    background-color: var(--bg-hover);
+    color: var(--primary-dark);
 }
 
-/* === Dropdown Navigation === */
-.nav-dropdown > a.nav-link {
+.nav-link.active {
+    background: var(--primary);
+    color: white !important;
+    box-shadow: var(--shadow-md);
+}
+
+/* Dropdown Submenus (القوائم الفرعية) */
+.has-submenu .sidebar-toggler {
     position: relative;
 }
 
-.nav-dropdown > a.nav-link::after {
-    content: "\f053"; /* Font Awesome Chevron Left */
-    font-family: "Font Awesome 6 Free";
-    font-weight: 900;
-    position: absolute;
-    left: 1.5rem;
-    top: 50%;
-    transform: translateY(-50%) rotate(0deg);
-    transition: transform 0.3s;
+.has-submenu .sidebar-toggler .toggle-icon {
     font-size: 0.75rem;
+    margin-left: 0;
+    transition: transform 0.3s;
 }
 
-.nav-dropdown.open > a.nav-link::after {
-    transform: translateY(-50%) rotate(-90deg); /* تدوير عند الفتح */
+.has-submenu.open .sidebar-toggler .toggle-icon {
+    transform: rotate(90deg);
 }
 
-.nav-submenu {
+.sidebar-submenu {
     max-height: 0;
     overflow: hidden;
     transition: max-height 0.4s ease-in-out;
-    background-color: rgba(255, 255, 255, 0.9);
-    border-right: 4px solid var(--primary-light);
+    background-color: var(--bg-card-header);
+    padding: 0.25rem 0;
+    border-radius: var(--radius-md);
+    margin-top: 0.25rem;
 }
 
-.nav-submenu .nav-link {
-    padding: 0.5rem 1.5rem 0.5rem 2.5rem; /* إزاحة للداخل */
-    font-size: 0.95rem;
-    font-weight: 400;
+.sidebar-submenu .sub-link {
+    padding: 0.5rem 1rem 0.5rem 1.5rem;
+    display: flex;
+    align-items: center;
     color: var(--text-secondary);
+    font-size: 0.9rem;
+    transition: color 0.2s;
 }
 
-.nav-submenu .nav-link:hover, .nav-submenu .nav-item.active .nav-link {
-    background-color: var(--bg-body);
+.sidebar-submenu .sub-link:hover {
     color: var(--primary);
-    border-right: none;
 }
 
 
@@ -233,65 +252,6 @@ a:hover {
     margin: 0;
 }
 
-.topbar-actions {
-    display: flex;
-    align-items: center;
-}
-
-/* === User Menu (في الشريط العلوي) === */
-.user-menu-dropdown {
-    margin-right: 1rem;
-}
-
-.user-menu-toggle {
-    background: var(--primary);
-    color: white;
-    border-radius: 50%;
-    width: 38px;
-    height: 38px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.9rem;
-    font-weight: 700;
-    cursor: pointer;
-}
-
-.dropdown-menu {
-    border: 1px solid var(--border-light);
-    box-shadow: var(--shadow-md);
-    border-radius: var(--border-radius);
-    margin-top: 0.5rem;
-}
-
-.dropdown-item i {
-    margin-left: 8px;
-    color: var(--primary);
-}
-
-
-/* === Content Area (منطقة المحتوى الرئيسية) === */
-.modern-content {
-    padding: 1.5rem;
-    flex-grow: 1;
-}
-
-/* === Flash Messages === */
-.flash-messages-container {
-    margin-bottom: 1.5rem;
-}
-.alert {
-    border-radius: var(--border-radius);
-    padding: 1rem 1.5rem;
-    box-shadow: var(--shadow-sm);
-    animation-duration: 0.5s;
-}
-.alert-success { background-color: #d1e7dd; color: #0f5132; }
-.alert-danger { background-color: #f8d7da; color: #842029; }
-.alert-info { background-color: #cff4fc; color: #055160; }
-.alert-warning { background-color: #fff3cd; color: #664d03; }
-
-
 /* === Footer === */
 .modern-footer {
     padding: 1rem 1.5rem;
@@ -304,127 +264,59 @@ a:hover {
     font-size: 0.9rem;
     flex-shrink: 0;
 }
-.footer-links a {
-    margin-left: 15px;
-    color: var(--text-secondary);
-}
-.footer-links a:hover {
-    color: var(--primary);
-}
 
 
 /* ========================================================================== */
-/* == UI Components (البطاقات، الجداول، الأزرار) == */
+/* == UI Components (Cards, Tables, Buttons) - Keeping the best from original == */
 /* ========================================================================== */
 
-/* === Cards === */
-.modern-card {
+.card {
     background: var(--bg-surface);
     border: 1px solid var(--border-light);
-    border-radius: var(--border-radius);
+    border-radius: var(--radius-lg);
     box-shadow: var(--shadow-sm);
-    margin-bottom: 1.5rem;
+    transition: all 0.1s;
+    overflow: hidden;
 }
-.modern-card-header {
-    padding: 1rem 1.5rem;
+
+.card-header {
+    background: var(--bg-card-header);
     border-bottom: 1px solid var(--border-light);
-    font-size: 1.1rem;
-    font-weight: 600;
-    background-color: var(--bg-body); /* خلفية خفيفة للرأس */
-    border-top-left-radius: var(--border-radius);
-    border-top-right-radius: var(--border-radius);
-}
-.modern-card-body {
-    padding: 1.5rem;
-}
-.modern-card-footer {
     padding: 1rem 1.5rem;
-    border-top: 1px solid var(--border-light);
-    background-color: var(--bg-body);
-    border-bottom-left-radius: var(--border-radius);
-    border-bottom-right-radius: var(--border-radius);
-}
-
-/* === Summary Cards (بطاقات الملخص) === */
-.summary-card-icon {
-    font-size: 2rem;
-    width: 50px;
-    height: 50px;
-    background-color: rgba(4, 120, 87, 0.1); /* لون Primary شفاف */
-    color: var(--primary);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-left: 15px;
-}
-.summary-card-text .label {
-    color: var(--text-secondary);
-    font-size: 0.9rem;
-}
-.summary-card-text .value {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--text-primary);
-}
-
-
-/* === Buttons === */
-.btn-primary {
-    background-color: var(--primary);
-    border-color: var(--primary);
-    transition: all 0.2s;
     font-weight: 600;
-    border-radius: var(--border-radius);
-}
-.btn-primary:hover {
-    background-color: var(--primary-light);
-    border-color: var(--primary-light);
 }
 
-/* === Tables === */
-.table {
-    --bs-table-bg: var(--bg-surface);
-    --bs-table-hover-bg: #f1f5f9; /* Slate 100 */
-    border-radius: var(--border-radius);
-    overflow: hidden; /* لحفظ الحدود المستديرة */
-}
-.table thead th {
-    background-color: var(--bg-body);
-    color: var(--text-primary);
-    font-weight: 700;
-    border-bottom-width: 2px;
-}
-.table-responsive {
-    border: 1px solid var(--border-light);
-    border-radius: var(--border-radius);
+.card-header.bg-dark { /* تصحيح اللون الداكن لرأس البطاقة */
+    background: var(--secondary) !important;
+    color: white !important;
 }
 
+.table th {
+    background: var(--bg-card-header);
+}
 
 /* ========================================================================== */
 /* == ANIMATIONS == */
 /* ========================================================================== */
 
-.animate-fade-in-up {
-    opacity: 0;
-    transform: translateY(20px);
-    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .animate-fade-in-up.is-visible {
-    opacity: 1;
-    transform: translateY(0);
+    animation: fadeInUp 0.6s ease-out both;
 }
 
+/* ========================================================================== */
+/* == MOBILE OPTIMIZATIONS (Media Queries) == */
+/* ========================================================================== */
 
-/* ========================================================================== */
-/* == MOBILE OPTIMIZATIONS (لضمان الاستجابة الكاملة) == */
-/* ========================================================================== */
 @media (max-width: 991.98px) {
     /* إخفاء القائمة الجانبية افتراضياً على الجوال */
     .modern-sidebar {
         width: var(--sidebar-width);
-        transform: translateX(var(--sidebar-width)); /* سحبها إلى اليمين لإخفائها */
+        transform: translateX(var(--sidebar-width)); 
         box-shadow: none;
     }
     
@@ -453,13 +345,12 @@ a:hover {
     .topbar-main-title {
         display: none !important;
     }
-
-    /* تغيير تصميم الشعار في القائمة الجانبية ليلائم الجوال */
-    .sidebar-header .brand-logo {
-        font-size: 1.3rem;
-    }
     
     /* تطبيق تأثير التعتيم (Backdrop) عند فتح القائمة على الجوال */
+    body.sidebar-open {
+        overflow: hidden; /* لمنع التمرير عندما تكون القائمة مفتوحة */
+    }
+    
     body.sidebar-open::after {
         content: '';
         position: fixed;
@@ -471,24 +362,19 @@ a:hover {
         z-index: 1040;
     }
     
-    /* محتوى الصفحة يصبح في المقدمة فوق الـ backdrop لتمكين النقر */
+    /* المحتوى الرئيسي (Main) يحتاج إلى زجاج أمامي لـ backdrop */
     .modern-main {
         position: relative;
-        z-index: 1045;
+        z-index: 1045; 
     }
 
-    /* تصغير الهوامش والتذييل على الجوال */
-    .modern-content {
-        padding: 1rem;
-    }
+    /* تنسيق تذييل الصفحة على الجوال */
     .modern-footer {
         flex-direction: column;
-        text-align: center;
+        align-items: flex-start;
+        font-size: 0.85rem;
     }
-    .modern-footer p {
-        margin-bottom: 0.5rem;
-    }
-    .footer-links a {
-        margin: 0 5px;
+    .footer-links {
+        margin-top: 0.5rem;
     }
 }

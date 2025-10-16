@@ -1,11 +1,24 @@
-{% extends "layouts/base.html" %}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {# تم تغيير اسم البلوك الرئيسي لـ title فقط لتقليل التعقيد #}
+    <title>{% block title %}سواعدنا - إدارة التكاليف{% endblock %}</title>
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/modern.css') }}">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="modern-body">
+    {# تم إزالة Loader لتبسيط البداية #}
 
-{% block title %}{% block page_title_inner %}{% endblock %}سواعدنا - إدارة التكاليف{% endblock %}
-
-{% block content %}
     <div class="app-wrapper">
         
-        {# القائمة الجانبية الحديثة (Sidebar) - تم نقل زر الإغلاق والشعار إلى هنا #}
+        {# القائمة الجانبية الحديثة (Sidebar) #}
         <aside class="modern-sidebar" id="sidebar">
             <div class="sidebar-header">
                 <div class="brand-logo">
@@ -24,7 +37,7 @@
         </aside>
 
         <main class="modern-main">
-            {# شريط التنقل العلوي (Topbar) - الآن أكثر بساطة #}
+            {# شريط التنقل العلوي (Topbar) #}
             <header class="modern-topbar">
                 <div class="topbar-content">
                     {# زر فتح القائمة الجانبية - يظهر على شاشات الجوال فقط #}
@@ -36,33 +49,34 @@
                     <h1 class="topbar-main-title d-none d-lg-block">{% block page_title %}{% endblock %}</h1>
                     
                     <div class="topbar-actions">
-                        {# قائمة المستخدمين والإعدادات #}
                         {% include 'partials/modern_user_menu.html' %}
                     </div>
                 </div>
             </header>
 
             <div class="modern-content">
-                {% with messages = get_flashed_messages(with_categories=true) %}
-                    {% if messages %}
-                        <div class="flash-messages-container">
+                {# Flash Messages Container - The JS will handle showing these as toasts (The `modern-alert` class is necessary for JS handling) #}
+                <div class="flash-messages-container" id="flash-messages-container">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
                             {% for category, message in messages %}
-                                <div class="alert alert-{{ category }} alert-dismissible fade show animate-fade-in-up" role="alert">
-                                    {{ message }}
-                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                <div class="alert alert-{{ category }} alert-dismissible fade show modern-alert" role="alert">
+                                    <i class="alert-icon"></i>
+                                    <span>{{ message }}</span>
                                 </div>
                             {% endfor %}
-                        </div>
-                    {% endif %}
-                {% endwith %}
+                        {% endif %}
+                    {% endwith %}
+                </div>
 
-                <div class="content-body">
-                    {% block app_content %}{% endblock %}
+                <div class="page-content animate-fade-in-up">
+                    {# هذا هو البلوك الذي يتم فيه عرض محتوى الصفحات الأخرى #}
+                    {% block content %}{% endblock %}
                 </div>
             </div>
-
+            
             <footer class="modern-footer">
-                <p>&copy; 2024 Sawaedna Cost App. All rights reserved.</p>
+                <p>&copy; 2025 سواعدنا - نظام إدارة التكاليف</p>
                 <div class="footer-links">
                     <a href="#">الشروط والأحكام</a>
                     <a href="#">سياسة الخصوصية</a>
@@ -70,4 +84,11 @@
             </footer>
         </main>
     </div>
-{% endblock %}
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/modern.js') }}"></script>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>
