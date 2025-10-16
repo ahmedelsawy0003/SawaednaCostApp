@@ -1,45 +1,159 @@
 // ==========================================================================
-// == SAWAEDNA COST APP - MODERN JAVASCRIPT ENHANCEMENTS ==
-// == Version: 8.0 - Enhanced & Optimized ==
+// == SAWAEDNA COST APP - ATLANTIS DESIGN SYSTEM JS (Core Features) ==
+// == Version: 9.0 - Optimized & Unified JS ==
 // ==========================================================================
 
 document.addEventListener("DOMContentLoaded", function() {
-    console.log("🚀 Sawaedna Cost App - Modern JavaScript Loaded");
+    console.log("🚀 Sawaedna Cost App - Atlantis JavaScript Loaded");
     
-    // Initialize all modern features
-    initializeModernFeatures();
+    // Initialize core features
+    initializeCoreFeatures();
     setupEnhancedSidebar();
     setupPasswordToggle();
     setupBulkActions();
     setupPaymentModal();
-    setupAdvancedSearch();
+    // setupAdvancedSearch is now handled in modern.js for unification
     setupRealTimeCalculations();
     setupMobileOptimizations();
-    setupPerformanceOptimizations();
 });
 
 // ==========================================================================
-// == MODERN FEATURE INITIALIZATION ==
+// == UTILITY FUNCTIONS (Centralized) ==
 // ==========================================================================
 
-function initializeModernFeatures() {
-    // Add loading animation to all buttons
-    document.querySelectorAll('button[type="submit"], .btn-primary, .btn-success').forEach(btn => {
+// Global debounce function (moved here to centralize)
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// Simple toast notification function (New Atlantis System)
+window.showToast = function(message, type = 'info') {
+    // 1. Create toast container if it doesn't exist (positioned in the top-left)
+    let container = document.getElementById('toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        container.className = 'modern-notifications'; // Use the CSS class defined in style.css
+        document.body.appendChild(container);
+    }
+
+    // 2. Create the toast element
+    const toast = document.createElement('div');
+    toast.className = `modern-alert alert-${type}`;
+    
+    // Determine the icon based on the type (using Font Awesome)
+    let iconClass = 'fa-info-circle';
+    if (type === 'success') iconClass = 'fa-check-circle';
+    if (type === 'danger') iconClass = 'fa-exclamation-triangle';
+    if (type === 'warning') iconClass = 'fa-exclamation-circle';
+
+    toast.innerHTML = `
+        <i class="alert-icon fas ${iconClass}"></i>
+        <span>${message}</span>
+        <button class="alert-close">&times;</button>
+    `;
+    
+    // 3. Add to container and show
+    container.prepend(toast); // Add to the beginning (LIFO)
+    
+    // 4. Auto remove after 5 seconds
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(-100%)';
+        setTimeout(() => toast.remove(), 500); // Remove after animation
+    }, 5000);
+    
+    // 5. Close on button click
+    toast.querySelector('.alert-close').addEventListener('click', () => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(-100%)';
+        setTimeout(() => toast.remove(), 500);
+    });
+}
+
+// Global error handler for better user experience
+window.addEventListener('error', function(e) {
+    console.error('Application Error:', e.error);
+    if (e.error && e.error.message) {
+        // Use the new centralized showToast
+        showToast('حدث خطأ غير متوقع. يرجى تحديث الصفحة والمحاولة مرة أخرى.', 'danger');
+    }
+});
+
+// Unhandled promise rejection handler
+window.addEventListener('unhandledrejection', function(e) {
+    console.error('Unhandled Promise Rejection:', e.reason);
+    showToast('حدث خطأ في النظام. يرجى المحاولة مرة أخرى.', 'danger');
+});
+
+function formatDate(dateString) {
+    if (!dateString) return '-';
+    
+    try {
+        const date = new Date(dateString);
+        // نستخدم التنسيق العربي مع الحماية من الأخطاء
+        return date.toLocaleDateString('ar-EG', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+        });
+    } catch (e) {
+        return dateString;
+    }
+}
+
+function showLoadingState(button) {
+    const originalText = button.innerHTML;
+    button.disabled = true;
+    // استخدام أيقونة التحميل الجديدة
+    button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> جاري المعالجة...';
+    
+    // Auto reset after 5 seconds (fallback)
+    setTimeout(() => {
+        button.disabled = false;
+        button.innerHTML = originalText;
+    }, 5000);
+}
+
+// ==========================================================================
+// == CORE FEATURE INITIALIZATION ==
+// ==========================================================================
+
+function initializeCoreFeatures() {
+    // 1. Add loading animation to all buttons (Optimized)
+    document.querySelectorAll('button[type="submit"], .btn-primary, .btn-success, .btn-warning, .btn-danger, .btn-info').forEach(btn => {
         btn.addEventListener('click', function(e) {
-            if (!this.classList.contains('no-loading')) {
-                this.classList.add('loading');
-                this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>' + this.textContent;
+            // Prevent adding loading state if button is already disabled or has 'no-loading' class
+            if (!this.classList.contains('no-loading') && !this.disabled && !this.classList.contains('loading')) {
+                // Remove existing content before setting loading text
+                const originalContent = this.innerHTML;
                 
-                // Auto remove loading state after 3 seconds (fallback)
-                setTimeout(() => {
-                    this.classList.remove('loading');
-                    this.innerHTML = this.innerHTML.replace('<i class="fas fa-spinner fa-spin me-2"></i>', '');
-                }, 3000);
+                this.classList.add('loading');
+                this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> جاري...';
+                
+                // Store original content for fallback removal
+                this.dataset.originalContent = originalContent;
+
+                // Auto remove loading state after 4 seconds (fallback)
+                setTimeout((button) => {
+                    if (button.classList.contains('loading')) {
+                         button.classList.remove('loading');
+                         button.innerHTML = button.dataset.originalContent;
+                    }
+                }, 4000, this);
             }
         });
     });
 
-    // Add smooth scrolling to all internal links
+    // 2. Add smooth scrolling to all internal links
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function (e) {
             e.preventDefault();
@@ -52,24 +166,21 @@ function initializeModernFeatures() {
             }
         });
     });
-
-    // Initialize tooltips
-    initializeTooltips();
-    
-    // Add fade-in animation to cards and tables
-    addScrollAnimations();
 }
 
 // ==========================================================================
 // == ENHANCED SIDEBAR FUNCTIONALITY ==
 // ==========================================================================
 
+// Function remains mostly the same, now relying on modern.js for tooltips
 function setupEnhancedSidebar() {
     const sidebar = document.querySelector('.sidebar');
-    const openSidebarBtn = document.getElementById('open-sidebar-btn');
-    const closeSidebarBtn = document.getElementById('close-sidebar-btn');
+    const openSidebarBtn = document.getElementById('sidebarToggler'); // Changed ID to match base.html
+    const sidebarCloseBtn = document.getElementById('sidebarClose');
     const sidebarOverlay = document.getElementById('sidebar-overlay');
-
+    
+    // The rest of the sidebar logic is preserved as it is robust.
+    // ... (Your original sidebar logic) ...
     // Create overlay if it doesn't exist
     if (!sidebarOverlay && sidebar) {
         const overlay = document.createElement('div');
@@ -79,7 +190,7 @@ function setupEnhancedSidebar() {
         
         overlay.addEventListener('click', closeSidebar);
     }
-
+    
     // Enhanced sidebar togglers with animations
     const togglers = document.querySelectorAll('.sidebar-toggler');
     
@@ -115,8 +226,8 @@ function setupEnhancedSidebar() {
     if (sidebar && openSidebarBtn) {
         openSidebarBtn.addEventListener('click', openSidebar);
         
-        if (closeSidebarBtn) {
-            closeSidebarBtn.addEventListener('click', closeSidebar);
+        if (sidebarCloseBtn) {
+            sidebarCloseBtn.addEventListener('click', closeSidebar);
         }
         
         // Close sidebar when clicking on overlay
@@ -135,7 +246,7 @@ function setupEnhancedSidebar() {
     function openSidebar() {
         if (sidebar) {
             sidebar.classList.add('show');
-            document.body.style.overflow = 'hidden';
+            document.body.classList.add('sidebar-open'); // New class to manage body overflow
             if (sidebarOverlay) {
                 sidebarOverlay.classList.add('show');
             }
@@ -145,7 +256,7 @@ function setupEnhancedSidebar() {
     function closeSidebar() {
         if (sidebar) {
             sidebar.classList.remove('show');
-            document.body.style.overflow = '';
+            document.body.classList.remove('sidebar-open');
             if (sidebarOverlay) {
                 sidebarOverlay.classList.remove('show');
             }
@@ -158,42 +269,44 @@ function setupEnhancedSidebar() {
 // ==========================================================================
 
 function setupPasswordToggle() {
-    const togglePassword = document.querySelector("#togglePassword");
-    const passwordInput = document.querySelector("#password");
-    const confirmPasswordInput = document.querySelector("#confirm_password");
+    const togglePassword = document.querySelectorAll(".password-toggle-icon");
     
-    if (togglePassword && passwordInput) {
-        togglePassword.addEventListener("click", function () {
-            const type = passwordInput.getAttribute("type") === "password" ? "text" : "password";
-            passwordInput.setAttribute("type", type);
+    togglePassword.forEach(toggleBtn => {
+        toggleBtn.addEventListener("click", function () {
+            // Find the nearest password input sibling
+            const passwordInput = this.closest('.input-group').querySelector('input[type="password"], input[type="text"]');
             
-            if (confirmPasswordInput) {
-                confirmPasswordInput.setAttribute("type", type);
-            }
-            
-            // Enhanced icon animation
-            this.classList.toggle("fa-eye");
-            this.classList.toggle("fa-eye-slash");
-            this.style.transform = "scale(1.2)";
-            
-            setTimeout(() => {
-                this.style.transform = "scale(1)";
-            }, 200);
-        });
-        
-        // Add focus effects
-        [passwordInput, confirmPasswordInput].forEach(input => {
-            if (input) {
-                input.addEventListener('focus', function() {
-                    this.parentElement.classList.add('input-focused');
-                });
+            if (passwordInput) {
+                const type = passwordInput.getAttribute("type") === "password" ? "text" : "password";
+                passwordInput.setAttribute("type", type);
                 
-                input.addEventListener('blur', function() {
-                    this.parentElement.classList.remove('input-focused');
-                });
+                // Enhanced icon animation
+                this.classList.toggle("fa-eye");
+                this.classList.toggle("fa-eye-slash");
+                this.style.transform = "scale(1.2)";
+                
+                setTimeout(() => {
+                    this.style.transform = "scale(1)";
+                }, 200);
             }
         });
-    }
+    });
+
+    // Add focus effects to all relevant inputs
+    document.querySelectorAll('input[type="password"], input[type="text"], input[type="email"], input[type="number"], input[type="date"]').forEach(input => {
+        if (input) {
+            input.addEventListener('focus', function() {
+                // Find parent element that should get the focus class
+                const parent = this.closest('.input-group') || this.parentElement;
+                parent.classList.add('input-focused');
+            });
+            
+            input.addEventListener('blur', function() {
+                const parent = this.closest('.input-group') || this.parentElement;
+                parent.classList.remove('input-focused');
+            });
+        }
+    });
 }
 
 // ==========================================================================
@@ -232,19 +345,19 @@ function setupBulkActions() {
             [bulkUpdateBtn, bulkDeleteBtn, bulkDuplicateBtn].forEach(btn => {
                 if (btn) {
                     btn.disabled = !hasSelection;
-                    btn.style.transform = hasSelection ? 'scale(1.05)' : 'scale(1)';
-                    btn.style.transition = 'transform 0.2s ease';
+                    // Remove scale animation as it is distracting
                 }
             });
 
             // Show/hide bulk actions section based on selection
-            const bulkSection = document.querySelector('.bulk-actions-section');
+            const bulkSection = document.getElementById('collapseBulkEdit');
             if (bulkSection) {
+                 // Use Bootstrap's collapse function
+                 const bsCollapse = bootstrap.Collapse.getOrCreateInstance(bulkSection, { toggle: false });
                 if (hasSelection) {
-                    bulkSection.style.display = 'block';
-                    bulkSection.style.animation = 'fadeInUp 0.3s ease';
+                    bsCollapse.show();
                 } else {
-                    bulkSection.style.display = 'none';
+                    bsCollapse.hide();
                 }
             }
         }
@@ -256,17 +369,14 @@ function setupBulkActions() {
                 
                 itemCheckboxes.forEach(checkbox => {
                     checkbox.checked = isChecked;
-                    // Add visual feedback
-                    checkbox.parentElement.style.backgroundColor = isChecked ? 'rgba(37, 99, 235, 0.1)' : '';
+                    // Add visual feedback directly to the row for better clarity
+                    const row = checkbox.closest('tr');
+                    if (row) {
+                        row.style.backgroundColor = isChecked ? 'var(--bg-hover)' : '';
+                    }
                 });
                 
                 updateSelectedState();
-                
-                // Visual feedback for select all
-                this.parentElement.style.backgroundColor = isChecked ? 'rgba(37, 99, 235, 0.2)' : '';
-                setTimeout(() => {
-                    this.parentElement.style.backgroundColor = '';
-                }, 500);
             });
 
             // Individual checkbox functionality
@@ -279,25 +389,19 @@ function setupBulkActions() {
                     }
                     
                     // Visual feedback
-                    this.parentElement.style.backgroundColor = this.checked ? 'rgba(37, 99, 235, 0.1)' : '';
+                    const row = this.closest('tr');
+                    if (row) {
+                        row.style.backgroundColor = this.checked ? 'var(--bg-hover)' : '';
+                    }
                     
                     updateSelectedState();
                 });
                 
-                // Hover effects
-                checkbox.addEventListener('mouseenter', function() {
-                    this.parentElement.style.backgroundColor = 'rgba(37, 99, 235, 0.05)';
-                });
-                
-                checkbox.addEventListener('mouseleave', function() {
-                    if (!this.checked) {
-                        this.parentElement.style.backgroundColor = '';
-                    }
-                });
+                // Hover effects (removed for table rows as it's already handled by CSS)
             });
         }
 
-        // Enhanced bulk action buttons
+        // Enhanced bulk action buttons (now using showLoadingState)
         if (bulkUpdateBtn) {
             bulkUpdateBtn.addEventListener('click', function(e) {
                 e.preventDefault();
@@ -346,7 +450,6 @@ function setupPaymentModal() {
     if (paymentItemsModal) {
         paymentItemsModal.addEventListener('show.bs.modal', function(event) {
             const button = event.relatedTarget;
-            const paymentId = button.getAttribute('data-payment-id');
             const paymentAmount = button.getAttribute('data-payment-amount');
             const paymentDate = button.getAttribute('data-payment-date');
             const paymentDescription = button.getAttribute('data-payment-description');
@@ -368,7 +471,7 @@ function setupPaymentModal() {
             modalItemsList.innerHTML = `
                 <tr>
                     <td colspan="2" class="text-center">
-                        <div class="loading-spinner">
+                        <div class="loading-spinner py-4 text-muted">
                             <i class="fas fa-spinner fa-spin me-2"></i> جاري تحميل تفاصيل التوزيع...
                         </div>
                     </td>
@@ -385,8 +488,9 @@ function setupPaymentModal() {
                 if (list && list.length > 0) {
                     list.forEach((dist, index) => {
                         const row = document.createElement('tr');
+                        // Add fade-in-up class defined in modern.js / style.css
+                        row.classList.add('animate-fade-in-up'); 
                         row.style.animationDelay = (index * 0.1) + 's';
-                        row.classList.add('fade-in-row');
                         
                         const description = dist.description || (dist.invoice_item ? dist.invoice_item.description : 'غير محدد');
                         const amount = parseFloat(dist.amount);
@@ -402,7 +506,7 @@ function setupPaymentModal() {
                     
                     // Add total row
                     const totalRow = document.createElement('tr');
-                    totalRow.classList.add('table-primary', 'fade-in-row');
+                    totalRow.classList.add('table-primary', 'animate-fade-in-up');
                     totalRow.style.animationDelay = (list.length * 0.1) + 's';
                     
                     const totalAmount = list.reduce((sum, dist) => sum + parseFloat(dist.amount), 0);
@@ -429,7 +533,12 @@ function setupPaymentModal() {
             if (distributionsJsonAttr && distributionsJsonAttr.trim() !== '') {
                 let parsed = [];
                 try { 
-                    parsed = JSON.parse(distributionsJsonAttr); 
+                    // Note: distributionsJsonAttr is already JSON-encoded string from the template.
+                    // The tojson filter in Jinja2 escapes the content. We only need JSON.parse
+                    // if it was the string attribute, but since we are copying from the element
+                    // attribute, it might be double escaped. We rely on the template output being correct.
+                    // Let's assume the template provided a clean JSON string:
+                    parsed = JSON.parse(distributionsJsonAttr);
                 } catch (e) { 
                     console.error("Error parsing embedded JSON data:", e);
                     parsed = []; 
@@ -463,96 +572,33 @@ function setupPaymentModal() {
 
         // Add animation when modal is fully shown
         paymentItemsModal.addEventListener('shown.bs.modal', function() {
-            this.querySelector('.modal-content').classList.add('animate__animated', 'animate__fadeInUp');
+            // Animation class is now handled by CSS or by the items themselves
         });
     }
 }
 
 // ==========================================================================
-// == ADVANCED SEARCH FUNCTIONALITY ==
+// == ADVANCED SEARCH FUNCTIONALITY (Client-Side) ==
 // ==========================================================================
 
 function setupAdvancedSearch() {
-    // Quick search for projects table
-    const projectSearch = document.getElementById('project-quick-search');
-    if (projectSearch) {
-        projectSearch.addEventListener('input', debounce(function() {
-            const filter = this.value.toLowerCase();
-            const rows = document.querySelectorAll('#projects-table tbody tr');
-            
-            rows.forEach(row => {
-                const name = row.querySelector('td:nth-child(1)').textContent.toLowerCase();
-                const statusElement = row.querySelector('[data-project-status]');
-                const status = statusElement ? statusElement.getAttribute('data-project-status').toLowerCase() : '';
-                
-                if (name.includes(filter) || status.includes(filter)) {
-                    row.style.display = '';
-                    row.classList.add('search-highlight');
-                    setTimeout(() => row.classList.remove('search-highlight'), 1000);
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-            
-            // Show search results count
-            const visibleRows = document.querySelectorAll('#projects-table tbody tr:not([style*="display: none"])');
-            updateSearchResultsCount(visibleRows.length, rows.length);
-        }, 300));
-    }
+    // Quick search for projects table (Logic is moved to modern.js)
     
-    // Quick search for contractors table
-    const contractorSearch = document.getElementById('contractor-quick-search');
-    if (contractorSearch) {
-        contractorSearch.addEventListener('input', debounce(function() {
-            const filter = this.value.toLowerCase();
-            const table = document.getElementById('contractors-table');
-            if (!table) return;
-            
-            const rows = table.querySelectorAll('tbody tr');
-            rows.forEach(row => {
-                const name = row.querySelector('td:nth-child(1)').textContent.toLowerCase();
-                const contact = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
-                const phone = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
-                
-                if (name.includes(filter) || contact.includes(filter) || phone.includes(filter)) {
-                    row.style.display = '';
-                    row.classList.add('search-highlight');
-                    setTimeout(() => row.classList.remove('search-highlight'), 1000);
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-        }, 300));
-    }
+    // Quick search for contractors table (Logic is moved to modern.js)
 }
 
 // ==========================================================================
 // == REAL-TIME CALCULATIONS ==
 // ==========================================================================
 
-function setupRealTimeCalculations() {
-    // Real-time calculation for contract total
-    const contractQtyInput = document.getElementById('contract_quantity');
-    const contractUnitCostInput = document.getElementById('contract_unit_cost');
-    const contractTotalInput = document.getElementById('contract_total_cost');
-    
-    if (contractQtyInput && contractUnitCostInput && contractTotalInput) {
-        [contractQtyInput, contractUnitCostInput].forEach(input => {
-            input.addEventListener('input', debounce(() => {
-                calculateContractTotal();
-            }, 200));
-        });
-    }
-    
-    // Real-time calculation for cost details
-    document.querySelectorAll('.cost-input').forEach(input => {
-        input.addEventListener('input', debounce(() => {
-            calculateCostDetailTotal();
-        }, 200));
-    });
-}
+// Centralized calculation logic for contract total (remains here)
+const contractQtyInput = document.getElementById('contract_quantity');
+const contractUnitCostInput = document.getElementById('contract_unit_cost');
+const contractTotalInput = document.getElementById('contract_total_cost');
 
 function calculateContractTotal() {
+    if (!contractQtyInput || !contractUnitCostInput || !contractTotalInput) return;
+
     const qty = parseFloat(contractQtyInput.value) || 0;
     const cost = parseFloat(contractUnitCostInput.value) || 0;
     const total = qty * cost;
@@ -563,15 +609,31 @@ function calculateContractTotal() {
     });
 }
 
+// Note: calculateCostDetailTotal() is removed as it's now handled by cost_details/edit.html specific script.
+function setupRealTimeCalculations() {
+    // Real-time calculation for contract total
+    if (contractQtyInput && contractUnitCostInput && contractTotalInput) {
+        [contractQtyInput, contractUnitCostInput].forEach(input => {
+            input.addEventListener('input', debounce(() => {
+                calculateContractTotal();
+            }, 200));
+        });
+        calculateContractTotal(); // Initial run
+    }
+    
+    // Real-time calculation for cost details (Inputs are handled in their own template script now)
+}
+
+
 // ==========================================================================
 // == MOBILE OPTIMIZATIONS ==
 // ==========================================================================
 
 function setupMobileOptimizations() {
-    // Improve touch experience
-    document.querySelectorAll('.btn, .sidebar-link, .table-row').forEach(element => {
+    // Ensure sufficient touch target size (UX improvement for smaller screens)
+    document.querySelectorAll('.btn, .sidebar-link, .table-row, .form-select, .form-control').forEach(element => {
+        // Enforce the 44px touch target rule
         element.style.minHeight = '44px';
-        element.style.minWidth = '44px';
         element.classList.add('touch-optimized');
     });
     
@@ -582,7 +644,7 @@ function setupMobileOptimizations() {
         }, 300);
     });
     
-    // Prevent zoom on double-tap
+    // Prevent zoom on double-tap (optional but good for mobile UX)
     let lastTouchEnd = 0;
     document.addEventListener('touchend', function(event) {
         const now = (new Date()).getTime();
@@ -594,139 +656,45 @@ function setupMobileOptimizations() {
 }
 
 // ==========================================================================
-// == PERFORMANCE OPTIMIZATIONS ==
+// == PERFORMANCE OPTIMIZATIONS (Only essential parts remain) ==
 // ==========================================================================
 
 function setupPerformanceOptimizations() {
-    // Lazy load images
+    // Lazy load images (remains if img.lazy class is used)
     if ('IntersectionObserver' in window) {
         const imageObserver = new IntersectionObserver((entries, observer) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
                     const img = entry.target;
-                    img.src = img.dataset.src;
-                    img.classList.remove('lazy');
+                    const src = img.dataset.src || img.getAttribute('data-src');
+                    if (src) {
+                        img.src = src;
+                        img.removeAttribute('data-src');
+                        img.classList.remove('lazy');
+                    }
                     imageObserver.unobserve(img);
                 }
             });
-        });
+        }, { threshold: 0.1 });
 
         document.querySelectorAll('img.lazy').forEach(img => {
             imageObserver.observe(img);
         });
     }
     
-    // Debounced resize handler
-    window.addEventListener('resize', debounce(() => {
-        // Handle responsive adjustments
-        adjustLayoutForScreenSize();
-    }, 250));
+    // Debounced resize handler (handled in modern.js)
 }
 
 // ==========================================================================
-// == UTILITY FUNCTIONS ==
+// == ENHANCED CSS DYNAMICALLY (Removed most CSS as it's in style.css now) ==
 // ==========================================================================
 
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
-}
-
-function formatDate(dateString) {
-    if (!dateString) return '-';
-    
-    try {
-        const date = new Date(dateString);
-        return date.toLocaleDateString('ar-EG', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit'
-        });
-    } catch (e) {
-        return dateString;
-    }
-}
-
-function showLoadingState(button) {
-    const originalText = button.innerHTML;
-    button.disabled = true;
-    button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> جاري المعالجة...';
-    
-    // Auto reset after 5 seconds (fallback)
-    setTimeout(() => {
-        button.disabled = false;
-        button.innerHTML = originalText;
-    }, 5000);
-}
-
-function initializeTooltips() {
-    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
-    });
-}
-
-function addScrollAnimations() {
-    const observerOptions = {
-        threshold: 0.1,
-        rootMargin: '0px 0px -50px 0px'
-    };
-    
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('animate-fade-in-up');
-            }
-        });
-    }, observerOptions);
-    
-    // Observe cards and tables for animation
-    document.querySelectorAll('.card, .table-responsive').forEach(el => {
-        observer.observe(el);
-    });
-}
-
-function updateSearchResultsCount(visible, total) {
-    let countElement = document.getElementById('search-results-count');
-    
-    if (!countElement) {
-        countElement = document.createElement('div');
-        countElement.id = 'search-results-count';
-        countElement.className = 'search-results-count';
-        document.querySelector('.card-header').appendChild(countElement);
-    }
-    
-    countElement.textContent = `عرض ${visible} من أصل ${total} نتيجة`;
-    countElement.style.display = visible === total ? 'none' : 'block';
-}
-
-function adjustLayoutForScreenSize() {
-    const width = window.innerWidth;
-    
-    if (width < 768) {
-        document.body.classList.add('mobile-view');
-        // Mobile-specific adjustments
-    } else {
-        document.body.classList.remove('mobile-view');
-    }
-}
-
-// ==========================================================================
-// == ENHANCED CSS DYNAMICALLY ==
-// ==========================================================================
-
-// Inject additional CSS for enhanced features
 const enhancedStyles = `
+    /* Loading state for buttons */
     .loading {
         position: relative;
         pointer-events: none;
+        color: transparent !important;
     }
     
     .loading::after {
@@ -747,28 +715,17 @@ const enhancedStyles = `
         to { transform: rotate(360deg); }
     }
     
-    .search-highlight {
-        animation: highlight 1s ease;
+    /* Input focus visual feedback */
+    .input-focused {
+        border-color: var(--primary) !important;
+        box-shadow: 0 0 0 0.2rem var(--bg-hover) !important;
     }
     
-    @keyframes highlight {
-        0% { background-color: rgba(37, 99, 235, 0.3); }
-        100% { background-color: transparent; }
-    }
-    
-    .fade-in-row {
-        animation: fadeInRow 0.5s ease forwards;
-        opacity: 0;
-    }
-    
-    @keyframes fadeInRow {
-        to { opacity: 1; }
-    }
-    
+    /* Sidebar overlay fix */
     .sidebar-overlay {
         position: fixed;
         top: 0;
-        left: 0;
+        right: 0;
         width: 100%;
         height: 100%;
         background: rgba(0, 0, 0, 0.5);
@@ -782,27 +739,14 @@ const enhancedStyles = `
         opacity: 1;
         visibility: visible;
     }
-    
-    .input-focused {
-        border-color: #2563eb !important;
-        box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.25) !important;
-    }
-    
+
+    /* Mobile UX improvement */
     .touch-optimized {
         -webkit-tap-highlight-color: transparent;
         user-select: none;
     }
-    
-    .search-results-count {
-        font-size: 0.875rem;
-        color: #6b7280;
-        margin-top: 0.5rem;
-    }
-    
-    @media (max-width: 768px) {
-        .mobile-view .table-responsive {
-            font-size: 0.875rem;
-        }
+    .sidebar-open {
+        overflow: hidden;
     }
 `;
 
@@ -811,56 +755,4 @@ const styleSheet = document.createElement('style');
 styleSheet.textContent = enhancedStyles;
 document.head.appendChild(styleSheet);
 
-// ==========================================================================
-// == ERROR HANDLING & FALLBACKS ==
-// ==========================================================================
-
-// Global error handler for better user experience
-window.addEventListener('error', function(e) {
-    console.error('Application Error:', e.error);
-    
-    // Show user-friendly error message
-    if (e.error && e.error.message) {
-        showToast('حدث خطأ غير متوقع. يرجى تحديث الصفحة والمحاولة مرة أخرى.', 'error');
-    }
-});
-
-// Unhandled promise rejection handler
-window.addEventListener('unhandledrejection', function(e) {
-    console.error('Unhandled Promise Rejection:', e.reason);
-    showToast('حدث خطأ في النظام. يرجى المحاولة مرة أخرى.', 'error');
-});
-
-// Simple toast notification function
-function showToast(message, type = 'info') {
-    // Create toast element
-    const toast = document.createElement('div');
-    toast.className = `toast toast-${type}`;
-    toast.innerHTML = `
-        <div class="toast-content">
-            <i class="fas fa-${type === 'error' ? 'exclamation-triangle' : 'info-circle'} me-2"></i>
-            ${message}
-        </div>
-        <button class="toast-close">&times;</button>
-    `;
-    
-    // Add to page
-    document.body.appendChild(toast);
-    
-    // Show toast
-    setTimeout(() => toast.classList.add('show'), 100);
-    
-    // Auto remove after 5 seconds
-    setTimeout(() => {
-        toast.classList.remove('show');
-        setTimeout(() => toast.remove(), 300);
-    }, 5000);
-    
-    // Close on button click
-    toast.querySelector('.toast-close').addEventListener('click', () => {
-        toast.classList.remove('show');
-        setTimeout(() => toast.remove(), 300);
-    });
-}
-
-console.log("✅ Enhanced JavaScript successfully loaded and initialized");
+console.log("✅ Core JavaScript successfully optimized and initialized");

@@ -4,7 +4,7 @@
     {% if show_archived %}
         المشاريع المؤرشفة
     {% else %}
-        قائمة المشاريع
+        قائمة المشاريع النشطة
     {% endif %}
 {% endblock %}
 
@@ -19,60 +19,59 @@
     </h2>
     
     <div class="d-flex flex-wrap gap-2">
-        {% if show_archived %}
-            <a href="{{ url_for('project.get_projects') }}" class="btn btn-primary"
-               data-bs-toggle="tooltip" data-bs-placement="bottom" title="العودة إلى القائمة الرئيسية للمشاريع النشطة">
-                <i class="fas fa-arrow-left me-1"></i> العودة للنشطة
-            </a>
-        {% else %}
-            <a href="{{ url_for('project.get_projects', show_archived=True) }}" class="btn btn-secondary"
-               data-bs-toggle="tooltip" data-bs-placement="bottom" title="عرض المشاريع التي تم إيقافها أو حفظها">
-                <i class="fas fa-archive me-1"></i> عرض الأرشيف
-            </a>
-            {% if current_user.role in ['admin', 'sub-admin'] %}
-            <a href="{{ url_for("project.new_project") }}" class="btn btn-success"
-               data-bs-toggle="tooltip" data-bs-placement="bottom" title="إنشاء مشروع جديد في النظام">
-                <i class="fas fa-plus me-1"></i> إضافة مشروع جديد
-            </a>
-            {% endif %}
+        {% if current_user.role in ['admin', 'sub-admin'] %}
+        <a href="{{ url_for("project.new_project") }}" class="btn btn-primary"
+           data-bs-toggle="tooltip" data-bs-placement="bottom" title="إنشاء مشروع جديد في النظام">
+            <i class="fas fa-plus me-1"></i> إضافة مشروع جديد
+        </a>
         {% endif %}
     </div>
 </div>
 
-<div class="card mb-4">
-    <div class="card-header bg-dark text-white">
-        <h5 class="mb-0"><i class="fas fa-search me-1"></i>البحث السريع في القائمة</h5>
-    </div>
-    <div class="card-body">
-         <input type="search" class="form-control" id="project-quick-search" placeholder="ابحث باسم المشروع أو حالته..." style="max-width: 100%;">
-         <div class="form-text mt-2 text-muted small">
-             ابحث فوراً عن أي مشروع في الجدول بالاسم أو الحالة أو الموقع.
-         </div>
-    </div>
-</div>
-
 <div class="card">
-    <div class="card-header">
-        <h5 class="mb-0"><i class="fas fa-list-alt me-1"></i>قائمة المشاريع التفصيلية ({{ projects|length }})</h5>
+    {# New Tabbed Header and Search Bar (Toolbar Style) #}
+    <div class="card-header p-0">
+        <ul class="nav nav-tabs card-header-tabs" id="projectTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <a class="nav-link {% if not show_archived %}active{% endif %} fw-bold" href="{{ url_for('project.get_projects') }}">
+                    <i class="fas fa-list-check me-1"></i> المشاريع النشطة
+                </a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link {% if show_archived %}active{% endif %} fw-bold" href="{{ url_for('project.get_projects', show_archived=True) }}">
+                    <i class="fas fa-archive me-1"></i> الأرشيف
+                </a>
+            </li>
+        </ul>
+        
+        {# Search/Filter Bar - Placed just below the tabs for a clean look #}
+        <div class="p-3 border-top border-light bg-light">
+             <input type="search" class="form-control" id="project-quick-search" placeholder="ابحث باسم المشروع، حالته، أو موقعه..." style="max-width: 100%;">
+             <div class="form-text mt-2 text-muted small">
+                 ابحث فوراً عن أي مشروع في الجدول.
+             </div>
+        </div>
     </div>
+    
     <div class="card-body p-0">
         {% if projects %}
             <div class="table-responsive">
-                <table class="table table-dark table-hover table-striped mb-0" id="projects-table">
+                {# تمت إزالة table-dark والاعتماد على style.css لتطبيق التصميم الاحترافي #}
+                <table class="table table-hover table-striped mb-0" id="projects-table">
                     <thead>
                         <tr>
-                            <th>اسم المشروع</th>
-                            <th class="d-none d-sm-table-cell text-center">الحالة</th>
+                            <th style="width: 25%;">اسم المشروع</th>
+                            <th class="d-none d-sm-table-cell text-center" style="width: 10%;">الحالة</th>
                             {% if current_user.role in ['admin', 'sub-admin'] %}
-                            <th class="d-none d-lg-table-cell text-end">التكلفة التعاقدية (ر.س)</th>
+                            <th class="d-none d-lg-table-cell text-end" data-bs-toggle="tooltip" title="التكلفة التعاقدية (ر.س)" style="width: 15%;">تعاقدي (ر.س)</th>
                             {% endif %}
-                            <th class="d-none d-sm-table-cell text-end">التكلفة الفعلية (ر.س)</th>
-                            <th class="d-none d-md-table-cell text-end">إجمالي المدفوع (ر.س)</th>
-                            <th class="d-none d-md-table-cell text-end">المبلغ المتبقي (ر.س)</th>
+                            <th class="d-none d-sm-table-cell text-end" data-bs-toggle="tooltip" title="التكلفة الفعلية المحتسبة (ر.س)" style="width: 15%;">فعلي (ر.س)</th>
+                            <th class="d-none d-md-table-cell text-end" style="width: 15%;">إجمالي المدفوع (ر.س)</th>
+                            <th class="d-none d-md-table-cell text-end" style="width: 15%;">المبلغ المتبقي (ر.س)</th>
                              {% if current_user.role in ['admin', 'sub-admin'] %}
-                             <th class="d-none d-lg-table-cell text-end">الوفر/الزيادة (ر.س)</th>
+                             <th class="d-none d-lg-table-cell text-end" data-bs-toggle="tooltip" title="الوفر أو الزيادة (ر.س)" style="width: 5%;">وفر/زيادة (ر.س)</th>
                              {% endif %}
-                             <th class="text-center" style="width: 200px;">الإجراءات</th>
+                             <th class="text-center" style="width: 10%;">الإجراءات</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -115,34 +114,39 @@
                                         <i class="fas fa-eye"></i>
                                     </a>
                                     {% if current_user.role in ['admin', 'sub-admin'] %}
-                                    <a href="{{ url_for("project.edit_project", project_id=project.id) }}" class="btn btn-warning"
-                                       data-bs-toggle="tooltip" data-bs-placement="top" title="تعديل بيانات المشروع">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    
-                                    <form action="{{ url_for('project.toggle_archive', project_id=project.id, show_archived=show_archived) }}" method="POST" class="d-inline">
-                                        {% if project.is_archived %}
-                                            <button type="submit" class="btn btn-success"
-                                                    data-bs-toggle="tooltip" data-bs-placement="top" title="إلغاء أرشفة المشروع وإعادته للنشطة">
-                                                <i class="fas fa-box-open"></i>
-                                            </button>
-                                        {% else %}
-                                            <button type="submit" class="btn btn-dark"
-                                                    data-bs-toggle="tooltip" data-bs-placement="top" title="أرشفة المشروع لإخفائه من القائمة النشطة">
-                                                <i class="fas fa-archive"></i>
-                                            </button>
-                                        {% endif %}
-                                    </form>
-
-                                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteProjectModal-{{ project.id }}"
-                                            data-bs-toggle="tooltip" data-bs-placement="top" title="حذف المشروع نهائياً">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
+                                    {# Dropdown for Secondary Actions #}
+                                    <div class="dropdown">
+                                        <button class="btn btn-secondary dropdown-toggle btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="إجراءات إضافية">
+                                            <i class="fas fa-ellipsis-v"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end text-end" dir="rtl">
+                                            <li><a class="dropdown-item" href="{{ url_for("project.edit_project", project_id=project.id) }}"><i class="fas fa-edit me-2 text-warning"></i> تعديل البيانات</a></li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li>
+                                                <form action="{{ url_for('project.toggle_archive', project_id=project.id, show_archived=show_archived) }}" method="POST" class="d-inline">
+                                                    <button type="submit" class="dropdown-item">
+                                                        {% if project.is_archived %}
+                                                            <i class="fas fa-box-open me-2 text-success"></i> إلغاء الأرشفة
+                                                        {% else %}
+                                                            <i class="fas fa-archive me-2 text-dark"></i> أرشفة المشروع
+                                                        {% endif %}
+                                                    </button>
+                                                </form>
+                                            </li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li>
+                                                <button type="button" class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#deleteProjectModal-{{ project.id }}">
+                                                    <i class="fas fa-trash me-2"></i> حذف المشروع نهائياً
+                                                </button>
+                                            </li>
+                                        </ul>
+                                    </div>
                                     {% endif %}
                                 </div>
                             </td>
                         </tr>
                         
+                        {# Delete Modal (المحسن لطلب اسم المشروع) #}
                         <div class="modal fade" id="deleteProjectModal-{{ project.id }}" tabindex="-1">
                             <div class="modal-dialog modal-dialog-centered">
                                 <div class="modal-content">
@@ -153,11 +157,13 @@
                                     <div class="modal-body">
                                         <p>هل أنت متأكد أنك تريد حذف المشروع <strong>{{ project.name }}</strong>؟</p>
                                         <p class="text-danger"><i class="fas fa-exclamation-triangle me-2"></i>سيتم حذف جميع البنود والدفعات المرتبطة بهذا المشروع ولا يمكن التراجع.</p>
+                                        <p class="text-primary small mt-3">**إجراء احترازي:** لحماية بياناتك، يرجى كتابة اسم المشروع كاملاً لتأكيد الحذف.</p>
+                                        <input type="text" id="confirm-delete-{{ project.id }}" class="form-control" placeholder="أدخل: {{ project.name }}">
                                     </div>
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
                                         <form action="{{ url_for("project.delete_project", project_id=project.id) }}" method="POST" class="d-inline">
-                                            <button type="submit" class="btn btn-danger">تأكيد الحذف</button>
+                                            <button type="submit" id="submit-delete-{{ project.id }}" class="btn btn-danger" disabled>تأكيد الحذف</button>
                                         </form>
                                     </div>
                                 </div>
@@ -200,6 +206,7 @@ document.addEventListener("DOMContentLoaded", function() {
         searchInput.addEventListener('keyup', function() {
             const filter = searchInput.value.toLowerCase();
             rows.forEach(row => {
+                // Combine name and status for broader search
                 const name = row.querySelector('td:nth-child(1)').textContent.toLowerCase();
                 const statusElement = row.querySelector('[data-project-status]');
                 const status = statusElement ? statusElement.getAttribute('data-project-status').toLowerCase() : '';
@@ -212,6 +219,27 @@ document.addEventListener("DOMContentLoaded", function() {
             });
         });
     }
+    
+    // Enhanced Delete Modal Logic: Check if the entered text matches the required project name
+    document.querySelectorAll('[id^="deleteProjectModal-"]').forEach(modalEl => {
+        const requiredName = modalEl.querySelector('input[id^="confirm-delete-"]').placeholder.replace('أدخل: ', '').trim();
+        const inputField = modalEl.querySelector('input[id^="confirm-delete-"]');
+        const submitButton = modalEl.querySelector('button[id^="submit-delete-"]');
+
+        if (inputField && submitButton) {
+            inputField.addEventListener('input', (e) => {
+                const enteredText = e.target.value.trim();
+                // Enable button only if text matches exactly
+                submitButton.disabled = enteredText !== requiredName;
+            });
+            
+            // Clear input on modal close
+            modalEl.addEventListener('hide.bs.modal', () => {
+                inputField.value = '';
+                submitButton.disabled = true;
+            });
+        }
+    });
 });
 </script>
 {% endblock %}

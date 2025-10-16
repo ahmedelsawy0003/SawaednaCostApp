@@ -1,53 +1,37 @@
-// Modern Enhancements for Sawaedna Cost App
-class ModernApp {
+// Atlantis Enhancements for Sawaedna Cost App
+class AtlantisUX { // الفئة الجديدة لنظام أتلانتس
     constructor() {
         this.init();
     }
 
     init() {
-        this.setupSmoothAnimations();
-        this.setupModernInteractions();
-        this.setupRealTimeUpdates();
-        this.setupAdvancedFilters();
+        this.setupVisualAnimations(); 
+        this.setupAdvancedTooltips(); 
+        this.handleFlashMessages(); // وظيفة جديدة لمعالجة رسائل Flash القديمة وعرضها كـ Toasts
     }
 
-    setupSmoothAnimations() {
-        // Add intersection observer for scroll animations
+    setupVisualAnimations() {
+        // إضافة Intersection Observer لتحريك العناصر عند التمرير (Fade-in-up)
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
                     entry.target.classList.add('animate-fade-in-up');
                 }
             });
-        });
+        }, observerOptions);
 
+        // مراقبة البطاقات وحاويات الجداول
         document.querySelectorAll('.card, .table-responsive').forEach(el => {
             observer.observe(el);
         });
     }
 
-    setupModernInteractions() {
-        // Enhanced hover effects
-        document.querySelectorAll('.btn, .card').forEach(element => {
-            element.addEventListener('mouseenter', this.addHoverEffect);
-            element.addEventListener('mouseleave', this.removeHoverEffect);
-        });
-
-        // Advanced tooltips
-        this.setupAdvancedTooltips();
-    }
-
-    addHoverEffect(e) {
-        this.style.transform = 'translateY(-2px)';
-        this.style.boxShadow = '0 10px 25px -5px rgba(0, 0, 0, 0.15)';
-    }
-
-    removeHoverEffect(e) {
-        this.style.transform = 'translateY(0)';
-        this.style.boxShadow = '';
-    }
-
     setupAdvancedTooltips() {
+        // تهيئة الـ Tooltips (Bootstrap)
         const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
         const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
             return new bootstrap.Tooltip(tooltipTriggerEl, {
@@ -57,58 +41,46 @@ class ModernApp {
         });
     }
 
-    setupRealTimeUpdates() {
-        // Real-time financial calculations
-        this.setupRealTimeCalculations();
+    handleFlashMessages() {
+        // العثور على حاوية التنبيهات القديمة من ملف base.html
+        const notificationsContainer = document.querySelector('.modern-notifications');
         
-        // Auto-save functionality
-        this.setupAutoSave();
-    }
+        if (notificationsContainer) {
+            // التحقق مما إذا كانت هناك رسائل Flash موجودة داخلها
+            const flashMessages = notificationsContainer.querySelectorAll('.modern-alert');
+            
+            // المرور على كل رسالة وعرضها باستخدام نظام showToast الجديد
+            flashMessages.forEach(alert => {
+                // استخراج نوع الرسالة (success, danger, etc.)
+                const categoryClass = alert.className.match(/alert-(success|danger|warning|info)/);
+                const category = categoryClass ? categoryClass[1] : 'info';
+                
+                // استخراج نص الرسالة
+                const messageSpan = alert.querySelector('span');
+                const message = messageSpan ? messageSpan.textContent.trim() : 'رسالة نظام';
 
-    setupRealTimeCalculations() {
-        const calculationInputs = document.querySelectorAll('[data-calculate]');
-        calculationInputs.forEach(input => {
-            input.addEventListener('input', this.debounce(() => {
-                this.updateCalculations();
-            }, 300));
-        });
-    }
-
-    setupAdvancedFilters() {
-        // Advanced table filtering
-        this.setupTableFilters();
-        
-        // Search with debounce
-        this.setupSmartSearch();
-    }
-
-    setupTableFilters() {
-        const filterInputs = document.querySelectorAll('.table-filter');
-        filterInputs.forEach(input => {
-            input.addEventListener('input', this.debounce(() => {
-                this.filterTable(input);
-            }, 250));
-        });
-    }
-
-    debounce(func, wait) {
-        let timeout;
-        return function executedFunction(...args) {
-            const later = () => {
-                clearTimeout(timeout);
-                func(...args);
-            };
-            clearTimeout(timeout);
-            timeout = setTimeout(later, wait);
-        };
+                // استخدام دالة showToast المعرفة عالمياً في script.js
+                if (window.showToast) {
+                     window.showToast(message, category);
+                }
+                
+                // إخفاء الرسالة القديمة فوراً بعد معالجتها
+                alert.style.display = 'none';
+            });
+            
+            // إزالة الحاوية من DOM بعد فترة قصيرة
+            if (flashMessages.length > 0) {
+                 setTimeout(() => notificationsContainer.remove(), 500);
+            }
+        }
     }
 }
 
-// Initialize modern features when DOM is loaded
+// تهيئة نظام أتلانتس عند تحميل الصفحة
 document.addEventListener('DOMContentLoaded', function() {
-    new ModernApp();
+    new AtlantisUX();
     
-    // Enhanced mobile menu
+    // تهيئة قائمة الجوال (متبقي لضمان عمل زر الإغلاق والفتح)
     const sidebarToggler = document.getElementById('sidebarToggler');
     const sidebar = document.getElementById('sidebar');
     
@@ -117,5 +89,13 @@ document.addEventListener('DOMContentLoaded', function() {
             sidebar.classList.toggle('show');
             document.body.classList.toggle('sidebar-open');
         });
+        
+        const sidebarClose = document.getElementById('sidebarClose');
+        if (sidebarClose) {
+            sidebarClose.addEventListener('click', function() {
+                sidebar.classList.remove('show');
+                document.body.classList.remove('sidebar-open');
+            });
+        }
     }
 });

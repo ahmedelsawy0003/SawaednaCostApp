@@ -1,58 +1,50 @@
 /* ========================================================================== */
-/* == SAWAEDNA COST APP - MODERN PROFESSIONAL DESIGN == */
-/* == Version: 8.0 - Modern & Creative == */
+/* == SAWAEDNA COST APP - ATLANTIS DESIGN SYSTEM (PROFESSIONAL) == */
+/* == Version: 9.0 - Clarity & Focus == */
 /* ========================================================================== */
 
 @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;600;700;800&display=swap');
 
 :root {
-    /* === Modern Color Palette === */
-    --primary: #2563eb;
-    --primary-light: #3b82f6;
-    --primary-dark: #1d4ed8;
-    --primary-gradient: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+    /* === Atlantis Color Palette === */
+    --primary: #047857; /* Dark Teal - More professional and trustworthy */
+    --primary-light: #059669;
+    --primary-dark: #065f46;
+    --primary-gradient: linear-gradient(135deg, #047857 0%, #059669 100%);
     
-    --secondary: #64748b;
+    --secondary: #475569; /* Slate Gray */
     --success: #10b981;
     --warning: #f59e0b;
     --danger: #ef4444;
     --info: #06b6d4;
+    --muted-bg: #e2e8f0;
     
-    /* === Modern Background Colors === */
-    --bg-body: #f8fafc;
-    --bg-surface: #ffffff;
-    --bg-card: #f1f5f9;
-    --bg-hover: #e2e8f0;
+    /* === Atlantis Background Colors === */
+    --bg-body: #f8fafc; /* Light Gray */
+    --bg-surface: #ffffff; /* Pure White for cards/containers */
+    --bg-card: #f1f5f9; /* Off-white for section headers */
+    --bg-hover: #f0f9ff; /* Very light primary tone on hover */
     
-    /* === Modern Text Colors === */
+    /* === Atlantis Text Colors === */
     --text-primary: #1e293b;
     --text-secondary: #475569;
     --text-muted: #64748b;
     --text-light: #94a3b8;
     
-    /* === Modern Borders & Shadows === */
+    /* === Atlantis Borders & Shadows === */
     --border-light: #e2e8f0;
     --border-medium: #cbd5e1;
     --radius-lg: 12px;
     --radius-md: 8px;
     --radius-sm: 6px;
     
-    --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
     
-    /* === Modern Transitions === */
+    /* === Atlantis Transitions === */
     --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    
-    /* === Modern Spacing === */
-    --space-xs: 0.25rem;
-    --space-sm: 0.5rem;
-    --space-md: 1rem;
-    --space-lg: 1.5rem;
-    --space-xl: 2rem;
 }
 
 /* ========================================================================== */
@@ -82,7 +74,7 @@ body {
 }
 
 /* ========================================================================== */
-/* == MODERN TYPOGRAPHY == */
+/* == MODERN TYPOGRAPHY & UTILITIES == */
 /* ========================================================================== */
 
 h1, h2, h3, h4, h5, h6 {
@@ -92,17 +84,16 @@ h1, h2, h3, h4, h5, h6 {
     margin-bottom: var(--space-md);
 }
 
-h1 { font-size: 2.5rem; }
-h2 { font-size: 2rem; }
-h3 { font-size: 1.75rem; }
-h4 { font-size: 1.5rem; }
-h5 { font-size: 1.25rem; }
-h6 { font-size: 1.1rem; }
-
-.lead {
-    font-size: 1.25rem;
-    font-weight: 300;
-    color: var(--text-secondary);
+/* Fix for number alignment in RTL tables */
+.number-cell {
+    /* Ensures LTR rendering for financial figures within RTL layout */
+    direction: ltr;
+    text-align: right !important;
+    display: inline-block; /* لضمان تطبيق direction */
+}
+.table .text-end {
+    /* نضمن أن الأعمدة المالية تستخدم التصنيف الجديد */
+    text-align: end !important;
 }
 
 /* ========================================================================== */
@@ -110,11 +101,10 @@ h6 { font-size: 1.1rem; }
 /* ========================================================================== */
 
 /* === Modern Sidebar === */
-.sidebar {
+.modern-sidebar {
     background: var(--bg-surface);
     border-left: 1px solid var(--border-light);
     box-shadow: var(--shadow-lg);
-    backdrop-filter: blur(10px);
     transition: all var(--transition-normal);
 }
 
@@ -124,35 +114,51 @@ h6 { font-size: 1.1rem; }
     padding: var(--space-lg);
 }
 
-.sidebar-link {
+.nav-link {
     display: flex;
     align-items: center;
-    padding: var(--space-md) var(--space-lg);
+    padding: 0.75rem 1rem; /* تقليل المسافات لزيادة الكثافة */
     color: var(--text-secondary);
     text-decoration: none;
     transition: all var(--transition-fast);
     border-right: 3px solid transparent;
-    margin: var(--space-xs) 0;
+    margin: 0.25rem 0;
+    border-radius: var(--radius-sm);
 }
 
-.sidebar-link:hover {
+.nav-link:hover {
     background: var(--bg-hover);
-    color: var(--primary);
-    border-right-color: var(--primary-light);
-    transform: translateX(-4px);
+    color: var(--primary-dark);
+    transform: none; /* إزالة التحريك المشتت */
 }
 
-.sidebar-link.active {
-    background: var(--primary);
+.nav-link.active {
+    background: var(--primary-gradient);
     color: white;
     border-right-color: var(--primary-dark);
     box-shadow: var(--shadow-md);
 }
+.sidebar-submenu {
+    background: var(--bg-card); /* خلفية خفيفة للقوائم الفرعية */
+    border-radius: var(--radius-sm);
+    padding-bottom: 0.5rem;
+    margin-top: 0.25rem;
+}
+.sub-link {
+    padding: 0.5rem 1rem 0.5rem 0.5rem;
+    display: flex;
+    align-items: center;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+.sub-link:hover {
+    color: var(--primary);
+}
+
 
 /* === Modern Topbar === */
-.topbar {
+.modern-topbar {
     background: var(--bg-surface);
-    backdrop-filter: blur(10px);
     border-bottom: 1px solid var(--border-light);
     box-shadow: var(--shadow-sm);
 }
@@ -166,25 +172,31 @@ h6 { font-size: 1.1rem; }
     border: 1px solid var(--border-light);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-sm);
-    transition: all var(--transition-normal);
+    transition: all var(--transition-fast); /* تقليل مدة الانتقال */
     overflow: hidden;
 }
 
 .card:hover {
-    box-shadow: var(--shadow-lg);
-    transform: translateY(-2px);
-    border-color: var(--primary-light);
+    box-shadow: var(--shadow-md); /* تقليل الظل في التمرير */
+    transform: none; /* إزالة التحريك المشتت */
+    border-color: var(--border-medium);
 }
 
 .card-header {
     background: var(--bg-card);
     border-bottom: 1px solid var(--border-light);
-    padding: var(--space-lg);
+    padding: 1rem 1.5rem;
     font-weight: 600;
 }
 
 .card-body {
-    padding: var(--space-lg);
+    padding: 1.5rem;
+}
+
+/* === CARD HEADER MODIFIERS (لإزالة الخلفية السوداء المشتتة) === */
+.card-header.bg-dark {
+    background: var(--text-secondary) !important;
+    color: white !important;
 }
 
 /* ========================================================================== */
@@ -192,55 +204,32 @@ h6 { font-size: 1.1rem; }
 /* ========================================================================== */
 
 .btn {
-    padding: 0.75rem 1.5rem;
+    padding: 0.6rem 1.2rem; /* تصغير حجم الزر قليلاً */
     border-radius: var(--radius-md);
     font-weight: 500;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-sm);
     transition: all var(--transition-fast);
-    border: none;
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
-}
-
-.btn::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-    transition: left var(--transition-slow);
-}
-
-.btn:hover::before {
-    left: 100%;
 }
 
 .btn-primary {
     background: var(--primary-gradient);
-    color: white;
     box-shadow: var(--shadow-md);
 }
-
-.btn-primary:hover {
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-lg);
+.btn-success {
+    background-color: var(--success);
+    border-color: var(--success);
 }
-
-.btn-outline {
-    background: transparent;
-    border: 2px solid var(--primary);
-    color: var(--primary);
+.btn-warning {
+    background-color: var(--warning);
+    border-color: var(--warning);
+    color: var(--text-primary) !important;
 }
-
-.btn-outline:hover {
-    background: var(--primary);
-    color: white;
+.btn-danger {
+    background-color: var(--danger);
+    border-color: var(--danger);
+}
+.btn-info {
+    background-color: var(--info);
+    border-color: var(--info);
 }
 
 /* ========================================================================== */
@@ -248,7 +237,6 @@ h6 { font-size: 1.1rem; }
 /* ========================================================================== */
 
 .table {
-    width: 100%;
     border-collapse: separate;
     border-spacing: 0;
 }
@@ -256,102 +244,100 @@ h6 { font-size: 1.1rem; }
 .table th {
     background: var(--bg-card);
     font-weight: 600;
-    padding: var(--space-md);
-    border-bottom: 2px solid var(--primary);
+    padding: 0.8rem 1rem;
+    border-bottom: 2px solid var(--border-medium);
+    color: var(--text-primary);
 }
 
 .table td {
-    padding: var(--space-md);
+    padding: 0.8rem 1rem;
     border-bottom: 1px solid var(--border-light);
-    transition: background-color var(--transition-fast);
 }
 
 .table tbody tr:hover td {
     background: var(--bg-hover);
 }
 
-/* ========================================================================== */
-/* == MODERN FORMS == */
-/* ========================================================================== */
-
-.form-control {
-    padding: 0.75rem 1rem;
-    border: 2px solid var(--border-light);
-    border-radius: var(--radius-md);
-    transition: all var(--transition-fast);
-    background: var(--bg-surface);
-    width: 100%;
+/* إزالة اللون الداكن من الجدول لزيادة الوضوح والاحترافية */
+.table.table-dark {
+    --bs-table-color: var(--text-primary);
+    --bs-table-bg: var(--bg-surface);
+    --bs-table-border-color: var(--border-light);
+    --bs-table-striped-bg: var(--bg-card);
+    --bs-table-hover-bg: var(--bg-hover);
 }
-
-.form-control:focus {
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-    outline: none;
-    transform: translateY(-1px);
-}
-
-.form-label {
-    font-weight: 600;
-    margin-bottom: var(--space-sm);
+.table.table-dark thead th {
+    background: var(--bg-card);
     color: var(--text-primary);
 }
 
 /* ========================================================================== */
-/* == MODERN ALERTS & NOTIFICATIONS == */
+/* == MODERN ALERTS & NOTIFICATIONS (TOASTS) == */
 /* ========================================================================== */
 
-.alert {
-    padding: var(--space-lg);
+.modern-notifications {
+    position: fixed;
+    top: 1rem;
+    left: 1rem; /* نضعها في الزاوية اليسرى للتوست */
+    z-index: 1060;
+    width: 350px;
+}
+.modern-alert {
+    padding: 1rem;
     border-radius: var(--radius-md);
     border: 1px solid;
-    margin-bottom: var(--space-md);
-    position: relative;
-    overflow: hidden;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: flex-start;
+    box-shadow: var(--shadow-lg);
+    animation: slideInLeft 0.5s ease-out;
+}
+.alert-icon {
+    margin-left: 1rem;
+    font-size: 1.2rem;
+}
+.alert-close {
+    margin-right: 1rem;
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+}
+.alert-close:hover {
+    opacity: 1;
 }
 
-.alert::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 4px;
-    height: 100%;
+/* تحديد الألوان الجديدة للتنبيهات */
+.modern-alert.alert-success {
+    background: #ecfdf5;
+    border-color: #a7f3d0;
+    color: #065f46;
 }
+.modern-alert.alert-success .alert-icon::before { content: "\f058"; font-family: "Font Awesome 6 Free"; font-weight: 900; }
 
-.alert-success {
-    background: #f0fdf4;
-    border-color: #bbf7d0;
-    color: #166534;
+.modern-alert.alert-danger {
+    background: #fef2f2;
+    border-color: #fca5a5;
+    color: #991b1b;
 }
+.modern-alert.alert-danger .alert-icon::before { content: "\f06a"; font-family: "Font Awesome 6 Free"; font-weight: 900; }
 
-.alert-success::before {
-    background: #22c55e;
+.modern-alert.alert-warning {
+    background: #fffdf4;
+    border-color: #fcd34d;
+    color: #92400e;
 }
+.modern-alert.alert-warning .alert-icon::before { content: "\f071"; font-family: "Font Awesome 6 Free"; font-weight: 900; }
 
-/* ========================================================================== */
-/* == MODERN UTILITY CLASSES == */
-/* ========================================================================== */
-
-.glass-effect {
-    background: rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+.modern-alert.alert-info {
+    background: #f0f9ff;
+    border-color: #7dd3fc;
+    color: #0c4a6e;
 }
+.modern-alert.alert-info .alert-icon::before { content: "\f05a"; font-family: "Font Awesome 6 Free"; font-weight: 900; }
 
-.text-gradient {
-    background: var(--primary-gradient);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-}
-
-.shadow-hover {
-    transition: box-shadow var(--transition-normal);
-}
-
-.shadow-hover:hover {
-    box-shadow: var(--shadow-xl);
-}
 
 /* ========================================================================== */
 /* == MODERN ANIMATIONS == */
@@ -360,18 +346,17 @@ h6 { font-size: 1.1rem; }
 @keyframes fadeInUp {
     from {
         opacity: 0;
-        transform: translateY(30px);
+        transform: translateY(10px);
     }
     to {
         opacity: 1;
         transform: translateY(0);
     }
 }
-
-@keyframes slideInRight {
+@keyframes slideInLeft { /* حركة جديدة للتوست */
     from {
         opacity: 0;
-        transform: translateX(30px);
+        transform: translateX(-100%);
     }
     to {
         opacity: 1;
@@ -380,47 +365,38 @@ h6 { font-size: 1.1rem; }
 }
 
 .animate-fade-in-up {
-    animation: fadeInUp 0.6s ease-out;
-}
-
-.animate-slide-in-right {
-    animation: slideInRight 0.4s ease-out;
+    animation: fadeInUp 0.5s ease-out;
 }
 
 /* ========================================================================== */
-/* == MODERN RESPONSIVE DESIGN == */
-/* ========================================================================== */
-
-@media (max-width: 768px) {
-    .sidebar {
-        transform: translateX(100%);
-        position: fixed;
-        top: 0;
-        right: 0;
-        height: 100vh;
-        z-index: 1000;
-        width: 300px;
-    }
-    
-    .sidebar.show {
-        transform: translateX(0);
-    }
-    
-    .card {
-        margin: var(--space-sm);
-    }
-}
-
-/* ========================================================================== */
-/* == DARK MODE SUPPORT == */
+/* == DARK MODE SUPPORT (احترافي ومريح) == */
 /* ========================================================================== */
 
 @media (prefers-color-scheme: dark) {
     :root {
-        --bg-body: #0f172a;
-        --bg-surface: #1e293b;
-        --bg-card: #334155;
-        --text-primary: #f1f5f9;
-        --text-secondary: #e2e8f0;
+        --bg-body: #111827; /* Darker background */
+        --bg-surface: #1f2937; /* Dark cards */
+        --bg-card: #374151; /* Darker headers */
+        --bg-hover: #374151;
+        --border-light: #374151;
+        --border-medium: #4b5563;
+        --text-primary: #f9fafb;
+        --text-secondary: #e5e7eb;
+        --text-muted: #9ca3af;
+    }
+    .modern-sidebar {
+        border-left: 1px solid var(--border-light);
+    }
+
+    .table.table-dark {
+        --bs-table-color: var(--text-secondary);
+        --bs-table-bg: var(--bg-surface);
+        --bs-table-border-color: var(--border-light);
+        --bs-table-striped-bg: #1f2937;
+        --bs-table-hover-bg: #374151;
+    }
+    .table.table-dark thead th {
+        background: var(--bg-card);
+        color: var(--text-primary);
     }
 }

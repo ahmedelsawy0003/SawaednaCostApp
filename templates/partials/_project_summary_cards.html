@@ -1,45 +1,55 @@
 <div class="row g-3 mb-4">
-    {% if current_user.role in ['admin', 'sub-admin'] %}
-    <div class="col-sm-6 col-lg-6 col-xl-4">
-        <div class="card p-3 h-100 border-start border-info border-5">
-            <p class="text-muted mb-1 small"><i class="fas fa-file-contract fa-fw me-2"></i>التكلفة التعاقدية (ر.س)</p>
-            <h4 class="text-info fw-bold mb-0 number-cell">{{ "{:,.2f}".format(project.total_contract_cost) }} <span class="small text-muted">ر.س</span></h4>
-        </div>
-    </div>
-    {% endif %}
-    <div class="col-sm-6 col-lg-6 col-xl-4">
-        <div class="card p-3 h-100 border-start border-primary border-5">
-            <p class="text-muted mb-1 small"><i class="fas fa-calculator fa-fw me-2"></i>إجمالي التكلفة الفعلية (ر.س)</p>
+    {# Card 1: Total Actual Cost (Primary Focus) #}
+    <div class="col-sm-6 col-md-6 col-xl-6"> 
+        <div class="card p-3 h-100 border-start border-primary border-4 shadow-md-hover">
+            <p class="text-muted mb-1 small d-flex align-items-center"><i class="fas fa-calculator fa-fw me-2 text-primary"></i>إجمالي التكلفة الفعلية (ر.س)</p>
             <h4 class="text-primary fw-bold mb-0 number-cell">{{ "{:,.2f}".format(project.total_actual_cost) }} <span class="small text-muted">ر.س</span></h4>
         </div>
     </div>
+    
+    {# Card 2: Total Remaining Amount (Danger/Alert) #}
+    <div class="col-sm-6 col-md-6 col-xl-6">
+        <div class="card p-3 h-100 border-start border-danger border-4 shadow-md-hover">
+            <p class="text-muted mb-1 small d-flex align-items-center"><i class="fas fa-hourglass-half fa-fw me-2 text-danger"></i>المبلغ المتبقي للاستحقاق (ر.س)</p>
+            <h4 class="text-danger fw-bold mb-0 number-cell">{{ "{:,.2f}".format(project.total_remaining_amount) }} <span class="small text-muted">ر.س</span></h4>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    {# Card 3: Total Paid Amount (Success) #}
+    <div class="col-sm-6 col-md-6 col-xl-6">
+        <div class="card p-3 h-100 border-start border-success border-4 shadow-md-hover">
+            <p class="text-muted mb-1 small d-flex align-items-center"><i class="fas fa-check-circle fa-fw me-2 text-success"></i>إجمالي المدفوع (ر.س)</p>
+            <h4 class="text-success fw-bold mb-0 number-cell">{{ "{:,.2f}".format(project.total_paid_amount) }} <span class="small text-muted">ر.س</span></h4>
+        </div>
+    </div>
+
+    {# Card 4: Contract Cost / Variance (Admin/Sub-Admin Only) #}
     {% if current_user.role in ['admin', 'sub-admin'] %}
-    <div class="col-sm-6 col-lg-6 col-xl-4">
-        <div class="card p-3 h-100 border-start {{ "border-success" if project.total_savings >= 0 else "border-danger" }} border-5">
-            <p class="text-muted mb-1 small"><i class="fas fa-coins fa-fw me-2"></i>الوفر / الزيادة (ر.س)</p>
+    <div class="col-sm-6 col-md-6 col-xl-6">
+        <div class="card p-3 h-100 border-start {{ "border-success" if project.total_savings >= 0 else "border-danger" }} border-4 shadow-md-hover">
+            <p class="text-muted mb-1 small d-flex align-items-center"><i class="fas fa-coins fa-fw me-2 text-info"></i>الوفر / الزيادة (ر.س)</p>
             <h4 class="mb-0 fw-bold {{ "text-success" if project.total_savings >= 0 else "text-danger" }} number-cell">
                 {{ "{:,.2f}".format(project.total_savings) }} <span class="small text-muted">ر.س</span>
             </h4>
         </div>
     </div>
     {% endif %}
-</div>
-
-<div class="row g-3 mb-4">
-    <div class="col-sm-6 col-md-6">
-        <div class="card p-3 h-100 border-start border-success border-5">
-            <p class="text-muted mb-1 small"><i class="fas fa-check-circle fa-fw me-2"></i>إجمالي المدفوع (ر.س)</p>
-            <h4 class="text-success fw-bold mb-0 number-cell">{{ "{:,.2f}".format(project.total_paid_amount) }} <span class="small text-muted">ر.س</span></h4>
+    
+    {# Display Contract Cost Separately for Admins/Sub-Admins (full-width card for reference) #}
+    {% if current_user.role in ['admin', 'sub-admin'] %}
+    <div class="col-12">
+         <div class="card p-3 h-100 bg-light border-info border-3">
+            <p class="text-muted mb-1 small d-flex align-items-center"><i class="fas fa-file-contract fa-fw me-2 text-info"></i>التكلفة التعاقدية الكلية (مرجع)</p>
+            <h5 class="text-info fw-bold mb-0 number-cell">{{ "{:,.2f}".format(project.total_contract_cost) }} <span class="small text-muted">ر.س</span></h5>
         </div>
     </div>
-    <div class="col-sm-6 col-md-6">
-        <div class="card p-3 h-100 border-start border-danger border-5">
-            <p class="text-muted mb-1 small"><i class="fas fa-hourglass-half fa-fw me-2"></i>المبلغ المتبقي للاستحقاق (ر.س)</p>
-            <h4 class="text-danger fw-bold mb-0 number-cell">{{ "{:,.2f}".format(project.total_remaining_amount) }} <span class="small text-muted">ر.س</span></h4>
-        </div>
-    </div>
+    {% endif %}
+
 </div>
 
+{# Progress Indicators (Remains largely the same, but cleaner) #}
 <div class="card mb-4">
     <div class="card-header">
         <h5 class="mb-0"><i class="fas fa-chart-bar fa-fw me-2"></i>مؤشرات الإنجاز</h5>
