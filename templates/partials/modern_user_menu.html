@@ -1,0 +1,32 @@
+{# هذا الملف يمثل قائمة المستخدم (الدروب داون) في ملف layouts/base.html #}
+
+<div class="user-menu dropdown">
+    <button class="user-menu-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="fas fa-user-circle fa-2x"></i>
+    </button>
+    <ul class="dropdown-menu dropdown-menu-end text-end" dir="rtl">
+        <li>
+            <span class="dropdown-item-text fw-bold text-primary">مرحباً، {{ current_user.username }}</span>
+            <span class="dropdown-item-text small text-muted">الدور: {{ current_user.role }}</span>
+        </li>
+        <li><hr class="dropdown-divider"></li>
+        <li>
+            <a class="dropdown-item" href="{{ url_for('auth.profile') }}">
+                <i class="fas fa-user me-2 text-info"></i> ملفي الشخصي
+            </a>
+        </li>
+        {% if current_user.role == 'admin' %}
+        <li>
+            <a class="dropdown-item" href="{{ url_for('auth.admin_dashboard') }}">
+                <i class="fas fa-user-shield me-2 text-danger"></i> لوحة تحكم المسؤول
+            </a>
+        </li>
+        {% endif %}
+        <li><hr class="dropdown-divider"></li>
+        <li>
+            <a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}">
+                <i class="fas fa-sign-out-alt me-2"></i> تسجيل الخروج
+            </a>
+        </li>
+    </ul>
+</div>

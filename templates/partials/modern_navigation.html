@@ -1,0 +1,74 @@
+{# هذا الملف يمثل القائمة الجانبية (Sidebar) في ملف layouts/base.html #}
+
+<ul class="nav-list">
+    {# لوحة التحكم/المشاريع #}
+    <li>
+        <a href="{{ url_for('project.get_projects') }}" class="nav-link {% if request.endpoint in ['project.get_projects', 'project.get_project', 'project.project_dashboard', 'item.get_items_by_project'] %}active{% endif %}">
+            <i class="fas fa-fw fa-project-diagram me-2"></i>
+            <span>المشاريع</span>
+        </a>
+    </li>
+    
+    {# الملخص المالي الشامل (للمدراء فقط) #}
+    {% if current_user.role in ['admin', 'sub-admin'] %}
+    <li>
+        <a href="{{ url_for('project.projects_summary') }}" class="nav-link {% if request.endpoint == 'project.projects_summary' %}active{% endif %}">
+            <i class="fas fa-fw fa-chart-line me-2"></i>
+            <span>الملخص المالي الشامل</span>
+        </a>
+    </li>
+    {% endif %}
+
+    {# سجلات الدفعات وأوامر الشراء (Global) #}
+    <li>
+        <a href="{{ url_for('payment.get_all_payments') }}" class="nav-link {% if request.endpoint == 'payment.get_all_payments' %}active{% endif %}">
+            <i class="fas fa-fw fa-cash-register me-2"></i>
+            <span>سجل الدفعات الشامل</span>
+        </a>
+    </li>
+    <li>
+        <a href="{{ url_for('po.get_all_purchase_orders') }}" class="nav-link {% if request.endpoint == 'po.get_all_purchase_orders' %}active{% endif %}">
+            <i class="fas fa-fw fa-file-contract me-2"></i>
+            <span>سجل أوامر الشراء (PO)</span>
+        </a>
+    </li>
+    
+    {# المقاولون والموردون #}
+    <li>
+        <a href="{{ url_for('contractor.get_contractors') }}" class="nav-link {% if request.endpoint in ['contractor.get_contractors', 'contractor.show_contractor'] %}active{% endif %}">
+            <i class="fas fa-fw fa-hard-hat me-2"></i>
+            <span>المقاولون والموردون</span>
+        </a>
+    </li>
+
+    {# قائمة المشاريع المنبثقة #}
+    {% if sidebar_projects %}
+    <li class="nav-item has-submenu">
+        <a href="#" class="nav-link sidebar-toggler">
+            <i class="fas fa-fw fa-folder me-2"></i>
+            <span>تصفح المشاريع</span>
+            <i class="fas fa-chevron-left toggle-icon ms-auto"></i>
+        </a>
+        <ul class="sidebar-submenu">
+            {% for project in sidebar_projects %}
+            <li>
+                <a href="{{ url_for('project.get_project', project_id=project.id) }}" class="sub-link">
+                    <i class="fas fa-circle me-1"></i>
+                    {{ project.name | truncate(25) }}
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+    </li>
+    {% endif %}
+
+    {# لوحة تحكم المسؤول (للمشرفين فقط) #}
+    {% if current_user.role == 'admin' %}
+    <li>
+        <a href="{{ url_for('auth.admin_dashboard') }}" class="nav-link {% if request.endpoint in ['auth.admin_dashboard', 'auth.edit_user'] %}active{% endif %} text-danger">
+            <i class="fas fa-fw fa-user-shield me-2"></i>
+            <span>لوحة تحكم المسؤول</span>
+        </a>
+    </li>
+    {% endif %}
+</ul>
