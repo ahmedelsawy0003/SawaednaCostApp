@@ -1,0 +1,312 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}طلب مواد {{ material_request.request_number }} - سواعدنا{% endblock %}
+{% block page_title %}تفاصيل طلب توريد المواد{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header Card -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h4 class="mb-2">
+                                <i class="fas fa-file-import text-primary me-2"></i>
+                                طلب توريد مواد رقم: <strong>{{ material_request.request_number }}</strong>
+                            </h4>
+                            <p class="text-muted mb-0">
+                                <i class="fas fa-calendar me-2"></i>
+                                تاريخ الطلب: {{ material_request.request_date.strftime('%Y-%m-%d') if material_request.request_date else '-' }}
+                            </p>
+                        </div>
+                        <div>
+                            <span class="badge bg-{{ material_request.status_badge_class }} fs-6">
+                                {{ material_request.status_arabic }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Main Information -->
+        <div class="col-lg-8">
+            <!-- Basic Info -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>
+                        المعلومات الأساسية
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <strong>المشروع:</strong>
+                            <p class="mb-0">{{ material_request.project.name if material_request.project else '-' }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>البند:</strong>
+                            <p class="mb-0">{{ material_request.boq_item.description if material_request.boq_item else 'غير محدد' }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>مقدم الطلب:</strong>
+                            <p class="mb-0">{{ material_request.requester.username if material_request.requester else '-' }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>مدير المشروع:</strong>
+                            <p class="mb-0">{{ material_request.project_manager.username if material_request.project_manager else 'غير محدد' }}</p>
+                        </div>
+                        {% if material_request.notes %}
+                        <div class="col-12">
+                            <strong>ملاحظات:</strong>
+                            <p class="mb-0">{{ material_request.notes }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Items Table -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-list me-2"></i>
+                        بنود المواد ({{ material_request.total_items }})
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>رقم البند</th>
+                                    <th>اسم المادة</th>
+                                    <th>الوصف</th>
+                                    <th>الوحدة</th>
+                                    <th>متاح</th>
+                                    <th>مطلوب</th>
+                                    <th>تاريخ التوريد</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in material_request.items %}
+                                <tr>
+                                    <td>{{ loop.index }}</td>
+                                    <td>{{ item.boq_item_number or '-' }}</td>
+                                    <td><strong>{{ item.material_name }}</strong></td>
+                                    <td>{{ item.description or '-' }}</td>
+                                    <td>{{ item.unit }}</td>
+                                    <td>{{ item.quantity_available or '-' }}</td>
+                                    <td><strong class="text-primary">{{ item.quantity_requested }}</strong></td>
+                                    <td>{{ item.required_date.strftime('%Y-%m-%d') if item.required_date else '-' }}</td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="8" class="text-center text-muted">لا توجد بنود</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Approval Info -->
+            {% if material_request.status in ['approved', 'rejected'] %}
+            <div class="card mb-4">
+                <div class="card-header bg-{{ 'success' if material_request.status == 'approved' else 'danger' }}">
+                    <h6 class="mb-0 text-white">
+                        <i class="fas fa-{{ 'check' if material_request.status == 'approved' else 'times' }} me-2"></i>
+                        معلومات {{ 'الاعتماد' if material_request.status == 'approved' else 'الرفض' }}
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <strong>{{ 'اعتمد' if material_request.status == 'approved' else 'رفض' }} بواسطة:</strong>
+                            <p class="mb-0">{{ material_request.approved_by.username if material_request.approved_by else '-' }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>التاريخ:</strong>
+                            <p class="mb-0">{{ material_request.approved_at.strftime('%Y-%m-%d %H:%M') if material_request.approved_at else '-' }}</p>
+                        </div>
+                        {% if material_request.rejection_reason %}
+                        <div class="col-12">
+                            <strong>سبب الرفض:</strong>
+                            <p class="mb-0 text-danger">{{ material_request.rejection_reason }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Actions Card -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-cog me-2"></i>
+                        الإجراءات
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <!-- Export Actions -->
+                        <a href="{{ url_for('forms.export_material_request_excel', id=material_request.id) }}" class="btn btn-success">
+                            <i class="fas fa-file-excel me-2"></i>
+                            تصدير Excel
+                        </a>
+                        <a href="{{ url_for('forms.export_material_request_pdf', id=material_request.id) }}" class="btn btn-danger">
+                            <i class="fas fa-file-pdf me-2"></i>
+                            تصدير PDF
+                        </a>
+
+                        <hr>
+
+                        <!-- Status Actions -->
+                        {% if material_request.status == 'draft' %}
+                        <a href="{{ url_for('forms.edit_material_request', id=material_request.id) }}" class="btn btn-warning">
+                            <i class="fas fa-edit me-2"></i>
+                            تعديل
+                        </a>
+                        <form method="POST" action="{{ url_for('forms.submit_material_request', id=material_request.id) }}" class="d-inline">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-paper-plane me-2"></i>
+                                إرسال للمراجعة
+                            </button>
+                        </form>
+                        <form method="POST" action="{{ url_for('forms.delete_material_request', id=material_request.id) }}" 
+                              onsubmit="return confirm('هل أنت متأكد من حذف هذا الطلب؟')" class="d-inline">
+                            <button type="submit" class="btn btn-outline-danger w-100">
+                                <i class="fas fa-trash me-2"></i>
+                                حذف
+                            </button>
+                        </form>
+                        {% elif material_request.status == 'pending' %}
+                        <form method="POST" action="{{ url_for('forms.approve_material_request', id=material_request.id) }}" class="d-inline">
+                            <button type="submit" class="btn btn-success w-100">
+                                <i class="fas fa-check me-2"></i>
+                                اعتماد
+                            </button>
+                        </form>
+                        <button type="button" class="btn btn-danger w-100" data-bs-toggle="modal" data-bs-target="#rejectModal">
+                            <i class="fas fa-times me-2"></i>
+                            رفض
+                        </button>
+                        {% endif %}
+
+                        <hr>
+
+                        <a href="{{ url_for('forms.material_requests') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-right me-2"></i>
+                            العودة للقائمة
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Timeline Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-history me-2"></i>
+                        السجل الزمني
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <i class="fas fa-plus-circle text-primary"></i>
+                            <div>
+                                <strong>تم الإنشاء</strong>
+                                <p class="text-muted small mb-0">{{ material_request.created_at.strftime('%Y-%m-%d %H:%M') if material_request.created_at else '-' }}</p>
+                            </div>
+                        </div>
+                        {% if material_request.updated_at %}
+                        <div class="timeline-item">
+                            <i class="fas fa-edit text-warning"></i>
+                            <div>
+                                <strong>آخر تحديث</strong>
+                                <p class="text-muted small mb-0">{{ material_request.updated_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if material_request.approved_at %}
+                        <div class="timeline-item">
+                            <i class="fas fa-{{ 'check' if material_request.status == 'approved' else 'times' }} text-{{ 'success' if material_request.status == 'approved' else 'danger' }}"></i>
+                            <div>
+                                <strong>{{ 'اعتمد' if material_request.status == 'approved' else 'رفض' }}</strong>
+                                <p class="text-muted small mb-0">{{ material_request.approved_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reject Modal -->
+<div class="modal fade" id="rejectModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ url_for('forms.reject_material_request', id=material_request.id) }}">
+                <div class="modal-header">
+                    <h5 class="modal-title">رفض الطلب</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label required">سبب الرفض</label>
+                        <textarea name="rejection_reason" class="form-control" rows="4" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-danger">رفض الطلب</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.timeline {
+    position: relative;
+    padding-right: 30px;
+}
+
+.timeline-item {
+    position: relative;
+    padding-bottom: 20px;
+    display: flex;
+    gap: 15px;
+}
+
+.timeline-item:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    right: 8px;
+    top: 25px;
+    bottom: -5px;
+    width: 2px;
+    background: #dee2e6;
+}
+
+.timeline-item i {
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+</style>
+{% endblock %}
+

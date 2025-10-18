@@ -1,18 +1,20 @@
 // ==========================================================================
-// Atlantis UX Enhancements for Sawaedna Cost App - Core UI Logic
+// Modern UX Enhancements for Sawaedna Cost App - Enhanced UI Logic
 // ==========================================================================
 
-class AtlantisUX {
+class ModernUX {
     constructor() {
-        // تهيئة التفاعل الأساسي بعد تحميل الـ DOM
+        // Initialize core interactions after DOM load
         this.initSidebarToggle();
         this.initAnimations(); 
-        this.handleFlashMessages(); // معالجة رسائل الفلاش
-        this.setupAdvancedTooltips(); // تهيئة الـ Tooltips
-        this.setupDropdowns(); // تهيئة القوائم الفرعية (Sub-menus)
+        this.handleFlashMessages();
+        this.setupAdvancedTooltips();
+        this.setupDropdowns();
+        this.initSmoothScrolling();
+        this.enhanceTableInteractions();
     }
     
-    // إعداد الـ Intersection Observer لتحريك العناصر عند الظهور
+    // Setup Intersection Observer for scroll animations
     initAnimations() {
         if ('IntersectionObserver' in window) {
             const observer = new IntersectionObserver((entries, observer) => {
@@ -34,7 +36,7 @@ class AtlantisUX {
         }
     }
 
-    // تهيئة وظيفة فتح/إغلاق القائمة الجانبية (للجوال وسطح المكتب)
+    // Enhanced sidebar toggle with smooth animations
     initSidebarToggle() {
         const sidebarToggler = document.getElementById('sidebarToggler');
         const sidebar = document.getElementById('sidebar');
@@ -45,6 +47,9 @@ class AtlantisUX {
             if (sidebar) {
                 sidebar.classList.remove('show');
                 document.body.classList.remove('sidebar-open');
+                
+                // Add smooth transition
+                sidebar.style.transition = 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
             }
         };
 
@@ -52,32 +57,57 @@ class AtlantisUX {
             if (sidebar) {
                 sidebar.classList.add('show');
                 document.body.classList.add('sidebar-open');
+                
+                // Add smooth transition
+                sidebar.style.transition = 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
             }
         };
 
         if (sidebarToggler) {
-            sidebarToggler.addEventListener('click', openSidebar);
+            sidebarToggler.addEventListener('click', (e) => {
+                e.stopPropagation();
+                openSidebar();
+            });
         }
         
         if (sidebarClose) {
-            sidebarClose.addEventListener('click', closeSidebar);
+            sidebarClose.addEventListener('click', (e) => {
+                e.stopPropagation();
+                closeSidebar();
+            });
         }
 
-        // إغلاق القائمة عند النقر على منطقة المحتوى الرئيسية في وضع الجوال
+        // Close sidebar when clicking on backdrop (main content area)
         if (mainContent) {
             mainContent.addEventListener('click', (e) => {
-                // نغلق القائمة إذا كانت مفتوحة ونحن في وضع الجوال
                 if (document.body.classList.contains('sidebar-open') && window.innerWidth < 992) {
-                    // نتأكد أن النقر لم يكن على زر الفتح نفسه أو داخل القائمة
                     if (e.target.closest('#sidebar') === null && e.target.closest('#sidebarToggler') === null) {
                         closeSidebar();
                     }
                 }
             });
         }
+
+        // Close sidebar on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && document.body.classList.contains('sidebar-open')) {
+                closeSidebar();
+            }
+        });
+
+        // Handle window resize
+        let resizeTimer;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => {
+                if (window.innerWidth >= 992) {
+                    closeSidebar();
+                }
+            }, 250);
+        });
     }
 
-    // تهيئة القوائم المنسدلة (Sub-menus) في شريط التنقل
+    // Enhanced dropdown menus with smooth animations
     setupDropdowns() {
         const navDropdowns = document.querySelectorAll('.nav-list .has-submenu');
         
@@ -87,7 +117,7 @@ class AtlantisUX {
             
             if (!toggler || !submenu) return;
 
-            // تعيين الحالة الأولية للقوائم المفتوحة
+            // Set initial state for open menus
             if (submenu.style.maxHeight && submenu.style.maxHeight !== '0px') {
                 submenu.style.maxHeight = submenu.scrollHeight + "px";
                 dropdown.classList.add('open');
@@ -97,61 +127,195 @@ class AtlantisUX {
                 e.preventDefault();
                 e.stopPropagation();
                 
-                // Toggle the 'open' class
+                // Close other open dropdowns (accordion behavior)
+                navDropdowns.forEach(otherDropdown => {
+                    if (otherDropdown !== dropdown && otherDropdown.classList.contains('open')) {
+                        otherDropdown.classList.remove('open');
+                        const otherSubmenu = otherDropdown.querySelector('.sidebar-submenu');
+                        if (otherSubmenu) {
+                            otherSubmenu.style.maxHeight = 0;
+                        }
+                    }
+                });
+                
+                // Toggle current dropdown
                 dropdown.classList.toggle('open');
 
                 if (dropdown.classList.contains('open')) {
-                    // Open with animation
+                    // Open with smooth animation
                     submenu.style.maxHeight = submenu.scrollHeight + "px";
+                    
+                    // Add a slight delay for smooth appearance
+                    setTimeout(() => {
+                        submenu.style.opacity = '1';
+                    }, 50);
                 } else {
-                    // Close with animation
+                    // Close with smooth animation
                     submenu.style.maxHeight = 0;
+                    submenu.style.opacity = '0';
                 }
             });
-        });
-    }
 
-    // تهيئة الـ Tooltips (Bootstrap)
-    setupAdvancedTooltips() {
-        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl, {
-                trigger: 'hover focus',
-                placement: 'auto'
+            // Add hover effect for parent items
+            toggler.addEventListener('mouseenter', function() {
+                if (!dropdown.classList.contains('open')) {
+                    toggler.style.transform = 'translateX(-2px)';
+                }
+            });
+
+            toggler.addEventListener('mouseleave', function() {
+                toggler.style.transform = 'translateX(0)';
             });
         });
     }
 
-    // معالجة رسائل الفلاش (Flash Messages) - تحويلها إلى توست (Toasts)
+    // Enhanced tooltips
+    setupAdvancedTooltips() {
+        if (typeof bootstrap !== 'undefined' && bootstrap.Tooltip) {
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl, {
+                    trigger: 'hover focus',
+                    placement: 'auto',
+                    delay: { show: 300, hide: 100 }
+                });
+            });
+        }
+    }
+
+    // Handle flash messages with modern toast notifications
     handleFlashMessages() {
-        // نعتمد الآن على رسائل الفلاش الموجودة في base.html
         const notificationsContainer = document.getElementById('flash-messages-container');
         if (!notificationsContainer) return;
         
         const flashMessages = notificationsContainer.querySelectorAll('.modern-alert');
         
-        // إذا كان لديك دالة showToast معرفة في script.js، يمكنك استخدامها هنا
-        if (window.showToast) {
-            flashMessages.forEach(alertEl => {
-                 const categoryClass = alertEl.className.match(/alert-(success|danger|warning|info|secondary|primary)/);
-                 const category = categoryClass ? categoryClass[1] : 'info';
-                 const messageSpan = alertEl.querySelector('span');
-                 const message = messageSpan ? messageSpan.textContent.trim() : 'رسالة نظام';
-                 
-                 window.showToast(message, category);
-                 
-                 // إخفاء العنصر القديم من الـ DOM فوراً
-                 alertEl.style.display = 'none';
-            });
-            // إخفاء الحاوية القديمة بعد معالجة الرسائل
-            if (flashMessages.length > 0) {
-                 setTimeout(() => notificationsContainer.style.display = 'none', 500);
+        flashMessages.forEach((alertEl, index) => {
+            // Auto-dismiss after 5 seconds with fade out
+            setTimeout(() => {
+                alertEl.style.animation = 'slideOutUp 0.4s ease-out forwards';
+                setTimeout(() => {
+                    alertEl.remove();
+                }, 400);
+            }, 5000 + (index * 200)); // Stagger dismissal for multiple messages
+            
+            // Add close button functionality if exists
+            const closeBtn = alertEl.querySelector('.btn-close');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', () => {
+                    alertEl.style.animation = 'slideOutUp 0.4s ease-out forwards';
+                    setTimeout(() => {
+                        alertEl.remove();
+                    }, 400);
+                });
             }
+        });
+    }
+
+    // Smooth scrolling for anchor links
+    initSmoothScrolling() {
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                const href = this.getAttribute('href');
+                if (href === '#' || href === '') return;
+                
+                const target = document.querySelector(href);
+                if (target) {
+                    e.preventDefault();
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    }
+
+    // Enhance table interactions
+    enhanceTableInteractions() {
+        const tables = document.querySelectorAll('.table');
+        
+        tables.forEach(table => {
+            const rows = table.querySelectorAll('tbody tr');
+            
+            rows.forEach(row => {
+                // Add subtle scale effect on hover
+                row.addEventListener('mouseenter', function() {
+                    this.style.transition = 'all 0.2s ease';
+                });
+                
+                row.addEventListener('mouseleave', function() {
+                    this.style.transition = 'all 0.2s ease';
+                });
+            });
+        });
+    }
+
+    // Utility: Show toast notification (can be called from other scripts)
+    static showToast(message, type = 'info', duration = 5000) {
+        const container = document.getElementById('flash-messages-container') || document.body;
+        
+        const toast = document.createElement('div');
+        toast.className = `alert alert-${type} alert-dismissible fade show modern-alert`;
+        toast.setAttribute('role', 'alert');
+        toast.innerHTML = `
+            <i class="alert-icon"></i>
+            <span>${message}</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+        
+        container.appendChild(toast);
+        
+        // Auto-dismiss
+        setTimeout(() => {
+            toast.style.animation = 'slideOutUp 0.4s ease-out forwards';
+            setTimeout(() => {
+                toast.remove();
+            }, 400);
+        }, duration);
+        
+        // Manual close
+        const closeBtn = toast.querySelector('.btn-close');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                toast.style.animation = 'slideOutUp 0.4s ease-out forwards';
+                setTimeout(() => {
+                    toast.remove();
+                }, 400);
+            });
         }
     }
 }
 
-// تهيئة نظام أتلانتس عند تحميل الصفحة
+// Add slideOutUp animation to CSS dynamically if not exists
+if (!document.querySelector('#modern-animations')) {
+    const style = document.createElement('style');
+    style.id = 'modern-animations';
+    style.textContent = `
+        @keyframes slideOutUp {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+// Initialize Modern UX when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
-    new AtlantisUX();
+    window.modernUX = new ModernUX();
+    
+    // Expose showToast globally for backward compatibility
+    window.showToast = ModernUX.showToast;
 });
+
+// Export for use in other modules if needed
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = ModernUX;
+}
+

@@ -6,7 +6,7 @@ from app.models.item import Item
 from app.models.user import User
 from app.extensions import db
 from flask_login import login_required, current_user
-from app.utils import check_project_permission
+#from app.utils import check_project_permission
 from app.forms import ProjectForm
 from sqlalchemy.orm import selectinload, undefer
 

@@ -29,6 +29,32 @@
     
     <li class="nav-item-separator my-3"><hr class="dropdown-divider"></li>
     
+    {# النماذج (Forms) - NEW #}
+    <li>
+        <a href="{{ url_for('forms.index') }}" class="nav-link {% if request.endpoint and request.endpoint.startswith('forms.') %}active{% endif %}">
+            <i class="fas fa-fw fa-file-alt me-2"></i>
+            <span>النماذج</span>
+        </a>
+    </li>
+    
+    {# أوامر الصرف (Payment Orders) - NEW #}
+    <li>
+        <a href="{{ url_for('payment_orders.index') }}" class="nav-link {% if request.endpoint and request.endpoint.startswith('payment_orders.') %}active{% endif %}">
+            <i class="fas fa-fw fa-money-check-alt me-2"></i>
+            <span>أوامر الصرف</span>
+        </a>
+    </li>
+    
+    {# جداول الكميات (BOQ) - NEW #}
+    <li>
+        <a href="{{ url_for('boq.index') }}" class="nav-link {% if request.endpoint and request.endpoint.startswith('boq.') %}active{% endif %}">
+            <i class="fas fa-fw fa-table me-2"></i>
+            <span>جداول الكميات</span>
+        </a>
+    </li>
+    
+    <li class="nav-item-separator my-3"><hr class="dropdown-divider"></li>
+    
     {# سجلات الدفعات وأوامر الشراء (Global - Grouped for clarity) #}
     <li class="nav-item has-submenu">
         <a href="#" class="nav-link sidebar-toggler {% if request.endpoint in ['payment.get_all_payments', 'po.get_all_purchase_orders'] %}is-active{% endif %}">

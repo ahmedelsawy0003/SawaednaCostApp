@@ -10,3 +10,8 @@ psycopg[binary]
 bleach==6.1.0
 Flask-WTF==1.2.1
 email-validator==2.1.1
+openpyxl==3.1.2
+pandas==2.0.3
+xlsxwriter==3.1.9
+weasyprint==60.1
+reportlab==4.0.7

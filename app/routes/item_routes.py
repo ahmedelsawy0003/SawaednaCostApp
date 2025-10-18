@@ -7,7 +7,8 @@ from app.models.contractor import Contractor
 from app.models.cost_detail import CostDetail 
 from app.extensions import db
 from flask_login import login_required, current_user
-from app.utils import check_project_permission, sanitize_input
+from app.utils import sanitize_input
+#from app.utils import check_project_permission, sanitize_input
 from app.forms import ItemForm
 from sqlalchemy.orm import undefer # <<< إضافة: استيراد دالة التحميل الصريح
 

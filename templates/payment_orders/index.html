@@ -1,0 +1,221 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}أوامر الصرف - سواعدنا{% endblock %}
+{% block page_title %}أوامر الصرف{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card border-primary">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="text-muted">إجمالي المبالغ</h6>
+                            <h3 class="text-primary mb-0">{{ "{:,.2f}".format(total_amount) }} جنيه</h3>
+                        </div>
+                        <div class="text-primary">
+                            <i class="fas fa-money-bill-wave fa-3x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-warning">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="text-muted">قيد الانتظار</h6>
+                            <h3 class="text-warning mb-0">{{ "{:,.2f}".format(pending_amount) }} جنيه</h3>
+                        </div>
+                        <div class="text-warning">
+                            <i class="fas fa-clock fa-3x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-success">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="text-muted">المدفوع</h6>
+                            <h3 class="text-success mb-0">{{ "{:,.2f}".format(paid_amount) }} جنيه</h3>
+                        </div>
+                        <div class="text-success">
+                            <i class="fas fa-check-circle fa-3x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-money-check-alt me-2"></i>
+                            أوامر الصرف
+                        </h5>
+                        <a href="{{ url_for('payment_orders.new') }}" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>
+                            أمر صرف جديد
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">المشروع</label>
+                            <select name="project_id" class="form-select">
+                                <option value="">جميع المشاريع</option>
+                                {% for project in projects %}
+                                <option value="{{ project.id }}" {% if request.args.get('project_id')|int == project.id %}selected{% endif %}>
+                                    {{ project.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">نوع الصرف</label>
+                            <select name="payment_type" class="form-select">
+                                <option value="">جميع الأنواع</option>
+                                <option value="contractor" {% if request.args.get('payment_type') == 'contractor' %}selected{% endif %}>مقاول</option>
+                                <option value="labor" {% if request.args.get('payment_type') == 'labor' %}selected{% endif %}>عمالة</option>
+                                <option value="purchase" {% if request.args.get('payment_type') == 'purchase' %}selected{% endif %}>مشتريات</option>
+                                <option value="other" {% if request.args.get('payment_type') == 'other' %}selected{% endif %}>أخرى</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">الحالة</label>
+                            <select name="status" class="form-select">
+                                <option value="">جميع الحالات</option>
+                                <option value="pending" {% if request.args.get('status') == 'pending' %}selected{% endif %}>قيد المراجعة</option>
+                                <option value="approved" {% if request.args.get('status') == 'approved' %}selected{% endif %}>معتمد</option>
+                                <option value="paid" {% if request.args.get('status') == 'paid' %}selected{% endif %}>مدفوع</option>
+                                <option value="rejected" {% if request.args.get('status') == 'rejected' %}selected{% endif %}>مرفوض</option>
+                                <option value="cancelled" {% if request.args.get('status') == 'cancelled' %}selected{% endif %}>ملغي</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary me-2">
+                                <i class="fas fa-filter me-2"></i>
+                                تصفية
+                            </button>
+                            <a href="{{ url_for('payment_orders.index') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-redo me-2"></i>
+                                إعادة تعيين
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Orders Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>رقم الأمر</th>
+                                    <th>المشروع</th>
+                                    <th>النوع</th>
+                                    <th>المستفيد</th>
+                                    <th>المبلغ</th>
+                                    <th>التاريخ</th>
+                                    <th>الحالة</th>
+                                    <th>الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for order in orders %}
+                                <tr>
+                                    <td><strong>{{ order.payment_number }}</strong></td>
+                                    <td>{{ order.project.name if order.project else '-' }}</td>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ order.payment_type_arabic }}</span>
+                                    </td>
+                                    <td>{{ order.beneficiary }}</td>
+                                    <td><strong class="text-primary">{{ "{:,.2f}".format(order.amount) }}</strong></td>
+                                    <td>{{ order.payment_date.strftime('%Y-%m-%d') if order.payment_date else '-' }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ order.status_badge_class }}">
+                                            {{ order.status_arabic }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('payment_orders.view', id=order.id) }}" class="btn btn-sm btn-info">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        {% if order.status == 'pending' %}
+                                        <a href="{{ url_for('payment_orders.edit', id=order.id) }}" class="btn btn-sm btn-warning">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        {% endif %}
+                                        <a href="{{ url_for('payment_orders.export_pdf', id=order.id) }}" class="btn btn-sm btn-danger">
+                                            <i class="fas fa-file-pdf"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="8" class="text-center text-muted">لا توجد أوامر صرف</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    {% if pagination.pages > 1 %}
+                    <nav>
+                        <ul class="pagination justify-content-center">
+                            {% if pagination.has_prev %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('payment_orders.index', page=pagination.prev_num) }}">السابق</a>
+                            </li>
+                            {% endif %}
+                            
+                            {% for page_num in pagination.iter_pages() %}
+                                {% if page_num %}
+                                <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+                                    <a class="page-link" href="{{ url_for('payment_orders.index', page=page_num) }}">{{ page_num }}</a>
+                                </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if pagination.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('payment_orders.index', page=pagination.next_num) }}">التالي</a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

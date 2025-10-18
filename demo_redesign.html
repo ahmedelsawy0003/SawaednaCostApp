@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سواعدنا - معاينة التصميم الجديد</title>
+    
+    <link rel="stylesheet" href="static/css/style.css">
+    <link rel="stylesheet" href="static/css/modern.css">
+    <link rel="stylesheet" href="static/css/enhancements.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="modern-body">
+    <div class="app-wrapper">
+        
+        <!-- Modern Sidebar -->
+        <aside class="modern-sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="brand-logo">
+                    <i class="fas fa-chart-line"></i>
+                    <span>سواعدنا</span>
+                </div>
+                <button class="sidebar-close" id="sidebarClose" title="إغلاق القائمة">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <nav class="modern-nav">
+                <ul class="nav-list">
+                    <!-- Dashboard -->
+                    <li class="nav-item">
+                        <a href="#" class="nav-link active">
+                            <i class="fas fa-fw fa-project-diagram"></i>
+                            <span>المشاريع</span>
+                        </a>
+                    </li>
+                    
+                    <!-- Financial Summary -->
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i class="fas fa-fw fa-chart-line"></i>
+                            <span>الملخص المالي الشامل</span>
+                        </a>
+                    </li>
+                    
+                    <!-- Contractors -->
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i class="fas fa-fw fa-hard-hat"></i>
+                            <span>المقاولون والموردون</span>
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item-separator my-3"><hr class="dropdown-divider"></li>
+                    
+                    <!-- Global Records -->
+                    <li class="nav-item has-submenu">
+                        <a href="#" class="nav-link sidebar-toggler">
+                            <i class="fas fa-fw fa-globe"></i>
+                            <span>السجلات الشاملة</span>
+                            <i class="fas fa-chevron-left toggle-icon ms-auto"></i>
+                        </a>
+                        <ul class="sidebar-submenu">
+                            <li>
+                                <a href="#" class="sub-link">
+                                    <i class="fas fa-cash-register"></i> سجل الدفعات
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" class="sub-link">
+                                    <i class="fas fa-file-contract"></i> سجل أوامر الشراء (PO)
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <!-- Quick Jump -->
+                    <li class="nav-item has-submenu">
+                        <a href="#" class="nav-link sidebar-toggler">
+                            <i class="fas fa-fw fa-folder"></i>
+                            <span>الانتقال السريع لمشروع</span>
+                            <i class="fas fa-chevron-left toggle-icon ms-auto"></i>
+                        </a>
+                        <ul class="sidebar-submenu">
+                            <li>
+                                <a href="#" class="sub-link">
+                                    <i class="fas fa-circle"></i> مشروع البناء الأول
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" class="sub-link">
+                                    <i class="fas fa-circle"></i> مشروع التطوير
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" class="sub-link">
+                                    <i class="fas fa-circle"></i> مشروع الصيانة
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <!-- Admin Dashboard -->
+                    <li class="nav-item mt-4">
+                        <a href="#" class="nav-link text-danger fw-bold">
+                            <i class="fas fa-fw fa-user-shield"></i>
+                            <span>لوحة تحكم المسؤول</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="modern-main">
+            <!-- Topbar -->
+            <header class="modern-topbar">
+                <div class="topbar-content">
+                    <button class="sidebar-toggle" id="sidebarToggler" title="إظهار/إخفاء القائمة">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    
+                    <h1 class="topbar-main-title d-none d-lg-block">قائمة المشاريع النشطة</h1>
+                    
+                    <div class="topbar-actions">
+                        <div class="user-menu dropdown">
+                            <button class="user-menu-toggle btn btn-link" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="text-decoration: none; color: #1e293b; transition: all 0.2s;">
+                                <i class="fas fa-user-circle fa-2x" style="transition: transform 0.2s;"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end text-end" dir="rtl">
+                                <li>
+                                    <span class="dropdown-item-text fw-bold text-primary">مرحباً، أحمد</span>
+                                    <span class="dropdown-item-text small text-muted">الدور: مدير</span>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item" href="#">
+                                        <i class="fas fa-user me-2 text-info"></i> ملفي الشخصي
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="#">
+                                        <i class="fas fa-user-shield me-2 text-danger"></i> لوحة تحكم المسؤول
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item text-danger" href="#">
+                                        <i class="fas fa-sign-out-alt me-2"></i> تسجيل الخروج
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="modern-content">
+                <!-- Flash Messages -->
+                <div class="flash-messages-container" id="flash-messages-container">
+                    <div class="alert alert-success alert-dismissible fade show modern-alert" role="alert">
+                        <i class="alert-icon"></i>
+                        <span>تم تحديث التصميم بنجاح! استمتع بالواجهة الجديدة.</span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                </div>
+
+                <div class="page-content animate-fade-in-up">
+                    <!-- Page Header -->
+                    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                        <h2 class="mb-0">
+                            <i class="fas fa-project-diagram fa-fw me-2 text-primary"></i>قائمة المشاريع النشطة
+                        </h2>
+                        
+                        <div class="d-flex flex-wrap gap-2">
+                            <button class="btn btn-primary">
+                                <i class="fas fa-plus me-1"></i> إضافة مشروع جديد
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Stats Cards -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-3">
+                            <div class="card stats-card">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <p class="text-muted mb-1">إجمالي المشاريع</p>
+                                            <h3 class="mb-0">24</h3>
+                                        </div>
+                                        <div class="icon-circle">
+                                            <i class="fas fa-project-diagram fa-2x text-primary"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card stats-card">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <p class="text-muted mb-1">قيد التنفيذ</p>
+                                            <h3 class="mb-0">12</h3>
+                                        </div>
+                                        <div class="icon-circle">
+                                            <i class="fas fa-spinner fa-2x text-warning"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card stats-card">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <p class="text-muted mb-1">مكتملة</p>
+                                            <h3 class="mb-0">8</h3>
+                                        </div>
+                                        <div class="icon-circle">
+                                            <i class="fas fa-check-circle fa-2x text-success"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card stats-card">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <p class="text-muted mb-1">إجمالي التكلفة</p>
+                                            <h3 class="mb-0">2.5M</h3>
+                                        </div>
+                                        <div class="icon-circle">
+                                            <i class="fas fa-dollar-sign fa-2x text-info"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Projects Table -->
+                    <div class="card">
+                        <div class="card-header p-0">
+                            <ul class="nav nav-tabs card-header-tabs" id="projectTab" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <a class="nav-link active fw-bold" href="#">
+                                        <i class="fas fa-list-check me-1"></i> المشاريع النشطة
+                                    </a>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <a class="nav-link fw-bold" href="#">
+                                        <i class="fas fa-archive me-1"></i> الأرشيف
+                                    </a>
+                                </li>
+                            </ul>
+                            
+                            <div class="p-3 border-top border-light bg-light">
+                                <input type="search" class="form-control" id="project-quick-search" placeholder="ابحث باسم المشروع، حالته، أو موقعه..." style="max-width: 100%;">
+                                <div class="form-text mt-2 text-muted small">
+                                    ابحث فوراً عن أي مشروع في الجدول.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover table-striped mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 30%;">اسم المشروع</th>
+                                            <th class="text-center" style="width: 15%;">الحالة</th>
+                                            <th class="text-end" style="width: 15%;">التكلفة (ر.س)</th>
+                                            <th class="text-end" style="width: 15%;">المدفوع (ر.س)</th>
+                                            <th class="text-end" style="width: 15%;">المتبقي (ر.س)</th>
+                                            <th class="text-center" style="width: 10%;">الإجراءات</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><a href="#" class="fw-bold">مشروع البناء السكني</a></td>
+                                            <td class="text-center"><span class="badge bg-warning">قيد التنفيذ</span></td>
+                                            <td class="text-end number-cell">850,000.00</td>
+                                            <td class="text-end"><span class="text-success number-cell">450,000.00</span></td>
+                                            <td class="text-end"><span class="text-danger number-cell">400,000.00</span></td>
+                                            <td class="text-center">
+                                                <div class="btn-group btn-group-sm">
+                                                    <button class="btn btn-info" title="عرض"><i class="fas fa-eye"></i></button>
+                                                    <button class="btn btn-warning" title="تعديل"><i class="fas fa-edit"></i></button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td><a href="#" class="fw-bold">مشروع التطوير التجاري</a></td>
+                                            <td class="text-center"><span class="badge bg-success">مكتمل</span></td>
+                                            <td class="text-end number-cell">1,200,000.00</td>
+                                            <td class="text-end"><span class="text-success number-cell">1,200,000.00</span></td>
+                                            <td class="text-end"><span class="text-success number-cell">0.00</span></td>
+                                            <td class="text-center">
+                                                <div class="btn-group btn-group-sm">
+                                                    <button class="btn btn-info" title="عرض"><i class="fas fa-eye"></i></button>
+                                                    <button class="btn btn-warning" title="تعديل"><i class="fas fa-edit"></i></button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td><a href="#" class="fw-bold">مشروع الصيانة الدورية</a></td>
+                                            <td class="text-center"><span class="badge bg-info">معلق</span></td>
+                                            <td class="text-end number-cell">350,000.00</td>
+                                            <td class="text-end"><span class="text-success number-cell">100,000.00</span></td>
+                                            <td class="text-end"><span class="text-danger number-cell">250,000.00</span></td>
+                                            <td class="text-center">
+                                                <div class="btn-group btn-group-sm">
+                                                    <button class="btn btn-info" title="عرض"><i class="fas fa-eye"></i></button>
+                                                    <button class="btn btn-warning" title="تعديل"><i class="fas fa-edit"></i></button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <footer class="modern-footer">
+                <p>&copy; 2025 سواعدنا - نظام إدارة التكاليف</p>
+                <div class="footer-links">
+                    <a href="#">الشروط والأحكام</a>
+                    <a href="#">سياسة الخصوصية</a>
+                </div>
+            </footer>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="static/js/modern.js"></script>
+</body>
+</html>
+
