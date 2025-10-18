@@ -14,6 +14,11 @@ from .models.invoice import Invoice
 from .models.invoice_item import InvoiceItem
 from .models.cost_detail import CostDetail
 from .models.payment_distribution import PaymentDistribution
+from .models.sequence_counter import SequenceCounter
+from .models.material_request import MaterialRequest, MaterialRequestItem
+from .models.material_return import MaterialReturn, MaterialReturnItem
+from .models.payment_order import PaymentOrder
+from .models.boq_item import BOQItem
 
 def create_app():
     app = Flask(__name__, template_folder='../templates', static_folder='../static')
@@ -57,7 +62,10 @@ def create_app():
     from .routes.invoice_routes import invoice_bp
     from .routes.cost_detail_routes import cost_detail_bp
     from .routes.payment_routes import payment_bp
-    from .routes.purchase_order_routes import po_bp # <-- إضافة استيراد المسار الجديد
+    from .routes.purchase_order_routes import po_bp
+    from .routes.forms_routes import forms_bp
+    from .routes.payment_order_routes import payment_orders_bp
+    from .routes.boq_routes import boq_bp  # NEW
 
     app.register_blueprint(project_bp)
     app.register_blueprint(item_bp)
@@ -67,7 +75,10 @@ def create_app():
     app.register_blueprint(invoice_bp)
     app.register_blueprint(cost_detail_bp)
     app.register_blueprint(payment_bp)
-    app.register_blueprint(po_bp) # <-- إضافة تسجيل المسار الجديد
+    app.register_blueprint(po_bp)
+    app.register_blueprint(forms_bp)
+    app.register_blueprint(payment_orders_bp)
+    app.register_blueprint(boq_bp)  # NEW
     
     @app.route('/')
     def index():
