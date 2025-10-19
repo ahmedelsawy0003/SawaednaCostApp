@@ -512,3 +512,92 @@ def download_material_return_template():
     output.seek(0)
     return output
 
+
+# --- START: الدوال المفقودة التي تسببت في خطأ BOQ ImportError ---
+# يجب أن تكون هذه الدوال موجودة في ملف excel_utils.py لتتمكن ملفات الـ routes من استيرادها.
+
+def export_boq_to_excel(items):
+    """
+    Generate BOQ Excel for export.
+    """
+    # يجب استيراد هذه الدوال داخل نطاق الدالة لتفادي مشكلة numpy/pandas
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, PatternFill, Alignment
+    from openpyxl.utils import get_column_letter
+    
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "جدول الكميات"
+    
+    # Styling
+    header_fill = PatternFill(start_color="047857", end_color="047857", fill_type="solid")
+    header_font = Font(bold=True, color="FFFFFF")
+    
+    # Headers
+    headers = [
+        'رقم البند', 'الوصف', 'الوحدة', 'الكمية المخططة', 'الكمية المنفذة', 
+        'سعر الوحدة', 'القيمة الإجمالية', 'نسبة الإنجاز (%)', 'التصنيف'
+    ]
+    
+    row = 1
+    for col, header in enumerate(headers, 1):
+        cell = ws.cell(row=row, column=col, value=header)
+        cell.fill = header_fill
+        cell.font = header_font
+        cell.alignment = Alignment(horizontal='center', vertical='center')
+        
+    # Data rows
+    row = 2
+    for item in items:
+        # التأكد من أن الـ properties موجودة قبل الوصول إليها
+        ws.cell(row=row, column=1, value=getattr(item, 'item_number', ''))
+        ws.cell(row=row, column=2, value=getattr(item, 'description', ''))
+        ws.cell(row=row, column=3, value=getattr(item, 'unit', ''))
+        ws.cell(row=row, column=4, value=getattr(item, 'quantity', 0.0))
+        ws.cell(row=row, column=5, value=getattr(item, 'executed_quantity', 0.0))
+        ws.cell(row=row, column=6, value=getattr(item, 'unit_price', 0.0))
+        ws.cell(row=row, column=7, value=getattr(item, 'total_price', 0.0))
+        ws.cell(row=row, column=8, value=f"{getattr(item, 'completion_percentage', 0.0):.2f}%")
+        ws.cell(row=row, column=9, value=getattr(item, 'category', ''))
+        row += 1
+    
+    # Auto-fit columns
+    for column in ws.columns:
+        ws.column_dimensions[get_column_letter(column[0].column)].width = 20
+    
+    output = io.BytesIO()
+    wb.save(output)
+    output.seek(0)
+    return output
+
+
+def import_boq_from_excel(file):
+    """
+    Import BOQ items from Excel file. (Simplified implementation)
+    """
+    import pandas as pd
+    
+    try:
+        df = pd.read_excel(file, header=0) 
+        
+        items = []
+        for _, row in df.iterrows():
+            if pd.isna(row.get('رقم البند')):
+                continue
+                
+            items.append({
+                'item_number': str(row.get('رقم البند', '')),
+                'description': str(row.get('الوصف', '')),
+                'unit': str(row.get('الوحدة', '')),
+                'quantity': float(row.get('الكمية المخططة', 0) or 0),
+                'unit_price': float(row.get('سعر الوحدة', 0) or 0),
+                'total_price': float(row.get('القيمة الإجمالية', 0) or 0),
+                'category': str(row.get('التصنيف', '')),
+            })
+        
+        return items
+    except Exception as e:
+        # استخدام ValueError لسهولة التعامل مع الـ traceback
+        raise ValueError(f"خطأ في قراءة ملف Excel: {str(e)}")
+
+# --- END: الدوال المفقودة ---
